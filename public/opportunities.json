@@ -1,0 +1,721 @@
+{
+  "last_updated": "2026-08-07T23:25:47.565098",
+  "total_count": 24,
+  "status": "active",
+  "opportunities": [
+    {
+      "id": "ad-ogilvy-2027",
+      "title": "Ogilvy & Mather Creative & Strategy Fellowship 2027",
+      "organization": "Ogilvy & Mather / WPP Network",
+      "location": "New York, London, Paris & Remote",
+      "type": "fellowship",
+      "level": "undergrad",
+      "region": "global",
+      "field": "advertising",
+      "funding": "fully_funded",
+      "stipend": "$5,500 / month + Housing Allowance",
+      "deadline": "2027-02-15",
+      "no_ielts": true,
+      "popular": true,
+      "link": "https://www.ogilvy.com/careers",
+      "description": "Prestige rotational fellowship for Bachelor students and graduates in Advertising, Marketing, Copywriting, and Brand Strategy. Work on global brand campaigns for Nike, Coca-Cola, and IBM.",
+      "benefits": [
+        "Competitive monthly salary of $5,500/mo",
+        "Housing relocation stipend provided",
+        "Direct 1-on-1 executive mentorship by Chief Creative Officers",
+        "Rotations across Brand Strategy, Copywriting, and Digital Media"
+      ],
+      "eligibility": [
+        "Enrolled in or graduated from Bachelor in Advertising, Marketing, PR, or Communications",
+        "Portfolio of creative campaigns, copywriting samples, or strategy decks",
+        "Fluent in English"
+      ],
+      "steps": [
+        "Submit creative portfolio / strategy pitch deck",
+        "Complete brand brief challenge",
+        "Panel interview with Executive Creative Directors"
+      ],
+      "source": "WPP Global Talent Feed"
+    },
+    {
+      "id": "ad-google-creative-2027",
+      "title": "Google Creative Campus Fellowship & Lab",
+      "organization": "Google Creative Lab",
+      "location": "New York City, USA",
+      "type": "fellowship",
+      "level": "undergrad",
+      "region": "north_america",
+      "field": "advertising",
+      "funding": "fully_funded",
+      "stipend": "$7,800 / month + Full Relocation",
+      "deadline": "2026-11-20",
+      "no_ielts": true,
+      "popular": true,
+      "link": "https://creativelab5.com/",
+      "description": "1-year paid fellowship at Google Creative Lab for young writers, designers, strategists, and creative technologists to invent the future of marketing and storytelling.",
+      "benefits": [
+        "Top-tier compensation ($7,800/mo)",
+        "Full relocation to New York City",
+        "Work directly on Google hardware and brand launch films"
+      ],
+      "eligibility": [
+        "Bachelor degree in Advertising, Graphic Design, Copywriting, or Digital Media",
+        "Bold creative portfolio demonstrating original ideas"
+      ],
+      "steps": [
+        "Submit online portfolio link",
+        "Creative prompt assignment",
+        "Virtual pitch presentation"
+      ],
+      "source": "Google Creative Lab Feed"
+    },
+    {
+      "id": "ad-loreal-brandstorm-2027",
+      "title": "L'Oréal Brandstorm Marketing Innovation Challenge",
+      "organization": "L'Oréal Paris",
+      "location": "Paris, France (Global Finals)",
+      "type": "internship",
+      "level": "undergrad",
+      "region": "europe",
+      "field": "advertising",
+      "funding": "fully_funded",
+      "stipend": "100% Fully Funded Paris Trip + Intrapreneurship Salary",
+      "deadline": "2027-03-01",
+      "no_ielts": true,
+      "popular": true,
+      "link": "https://brandstorm.loreal.com/",
+      "description": "International innovation and advertising competition for university students. Winners receive a 3-month fully funded intrapreneurship mission at L'Oréal HQ in Paris to launch their campaign.",
+      "benefits": [
+        "Fully funded flight and luxury hotel stay in Paris",
+        "3-month paid intrapreneurship mission at Station F Paris",
+        "Direct job/internship offers from L'Oréal executives"
+      ],
+      "eligibility": [
+        "Undergraduate student in Advertising, Business, Marketing, or Communications",
+        "Teams of 3 students"
+      ],
+      "steps": [
+        "Form a team of 3 students",
+        "Submit 3-slide advertising pitch deck and 1-minute video",
+        "National finals presentation",
+        "Global Finals at Paris HQ"
+      ],
+      "source": "L'Oréal Career Feed"
+    },
+    {
+      "id": "ad-d-and-ad-2027",
+      "title": "D&AD New Blood Academy & Creative Grant",
+      "organization": "D&AD (Design & Art Direction)",
+      "location": "London, UK",
+      "type": "fellowship",
+      "level": "undergrad",
+      "region": "europe",
+      "field": "advertising",
+      "funding": "fully_funded",
+      "stipend": "£2,500 Grant + Free London Bootcamp & Flight",
+      "deadline": "2027-03-20",
+      "no_ielts": true,
+      "popular": true,
+      "link": "https://www.dandad.org/en/d-ad-new-blood-academy/",
+      "description": "Elite 2-week creative bootcamp and grant in London for emerging advertising creatives, art directors, and copywriters. Guaranteed agency placements at top London agencies.",
+      "benefits": [
+        "Fully funded travel & accommodation in London",
+        "£2,500 creative seed grant",
+        "Paid placement opportunities at top London ad agencies"
+      ],
+      "eligibility": [
+        "Undergraduate student or recent graduate in Advertising, Art Direction, Copywriting, or PR"
+      ],
+      "steps": [
+        "Enter a response to one of the official D&AD New Blood brand briefs",
+        "Shortlisting by jury of Executive Creative Directors"
+      ],
+      "source": "D&AD Global Network"
+    },
+    {
+      "id": "ad-publicis-nextgen-2027",
+      "title": "Publicis Groupe Global Advertising Internship",
+      "organization": "Publicis Groupe (Saatchi & Saatchi / Leo Burnett)",
+      "location": "Global (Chicago, London, Dubai, Singapore)",
+      "type": "internship",
+      "level": "undergrad",
+      "region": "global",
+      "field": "advertising",
+      "funding": "paid_stipend",
+      "stipend": "$4,200 / month + Housing Support",
+      "deadline": "2026-12-01",
+      "no_ielts": true,
+      "popular": false,
+      "link": "https://www.publicisgroupe.com/en/careers",
+      "description": "Paid summer internship program across Publicis Groupe agencies focusing on Media Planning, Data-Driven Advertising, Brand Storytelling, and Public Relations.",
+      "benefits": [
+        "Competitive monthly salary",
+        "Hands-on experience with Fortune 500 client accounts",
+        "Mentorship from senior brand directors"
+      ],
+      "eligibility": [
+        "Bachelor student in Advertising, Marketing, Public Relations, or Media Studies"
+      ],
+      "steps": [
+        "Apply online with CV and cover letter",
+        "Digital interview assessment"
+      ],
+      "source": "Publicis Network Feed"
+    },
+    {
+      "id": "auto-cern-2027",
+      "title": "CERN Summer Student Programme 2027",
+      "organization": "CERN (European Organization for Nuclear Research)",
+      "location": "Geneva, Switzerland",
+      "type": "internship",
+      "level": "undergrad",
+      "region": "europe",
+      "field": "engineering",
+      "funding": "fully_funded",
+      "stipend": "€3,100 / month (90 CHF/day)",
+      "deadline": "2027-01-30",
+      "no_ielts": true,
+      "popular": true,
+      "link": "https://careers.cern/summer",
+      "description": "Work alongside world-class physicists and engineers on high-energy research projects for 8 to 13 weeks. Includes fully paid travel allowance, daily allowance, and health insurance.",
+      "benefits": [
+        "Monthly stipend of 90 CHF/day (~€3,100/mo)",
+        "Round-trip travel allowance to Geneva",
+        "Comprehensive CERN Health Insurance"
+      ],
+      "eligibility": [
+        "Enrolled in a Bachelor or Master degree in Physics, Engineering, CS, or Math"
+      ],
+      "steps": [
+        "Submit online application form",
+        "Upload official transcripts",
+        "2 recommendation letters"
+      ],
+      "source": "CERN Official Careers"
+    },
+    {
+      "id": "auto-erasmus-2027",
+      "title": "Erasmus Mundus Joint Master Degrees (EMJMD)",
+      "organization": "European Commission",
+      "location": "Multiple European Countries",
+      "type": "scholarship",
+      "level": "masters",
+      "region": "europe",
+      "field": "stem",
+      "funding": "fully_funded",
+      "stipend": "100% Tuition + €1,400 / month",
+      "deadline": "2026-12-15",
+      "no_ielts": false,
+      "popular": true,
+      "link": "https://ec.europa.eu/programmes/erasmus-plus/opportunities/individuals/students/erasmus-mundus-joint-masters_en",
+      "description": "Prestige 2-year joint master degree study program across at least two European universities. 100% fully funded including living expenses, travel, installation cost, and insurance.",
+      "benefits": [
+        "Full tuition fee coverage (100%)",
+        "Monthly stipend of €1,400 for up to 24 months",
+        "Travel & Installation allowance up to €3,000/year"
+      ],
+      "eligibility": [
+        "Hold a recognized Bachelor degree or equivalent",
+        "Open to students from any nationality worldwide"
+      ],
+      "steps": [
+        "Choose up to 3 Erasmus Mundus master programs",
+        "Submit academic transcripts and diploma"
+      ],
+      "source": "EU Commission Feed"
+    },
+    {
+      "id": "auto-stanford-khs-2027",
+      "title": "Knight-Hennessy Scholars at Stanford",
+      "organization": "Stanford University",
+      "location": "California, USA",
+      "type": "scholarship",
+      "level": "masters",
+      "region": "north_america",
+      "field": "social",
+      "funding": "fully_funded",
+      "stipend": "Full Tuition + $25,000/yr Living Allowance",
+      "deadline": "2026-10-08",
+      "no_ielts": false,
+      "popular": true,
+      "link": "https://knight-hennessy.stanford.edu/",
+      "description": "Fully funded multidisciplinary scholarship for graduate studies (MA, MS, PhD, JD, MD, MBA) at Stanford University.",
+      "benefits": [
+        "100% full tuition waiver for any Stanford graduate program",
+        "Annual living stipend"
+      ],
+      "eligibility": [
+        "Applying to a graduate degree program at Stanford",
+        "Earned Bachelor degree within the last 6 years"
+      ],
+      "steps": [
+        "Apply to Knight-Hennessy Scholars portal"
+      ],
+      "source": "Stanford Portal Auto-Feed"
+    },
+    {
+      "id": "rss-2222413209445218890",
+      "title": "EJN Workshop 2026 for Communicators and Content Creators on Renewable Energy in Agra, India",
+      "organization": "Opportunity Desk Global",
+      "location": "Global / Host Institution",
+      "type": "scholarship",
+      "level": "undergrad",
+      "region": "global",
+      "field": "stem",
+      "funding": "fully_funded",
+      "stipend": "Fully Funded / Monthly Stipend",
+      "deadline": "2026-11-05",
+      "no_ielts": false,
+      "popular": true,
+      "link": "https://opportunitydesk.org/2026/08/06/ejn-workshop-2026-for-communicators-and-content-creators-on-renewable-energy-in-agra-india/",
+      "description": "Deadline: August 16, 2026 Applications are open for the EJN Workshop 2026 for Communicators and Content Creators on Renewable Energy. Earth Journalism Network (EJN) invites communicators and content c...",
+      "benefits": [
+        "Full financial coverage or stipend allowance",
+        "Global exposure and career advancement"
+      ],
+      "eligibility": [
+        "Open to international applicants",
+        "Refer to official link for details"
+      ],
+      "steps": [
+        "Click official link to apply"
+      ],
+      "source": "Live Feed (Opportunity Desk Global)"
+    },
+    {
+      "id": "rss-5258060323727594168",
+      "title": "Call for Proposals: UNEP Mountains ADAPT Small Grants 2026 (up to $30,000)",
+      "organization": "Opportunity Desk Global",
+      "location": "Global / Host Institution",
+      "type": "scholarship",
+      "level": "undergrad",
+      "region": "global",
+      "field": "advertising",
+      "funding": "fully_funded",
+      "stipend": "Fully Funded / Monthly Stipend",
+      "deadline": "2026-11-05",
+      "no_ielts": false,
+      "popular": true,
+      "link": "https://opportunitydesk.org/2026/08/06/unep-mountains-adapt-small-grants-2026/",
+      "description": "Deadline: September 15, 2026 Proposals are invited for the UNEP Mountains ADAPT Small Grants 2026. The small grants support inclusive ecosystem-based approaches that respond to climate change impacts ...",
+      "benefits": [
+        "Full financial coverage or stipend allowance",
+        "Global exposure and career advancement"
+      ],
+      "eligibility": [
+        "Open to international applicants",
+        "Refer to official link for details"
+      ],
+      "steps": [
+        "Click official link to apply"
+      ],
+      "source": "Live Feed (Opportunity Desk Global)"
+    },
+    {
+      "id": "rss-7735025543850341690",
+      "title": "MIT School Access and Quality Fellowship 2026-2027",
+      "organization": "Opportunity Desk Global",
+      "location": "Global / Host Institution",
+      "type": "fellowship",
+      "level": "undergrad",
+      "region": "global",
+      "field": "stem",
+      "funding": "fully_funded",
+      "stipend": "Fully Funded / Monthly Stipend",
+      "deadline": "2026-11-05",
+      "no_ielts": false,
+      "popular": true,
+      "link": "https://opportunitydesk.org/2026/08/06/mit-school-access-and-quality-fellowship-2026-2027/",
+      "description": "Deadline: August 24, 2026 Applications for the MIT School Access and Quality Fellowship 2026-2027 are now open. The MIT School Access and Quality Fellowship is a one-year program for education leaders...",
+      "benefits": [
+        "Full financial coverage or stipend allowance",
+        "Global exposure and career advancement"
+      ],
+      "eligibility": [
+        "Open to international applicants",
+        "Refer to official link for details"
+      ],
+      "steps": [
+        "Click official link to apply"
+      ],
+      "source": "Live Feed (Opportunity Desk Global)"
+    },
+    {
+      "id": "rss-8699464645111223228",
+      "title": "Sasol Foundation Bursary Programme 2027",
+      "organization": "Opportunity Desk Global",
+      "location": "Global / Host Institution",
+      "type": "scholarship",
+      "level": "undergrad",
+      "region": "global",
+      "field": "advertising",
+      "funding": "fully_funded",
+      "stipend": "Fully Funded / Monthly Stipend",
+      "deadline": "2026-11-05",
+      "no_ielts": false,
+      "popular": true,
+      "link": "https://opportunitydesk.org/2026/08/06/sasol-foundation-bursary-programme-2027/",
+      "description": "Deadline: August 23, 2026 Applications are open for the Sasol Foundation Bursary Programme 2027. The scarcity of talent in South Africa and globally makes it essential for Sasol to ensure continuous a...",
+      "benefits": [
+        "Full financial coverage or stipend allowance",
+        "Global exposure and career advancement"
+      ],
+      "eligibility": [
+        "Open to international applicants",
+        "Refer to official link for details"
+      ],
+      "steps": [
+        "Click official link to apply"
+      ],
+      "source": "Live Feed (Opportunity Desk Global)"
+    },
+    {
+      "id": "rss-4739230132816100094",
+      "title": "Commonwealth Fellowship Programme 2026/2027 (Funded)",
+      "organization": "Opportunity Desk Global",
+      "location": "Global / Host Institution",
+      "type": "fellowship",
+      "level": "undergrad",
+      "region": "global",
+      "field": "advertising",
+      "funding": "fully_funded",
+      "stipend": "Fully Funded / Monthly Stipend",
+      "deadline": "2026-11-05",
+      "no_ielts": false,
+      "popular": true,
+      "link": "https://opportunitydesk.org/2026/08/06/commonwealth-fellowship-programme-2026-2027/",
+      "description": "Deadline: August 25, 2026 Applications are open for the Commonwealth Fellowship Programme 2026/2027. From 2026/27, the CSC has launched a new ‘Commonwealth Fellowship Programme’ featuring two strands:...",
+      "benefits": [
+        "Full financial coverage or stipend allowance",
+        "Global exposure and career advancement"
+      ],
+      "eligibility": [
+        "Open to international applicants",
+        "Refer to official link for details"
+      ],
+      "steps": [
+        "Click official link to apply"
+      ],
+      "source": "Live Feed (Opportunity Desk Global)"
+    },
+    {
+      "id": "rss-1702190811922416335",
+      "title": "How I Won a Fully Funded Study Abroad Scholarship and How You Can Too",
+      "organization": "Opportunity Desk Global",
+      "location": "Global / Host Institution",
+      "type": "scholarship",
+      "level": "undergrad",
+      "region": "global",
+      "field": "stem",
+      "funding": "fully_funded",
+      "stipend": "Fully Funded / Monthly Stipend",
+      "deadline": "2026-11-05",
+      "no_ielts": false,
+      "popular": true,
+      "link": "https://opportunitydesk.org/2026/08/06/how-i-won-a-fully-funded-study-abroad-scholarship-and-how-you-can-too/",
+      "description": "A scholarship can be the door you have been waiting for. A year ago, I received a fully-funded Mastercard scholarship, and I did that after receiving 17 rejections. Now, I will show you how I did that...",
+      "benefits": [
+        "Full financial coverage or stipend allowance",
+        "Global exposure and career advancement"
+      ],
+      "eligibility": [
+        "Open to international applicants",
+        "Refer to official link for details"
+      ],
+      "steps": [
+        "Click official link to apply"
+      ],
+      "source": "Live Feed (Opportunity Desk Global)"
+    },
+    {
+      "id": "rss-2330437466736948495",
+      "title": "EJN Virtual Media Workshop on Mining, Environment and Human Rights Reporting in Africa 2026",
+      "organization": "Opportunity Desk Global",
+      "location": "Global / Host Institution",
+      "type": "scholarship",
+      "level": "undergrad",
+      "region": "global",
+      "field": "advertising",
+      "funding": "fully_funded",
+      "stipend": "Fully Funded / Monthly Stipend",
+      "deadline": "2026-11-05",
+      "no_ielts": false,
+      "popular": true,
+      "link": "https://opportunitydesk.org/2026/08/06/ejn-virtual-media-workshop-on-mining-environment-and-human-rights-reporting-in-africa-2026/",
+      "description": "Deadline: September 6, 2026 Applications are open for the EJN Virtual Media Workshop on Mining, Environment and Human Rights Reporting in Africa 2026. Internews’ Earth Journalism Network (EJN) is host...",
+      "benefits": [
+        "Full financial coverage or stipend allowance",
+        "Global exposure and career advancement"
+      ],
+      "eligibility": [
+        "Open to international applicants",
+        "Refer to official link for details"
+      ],
+      "steps": [
+        "Click official link to apply"
+      ],
+      "source": "Live Feed (Opportunity Desk Global)"
+    },
+    {
+      "id": "rss-4076229639965230612",
+      "title": "30 Hot Jobs Across Various Sectors Currently Open –  August 5, 2026",
+      "organization": "Opportunity Desk Global",
+      "location": "Global / Host Institution",
+      "type": "scholarship",
+      "level": "undergrad",
+      "region": "global",
+      "field": "stem",
+      "funding": "fully_funded",
+      "stipend": "Fully Funded / Monthly Stipend",
+      "deadline": "2026-11-05",
+      "no_ielts": false,
+      "popular": true,
+      "link": "https://opportunitydesk.org/2026/08/05/30-hot-jobs-across-various-sectors-currently-open-august-5-2026/",
+      "description": "1. Programme Management Officer, P3 &#8211; International Court of Justice, The HagueThe International Court of Justice is recruiting a Programme Management Officer to support the development and impl...",
+      "benefits": [
+        "Full financial coverage or stipend allowance",
+        "Global exposure and career advancement"
+      ],
+      "eligibility": [
+        "Open to international applicants",
+        "Refer to official link for details"
+      ],
+      "steps": [
+        "Click official link to apply"
+      ],
+      "source": "Live Feed (Opportunity Desk Global)"
+    },
+    {
+      "id": "rss-2008069629594528713",
+      "title": "ARES Scholarships in Belgium 2027-28 | Fully Funded | Belgium Government Scholarship",
+      "organization": "Opportunities Circle",
+      "location": "Global / Host Institution",
+      "type": "scholarship",
+      "level": "undergrad",
+      "region": "global",
+      "field": "stem",
+      "funding": "fully_funded",
+      "stipend": "Fully Funded / Monthly Stipend",
+      "deadline": "2026-11-05",
+      "no_ielts": false,
+      "popular": true,
+      "link": "https://www.opportunitiescircle.com/ares-scholarships-in-belgium/",
+      "description": "Here is another study abroad scholarship opportunity; applications are open for the ARES Scholarships in Belgium 2027-28. The ARES scholarships for international students are offered to pursue advance...",
+      "benefits": [
+        "Full financial coverage or stipend allowance",
+        "Global exposure and career advancement"
+      ],
+      "eligibility": [
+        "Open to international applicants",
+        "Refer to official link for details"
+      ],
+      "steps": [
+        "Click official link to apply"
+      ],
+      "source": "Live Feed (Opportunities Circle)"
+    },
+    {
+      "id": "rss-9068432257530069183",
+      "title": "ESO Science Communication Internship 2026 in Germany | Fully Funded",
+      "organization": "Opportunities Circle",
+      "location": "Global / Host Institution",
+      "type": "internship",
+      "level": "undergrad",
+      "region": "global",
+      "field": "stem",
+      "funding": "fully_funded",
+      "stipend": "Fully Funded / Monthly Stipend",
+      "deadline": "2026-11-05",
+      "no_ielts": false,
+      "popular": true,
+      "link": "https://www.opportunitiescircle.com/eso-science-communication-internship/",
+      "description": "Are you looking for an internship in Germany? The ESO Science Communication Internship 2026 in Germany is currently accepting applications. This internship program is an initiative of the European Org...",
+      "benefits": [
+        "Full financial coverage or stipend allowance",
+        "Global exposure and career advancement"
+      ],
+      "eligibility": [
+        "Open to international applicants",
+        "Refer to official link for details"
+      ],
+      "steps": [
+        "Click official link to apply"
+      ],
+      "source": "Live Feed (Opportunities Circle)"
+    },
+    {
+      "id": "rss-1782716541341415644",
+      "title": "Google Student Researcher Internship 2026 | Paid Internships",
+      "organization": "Opportunities Circle",
+      "location": "Global / Host Institution",
+      "type": "internship",
+      "level": "undergrad",
+      "region": "global",
+      "field": "stem",
+      "funding": "fully_funded",
+      "stipend": "Fully Funded / Monthly Stipend",
+      "deadline": "2026-11-05",
+      "no_ielts": false,
+      "popular": true,
+      "link": "https://www.opportunitiescircle.com/google-student-researcher-internship/",
+      "description": "Are you looking for Google internships? Applications for the Google Student Researcher Internship 2026 are currently open. This international internship is calling all bachelor&#8217;s and master&#821...",
+      "benefits": [
+        "Full financial coverage or stipend allowance",
+        "Global exposure and career advancement"
+      ],
+      "eligibility": [
+        "Open to international applicants",
+        "Refer to official link for details"
+      ],
+      "steps": [
+        "Click official link to apply"
+      ],
+      "source": "Live Feed (Opportunities Circle)"
+    },
+    {
+      "id": "rss-1521828300011959641",
+      "title": "Leiden University Excellence Scholarship 2027 in Netherlands",
+      "organization": "Opportunities Circle",
+      "location": "Global / Host Institution",
+      "type": "scholarship",
+      "level": "undergrad",
+      "region": "global",
+      "field": "stem",
+      "funding": "fully_funded",
+      "stipend": "Fully Funded / Monthly Stipend",
+      "deadline": "2026-11-05",
+      "no_ielts": false,
+      "popular": true,
+      "link": "https://www.opportunitiescircle.com/leiden-university-excellence-scholarship/",
+      "description": "Are you looking for a scholarship to study for a master’s degree in Europe? If yes, then the Leiden University Excellence Scholarship 2027 in the Netherlands is an excellent opportunity for you. The L...",
+      "benefits": [
+        "Full financial coverage or stipend allowance",
+        "Global exposure and career advancement"
+      ],
+      "eligibility": [
+        "Open to international applicants",
+        "Refer to official link for details"
+      ],
+      "steps": [
+        "Click official link to apply"
+      ],
+      "source": "Live Feed (Opportunities Circle)"
+    },
+    {
+      "id": "rss-1487992241947675156",
+      "title": "British Academy Knowledge Frontiers Symposium 2027",
+      "organization": "Opportunities Circle",
+      "location": "Global / Host Institution",
+      "type": "scholarship",
+      "level": "undergrad",
+      "region": "global",
+      "field": "stem",
+      "funding": "fully_funded",
+      "stipend": "Fully Funded / Monthly Stipend",
+      "deadline": "2026-11-05",
+      "no_ielts": false,
+      "popular": true,
+      "link": "https://www.opportunitiescircle.com/british-academy-knowledge-frontiers-symposium/",
+      "description": "Are you looking for an international research opportunity? Applications are now open for the British Academy Knowledge Frontiers Symposium 2027. It is an international research collaboration symposium...",
+      "benefits": [
+        "Full financial coverage or stipend allowance",
+        "Global exposure and career advancement"
+      ],
+      "eligibility": [
+        "Open to international applicants",
+        "Refer to official link for details"
+      ],
+      "steps": [
+        "Click official link to apply"
+      ],
+      "source": "Live Feed (Opportunities Circle)"
+    },
+    {
+      "id": "rss-6893125228836454958",
+      "title": "Yale Peace Fellowship 2027 | Fully Funded",
+      "organization": "Opportunities Circle",
+      "location": "Global / Host Institution",
+      "type": "fellowship",
+      "level": "undergrad",
+      "region": "global",
+      "field": "stem",
+      "funding": "fully_funded",
+      "stipend": "Fully Funded / Monthly Stipend",
+      "deadline": "2026-11-05",
+      "no_ielts": false,
+      "popular": true,
+      "link": "https://www.opportunitiescircle.com/yale-peace-fellowship/",
+      "description": "Are you a rising leader who promotes harmony and peace? If yes, then the Yale Peace Fellowship 2027 is a fantastic opportunity for you. The Peace Fellowship program is looking to gather rising leaders...",
+      "benefits": [
+        "Full financial coverage or stipend allowance",
+        "Global exposure and career advancement"
+      ],
+      "eligibility": [
+        "Open to international applicants",
+        "Refer to official link for details"
+      ],
+      "steps": [
+        "Click official link to apply"
+      ],
+      "source": "Live Feed (Opportunities Circle)"
+    },
+    {
+      "id": "rss-777972548744280111",
+      "title": "KAS-SAIIA Scholarships 2027 in South Africa",
+      "organization": "Opportunities Circle",
+      "location": "Global / Host Institution",
+      "type": "scholarship",
+      "level": "undergrad",
+      "region": "global",
+      "field": "stem",
+      "funding": "fully_funded",
+      "stipend": "Fully Funded / Monthly Stipend",
+      "deadline": "2026-11-05",
+      "no_ielts": false,
+      "popular": true,
+      "link": "https://www.opportunitiescircle.com/kas-saiia-scholarships/",
+      "description": "Are you looking for a fully funded master&#8217;s scholarship in South Africa? If yes, then the KAS-SAIIA Scholarships 2027 in South Africa are an excellent opportunity for you. The Konrad-Adenauer-St...",
+      "benefits": [
+        "Full financial coverage or stipend allowance",
+        "Global exposure and career advancement"
+      ],
+      "eligibility": [
+        "Open to international applicants",
+        "Refer to official link for details"
+      ],
+      "steps": [
+        "Click official link to apply"
+      ],
+      "source": "Live Feed (Opportunities Circle)"
+    },
+    {
+      "id": "rss-5320690962991315659",
+      "title": "Tsinghua University Free Online Courses 2026",
+      "organization": "Opportunities Circle",
+      "location": "Global / Host Institution",
+      "type": "scholarship",
+      "level": "undergrad",
+      "region": "global",
+      "field": "stem",
+      "funding": "fully_funded",
+      "stipend": "Fully Funded / Monthly Stipend",
+      "deadline": "2026-11-05",
+      "no_ielts": false,
+      "popular": true,
+      "link": "https://www.opportunitiescircle.com/tsinghua-university-free-online-courses/",
+      "description": "Are you looking for online courses? Tsinghua University Free Online Courses 2026 are an excellent opportunity to polish your skills and learn from a top university. Tsinghua University is one of the m...",
+      "benefits": [
+        "Full financial coverage or stipend allowance",
+        "Global exposure and career advancement"
+      ],
+      "eligibility": [
+        "Open to international applicants",
+        "Refer to official link for details"
+      ],
+      "steps": [
+        "Click official link to apply"
+      ],
+      "source": "Live Feed (Opportunities Circle)"
+    }
+  ]
+}
