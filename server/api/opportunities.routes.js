@@ -1,0 +1,122 @@
+import express from 'express';
+import sqliteDb from '../db/sqliteClient.js';
+import { calculateDeterministicMatchScore } from '../services/matchingEngine.js';
+import { generateApplicationKit } from '../services/applicationAssistant.js';
+import { generateVerifiedJobUrl } from '../services/linkVerifier.js';
+
+const router = express.Router();
+
+// Helper to sanitize and enrich opportunity record
+function enrichOpportunity(opp, userProfile) {
+  if (!opp) return opp;
+  const verified = generateVerifiedJobUrl(opp);
+  const matchData = calculateDeterministicMatchScore(opp, userProfile);
+
+  return {
+    ...opp,
+    official_apply_url: verified.verified_live_url,
+    linkedin_search_url: verified.linkedin_search_url,
+    link_verification_status: verified.status,
+    link_source_type: verified.source_type,
+    match_score: matchData.score,
+    match_breakdown: matchData.breakdown,
+    match_reasons: matchData.matchReasons,
+    match_flags: matchData.flags,
+    why_matches_you: matchData.whyMatches
+  };
+}
+
+// 1. GET /api/v1/opportunities
+router.get('/', (req, res) => {
+  try {
+    const { search, type, field, minScore } = req.query;
+    
+    // Get user profile for personalized matching
+    const profileRow = sqliteDb.prepare('SELECT * FROM user_profiles WHERE id = ?').get('default-user') || {};
+    const userProfile = {
+      ...profileRow,
+      skills: profileRow.skills ? JSON.parse(profileRow.skills) : [],
+      interests: profileRow.interests ? JSON.parse(profileRow.interests) : []
+    };
+
+    let query = "SELECT * FROM opportunities WHERE status = 'active'";
+    const params = [];
+
+
+    if (type && type !== 'all') {
+      query += ' AND opportunity_type = ?';
+      params.push(type);
+    }
+
+    if (field && field !== 'all') {
+      query += ' AND field_of_study = ?';
+      params.push(field);
+    }
+
+    if (search && search.trim()) {
+      const term = `%${search.trim()}%`;
+      query += ' AND (title LIKE ? OR company LIKE ? OR description LIKE ? OR location_country LIKE ? OR field_of_study LIKE ?)';
+      params.push(term, term, term, term, term);
+    }
+
+    query += ' ORDER BY created_at DESC';
+
+    const rows = sqliteDb.prepare(query).all(...params);
+    const enriched = rows.map(r => enrichOpportunity(r, userProfile));
+
+    // Sort by deterministic match score descending
+    enriched.sort((a, b) => (b.match_score || 0) - (a.match_score || 0));
+
+    res.json({
+      status: 'success',
+      total_count: enriched.length,
+      opportunities: enriched
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 2. GET /api/v1/opportunities/:id
+router.get('/:id', (req, res) => {
+  try {
+    const opp = sqliteDb.prepare('SELECT * FROM opportunities WHERE id = ?').get(req.params.id);
+    if (!opp) {
+      return res.status(404).json({ error: 'Opportunity not found' });
+    }
+
+    const profileRow = sqliteDb.prepare('SELECT * FROM user_profiles WHERE id = ?').get('default-user') || {};
+    const userProfile = {
+      ...profileRow,
+      skills: profileRow.skills ? JSON.parse(profileRow.skills) : [],
+      interests: profileRow.interests ? JSON.parse(profileRow.interests) : []
+    };
+
+    res.json({ status: 'success', opportunity: enrichOpportunity(opp, userProfile) });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 3. POST /api/v1/opportunities/:id/prepare-application (Section 11)
+router.post('/:id/prepare-application', async (req, res) => {
+  try {
+    const opp = sqliteDb.prepare('SELECT * FROM opportunities WHERE id = ?').get(req.params.id);
+    if (!opp) {
+      return res.status(404).json({ error: 'Opportunity not found' });
+    }
+
+    const userProfile = req.body.userProfile || sqliteDb.prepare('SELECT * FROM user_profiles WHERE id = ?').get('default-user');
+    const applicationKit = await generateApplicationKit({ opportunity: opp, userProfile });
+
+    res.json({
+      status: 'success',
+      opportunity_id: opp.id,
+      application_kit: applicationKit
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+export default router;

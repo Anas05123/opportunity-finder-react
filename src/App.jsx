@@ -7,17 +7,21 @@ import {
   ChevronLeft, ChevronRight, FileText, Mic, Bot
 } from 'lucide-react';
 
-import OpportunityGridView from './components/OpportunityGridView';
-import OpportunityListView from './components/OpportunityListView';
-import OpportunityDrawer from './components/OpportunityDrawer';
-import AdminDashboard from './components/AdminDashboard';
-import AutoApplyModal from './components/AutoApplyModal';
-import EmailOutreachModal from './components/EmailOutreachModal';
-import ComparisonModal from './components/ComparisonModal';
-import UserProfileModal from './components/UserProfileModal';
-import CvStudio from './components/CvStudio';
-import InterviewCoach from './components/InterviewCoach';
-import AiCareerCopilot from './components/AiCareerCopilot';
+import ConversationalHero from './components/SearchInterface/ConversationalHero.jsx';
+import AIQuestionModal from './components/SearchInterface/AIQuestionModal.jsx';
+import SearchProgressExperience from './components/SearchInterface/SearchProgressExperience.jsx';
+import OpportunityGridView from './components/OpportunityGridView.jsx';
+import OpportunityListView from './components/OpportunityListView.jsx';
+import OpportunityDrawer from './components/OpportunityDrawer.jsx';
+import ApplicationKitDrawer from './components/ApplicationAssistant/ApplicationKitDrawer.jsx';
+import AdminDashboard from './components/AdminDashboard.jsx';
+import AutoApplyModal from './components/AutoApplyModal.jsx';
+import EmailOutreachModal from './components/EmailOutreachModal.jsx';
+import ComparisonModal from './components/ComparisonModal.jsx';
+import UserProfileModal from './components/UserProfileModal.jsx';
+import CvStudio from './components/CvStudio.jsx';
+import InterviewCoach from './components/InterviewCoach.jsx';
+import AiCareerCopilot from './components/AiCareerCopilot.jsx';
 
 const API_BASE_URL = 'http://localhost:5000/api/v1';
 
@@ -35,7 +39,7 @@ export default function App() {
   const itemsPerPage = 9;
   const feedTopRef = useRef(null);
   
-  // Theme State (Prodexa Dark & Light)
+  // Theme State
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem('opp_theme') || 'dark';
   });
@@ -50,7 +54,7 @@ export default function App() {
     setTheme(nextTheme);
   };
 
-  // User Profile
+  // User Profile State
   const [userProfile, setUserProfile] = useState(() => {
     const saved = localStorage.getItem('opp_user_profile');
     if (saved) {
@@ -74,7 +78,6 @@ export default function App() {
     };
   });
 
-
   // Saved Applications (CRM Board)
   const [savedApps, setSavedApps] = useState(() => {
     return JSON.parse(localStorage.getItem('opp_react_saved')) || [];
@@ -88,11 +91,19 @@ export default function App() {
   const [typeFilter, setTypeFilter] = useState('all');
   const [levelFilter, setLevelFilter] = useState('all');
   const [fieldFilter, setFieldFilter] = useState('all');
-  const [selectedPreset, setSelectedPreset] = useState('all'); // all, advertising, fully_funded, linkedin, no_ielts
-  const [sortBy, setSortBy] = useState('deadline_asc');
+  const [selectedPreset, setSelectedPreset] = useState('all');
+  const [sortBy, setSortBy] = useState('match_desc');
 
-  // Modals & Slide-Over Drawer
+  // Conversational AI Search State
+  const [isSearchingPipeline, setIsSearchingPipeline] = useState(false);
+  const [activeQuestion, setActiveQuestion] = useState(null);
+  const [searchProfileContext, setSearchProfileContext] = useState(null);
+  const [pendingQuery, setPendingQuery] = useState('');
+  const [searchSummaryBadge, setSearchSummaryBadge] = useState('');
+
+  // Modals & Slide-Over Drawers
   const [drawerOp, setDrawerOp] = useState(null);
+  const [prepareAppOp, setPrepareAppOp] = useState(null);
   const [autoApplyOp, setAutoApplyOp] = useState(null);
   const [emailOutreachOp, setEmailOutreachOp] = useState(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
@@ -105,79 +116,7 @@ export default function App() {
     setTimeout(() => setToastMessage(''), 2800);
   };
 
-  // Persistent AI Discovered Opportunities (Saved across sessions)
-  const [aiDiscovered, setAiDiscovered] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem('opp_ai_discovered_results')) || [];
-    } catch (e) {
-      return [];
-    }
-  });
-
-  useEffect(() => {
-    localStorage.setItem('opp_ai_discovered_results', JSON.stringify(aiDiscovered));
-  }, [aiDiscovered]);
-
-  const [isGeminiSearching, setIsGeminiSearching] = useState(false);
-  const [geminiSearchSummary, setGeminiSearchSummary] = useState('');
-
-  // Gemini-Powered Smart Search & Job Hunter (Malaysia & Global)
-  const handleSmartSearch = async (e) => {
-    if (e && e.preventDefault) e.preventDefault();
-    if (!searchTerm.trim()) {
-      fetchOpportunities('');
-      setGeminiSearchSummary('');
-      return;
-    }
-
-    setIsLoading(true);
-    setIsGeminiSearching(true);
-    triggerToast('⚡ Gemini AI is scouring LinkedIn & Malaysia portals...');
-
-    try {
-      const res = await fetch(`${API_BASE_URL}/ai/smart-search`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          query: searchTerm,
-          userProfile
-        })
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        const newFound = data.opportunities || [];
-        
-        // Save discovered opportunities permanently
-        setAiDiscovered(prev => {
-          const combined = [...newFound, ...prev];
-          const unique = [];
-          const seen = new Set();
-          for (const item of combined) {
-            if (!seen.has(item.id || item.title)) {
-              seen.add(item.id || item.title);
-              unique.push(item);
-            }
-          }
-          return unique;
-        });
-
-        setOpportunities(newFound);
-        setCurrentPage(1);
-        setGeminiSearchSummary(`✨ Discovered & Saved ${data.ai_discovered_count || newFound.length} matches for "${searchTerm}"`);
-        triggerToast(`🎉 Discovered & saved ${newFound.length} matching listings!`);
-      } else {
-        fetchOpportunities(searchTerm);
-      }
-    } catch (err) {
-      fetchOpportunities(searchTerm);
-    } finally {
-      setIsLoading(false);
-      setIsGeminiSearching(false);
-    }
-  };
-
-  // Fetch Opportunities from live backend (and merge with saved AI discovered items)
+  // Initial Fetch Opportunities from SQLite / API
   const fetchOpportunities = async (searchOverride = null) => {
     setIsLoading(true);
     try {
@@ -186,657 +125,358 @@ export default function App() {
       if (term) queryParams.append('search', term);
       if (typeFilter !== 'all') queryParams.append('type', typeFilter);
       if (fieldFilter !== 'all') queryParams.append('field', fieldFilter);
-      if (levelFilter !== 'all') queryParams.append('degree', levelFilter);
-      if (sortBy) queryParams.append('sort', sortBy);
 
       const res = await fetch(`${API_BASE_URL}/opportunities?${queryParams.toString()}`);
-      let list = [];
       if (res.ok) {
         const data = await res.json();
-        list = data.opportunities || [];
-      } else {
-        const fallbackRes = await fetch('/opportunities.json');
-        const fbData = await fallbackRes.json();
-        list = fbData.opportunities || [];
+        setOpportunities(data.opportunities || []);
       }
-
-      // Merge with permanently saved AI discoveries
-      const combined = [...aiDiscovered, ...list];
-      const unique = [];
-      const seen = new Set();
-      for (const item of combined) {
-        const key = item.id || item.title;
-        if (!seen.has(key)) {
-          seen.add(key);
-          unique.push(item);
-        }
-      }
-      let finalList = unique;
-
-      // Apply in-memory search if specified
-      if (term && term.trim()) {
-        const t = term.toLowerCase();
-        finalList = finalList.filter(o => 
-          (o.title && o.title.toLowerCase().includes(t)) ||
-          (o.organization && o.organization.toLowerCase().includes(t)) ||
-          (o.location_country && o.location_country.toLowerCase().includes(t)) ||
-          (o.location_city && o.location_city.toLowerCase().includes(t)) ||
-          (o.field_of_study && o.field_of_study.toLowerCase().includes(t))
-        );
-      }
-
-      // Apply Preset Filtering
-      if (selectedPreset === 'advertising') {
-        finalList = finalList.filter(o => o.field_of_study === 'advertising');
-      } else if (selectedPreset === 'finance') {
-        finalList = finalList.filter(o => o.field_of_study === 'finance' || (o.title && o.title.toLowerCase().includes('finance')) || (o.title && o.title.toLowerCase().includes('banking')));
-      } else if (selectedPreset === 'fully_funded') {
-        finalList = finalList.filter(o => o.funding_level === 'fully_funded' || (o.stipend_text || '').toLowerCase().includes('fully'));
-      } else if (selectedPreset === 'linkedin') {
-        finalList = finalList.filter(o => o.type === 'internship' || (o.organization && o.organization.toLowerCase().includes('ogilvy')) || (o.organization && o.organization.toLowerCase().includes('goldman')));
-      } else if (selectedPreset === 'no_ielts') {
-        finalList = finalList.filter(o => o.no_ielts);
-      }
-
-      setOpportunities(finalList);
-      setCurrentPage(1);
     } catch (err) {
-      console.warn("Error fetching opportunities:", err);
+      console.warn('Backend fetch error, checking local fallback:', err.message);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const fetchSources = async () => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/sources`);
-      if (res.ok) {
-        const data = await res.json();
-        setSources(data.sources || []);
-      }
-    } catch (e) {}
-  };
-
-  const fetchStats = async () => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/stats`);
-      if (res.ok) {
-        const data = await res.json();
-        setStats(data);
-      }
-    } catch (e) {}
-  };
-
-  const triggerScraper = async () => {
-    triggerToast('⚡ Ingesting live opportunities from 48+ verified portals...');
-    try {
-      await fetch(`${API_BASE_URL}/admin/scrape`, { method: 'POST' });
-      await fetchOpportunities();
-      await fetchStats();
-      await fetchSources();
-      triggerToast('All 48+ sources synchronized successfully!');
-    } catch (err) {
-      triggerToast('Scraper synchronization complete.');
-    }
-  };
-
   useEffect(() => {
     fetchOpportunities();
-    fetchStats();
-    fetchSources();
-  }, [typeFilter, fieldFilter, levelFilter, selectedPreset, sortBy]);
+  }, [typeFilter, fieldFilter]);
 
-  useEffect(() => {
-    localStorage.setItem('opp_react_saved', JSON.stringify(savedApps));
-  }, [savedApps]);
+  // 1. Natural Language Conversational Search Flow (Section 2 & 3)
+  const handleStartConversationalSearch = async (rawQuery) => {
+    setPendingQuery(rawQuery);
+    setIsSearchingPipeline(true);
 
+    try {
+      const res = await fetch(`${API_BASE_URL}/search/conversational`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query: rawQuery,
+          userProfile
+        })
+      });
 
-  useEffect(() => {
-    localStorage.setItem('opp_user_profile', JSON.stringify(userProfile));
-  }, [userProfile]);
+      const data = await res.json();
+      if (data.status === 'success') {
+        setSearchProfileContext(data.searchProfile);
 
-  const toggleSaveApp = (op) => {
-    const exists = savedApps.some(a => a.id === op.id);
-    if (exists) {
-      setSavedApps(savedApps.filter(a => a.id !== op.id));
-      triggerToast('Removed from Board');
-    } else {
-      setSavedApps([...savedApps, { ...op, stage: 'saved', savedAt: new Date().toISOString() }]);
-      triggerToast('Saved to Board!');
-    }
-  };
+        // If critical info is missing -> ask targeted question
+        if (!data.hasEnoughInfo && data.followUpQuestion) {
+          setIsSearchingPipeline(false);
+          setActiveQuestion(data.followUpQuestion);
+          return;
+        }
 
-  const toggleCompare = (op) => {
-    const exists = compareList.some(c => c.id === op.id);
-    if (exists) {
-      setCompareList(compareList.filter(c => c.id !== op.id));
-      triggerToast('Removed from Comparison');
-    } else {
-      if (compareList.length >= 4) {
-        triggerToast('Maximum 4 programs can be compared.');
-        return;
+        // Otherwise execute full multi-source search pipeline immediately
+        await executeFinalSearch(rawQuery, data.searchProfile);
+      } else {
+        await executeFinalSearch(rawQuery, null);
       }
-      setCompareList([...compareList, op]);
-      triggerToast('Added to Comparison');
+    } catch (err) {
+      await executeFinalSearch(rawQuery, null);
     }
   };
 
-  const updateAppStage = (id, newStage) => {
-    setSavedApps(savedApps.map(a => a.id === id ? { ...a, stage: newStage } : a));
-    triggerToast(`Stage: ${newStage.toUpperCase()}`);
+  // 2. User Answered Clarifying Question
+  const handleAnswerQuestion = async (paramKey, answerVal) => {
+    setActiveQuestion(null);
+    setIsSearchingPipeline(true);
+    const updatedProfile = {
+      ...(searchProfileContext || {}),
+      [paramKey]: answerVal
+    };
+    await executeFinalSearch(pendingQuery, updatedProfile);
   };
 
-  const handleApplySuccess = (id, stage = 'submitted') => {
-    const exists = savedApps.some(a => a.id === id);
-    if (exists) {
-      setSavedApps(savedApps.map(a => a.id === id ? { ...a, stage } : a));
-    } else {
-      const op = opportunities.find(o => o.id === id);
-      if (op) setSavedApps([...savedApps, { ...op, stage, appliedAt: new Date().toISOString() }]);
+  // 3. Skip Question and Search Anyway
+  const handleSkipQuestion = async () => {
+    setActiveQuestion(null);
+    setIsSearchingPipeline(true);
+    await executeFinalSearch(pendingQuery, searchProfileContext);
+  };
+
+  // 4. Execute Multi-Source Search & Verification Pipeline
+  const executeFinalSearch = async (query, searchProfile) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/search/execute`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query,
+          searchProfile,
+          userProfile
+        })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        const found = data.opportunities || [];
+        setOpportunities(found);
+        setCurrentPage(1);
+        setSearchSummaryBadge(`✨ Verified & Ranked ${found.length} matches for "${query}"`);
+        triggerToast(`🎉 Found and verified ${found.length} matching opportunities!`);
+      }
+    } catch (err) {
+      fetchOpportunities(query);
+    } finally {
+      setTimeout(() => {
+        setIsSearchingPipeline(false);
+      }, 2400);
     }
   };
 
-  const resetFilters = () => {
-    setSearchTerm('');
-    setTypeFilter('all');
-    setLevelFilter('all');
-    setFieldFilter('all');
-    setSelectedPreset('all');
-    triggerToast('Filters reset');
+  // Application CRM State Management
+  const toggleSaveApp = (op) => {
+    setSavedApps(prev => {
+      const exists = prev.some(a => a.id === op.id);
+      let updated;
+      if (exists) {
+        updated = prev.filter(a => a.id !== op.id);
+        triggerToast('Removed from Saved');
+      } else {
+        updated = [{ ...op, savedAt: new Date().toISOString(), stage: 'saved' }, ...prev];
+        triggerToast('✓ Saved to Application CRM Board!');
+      }
+      localStorage.setItem('opp_react_saved', JSON.stringify(updated));
+      return updated;
+    });
   };
 
-  // Match score calculator
-  const calculateMatchScore = (op) => {
-    let score = 75;
-    const userMajor = (userProfile.major || '').toLowerCase();
-    const opField = (op.field_of_study || '').toLowerCase();
+  const handleApplySuccess = (opportunityId, newStage = 'applied') => {
+    setSavedApps(prev => {
+      const existing = prev.find(a => a.id === opportunityId);
+      const targetOp = opportunities.find(o => o.id === opportunityId) || { id: opportunityId, title: 'Opportunity' };
+      const updated = existing
+        ? prev.map(a => a.id === opportunityId ? { ...a, stage: newStage, appliedAt: new Date().toISOString() } : a)
+        : [{ ...targetOp, stage: newStage, appliedAt: new Date().toISOString() }, ...prev];
 
-    if (userMajor.includes('advertising') && opField === 'advertising') score += 20;
-    if (userMajor.includes('finance') && opField === 'finance') score += 20;
-    if (userMajor.includes('marketing') && (opField === 'marketing' || opField === 'advertising')) score += 15;
-    if (op.degree_level === 'undergrad' || op.degree_level === userProfile.degree_level) score += 10;
-    if (op.no_ielts && userProfile.no_ielts_preference) score += 5;
-    if (op.funding_level === 'fully_funded' || op.funding_level === 'paid_salary') score += 5;
-    return Math.min(score, 99);
+      localStorage.setItem('opp_react_saved', JSON.stringify(updated));
+      return updated;
+    });
   };
 
+  // Filter and Presets
+  const filteredOpportunities = opportunities.filter(op => {
+    if (selectedPreset === 'finance') {
+      const f = (op.field_of_study || '').toLowerCase();
+      const t = (op.title || '').toLowerCase();
+      return f.includes('finance') || t.includes('bank') || t.includes('finance') || t.includes('investment');
+    }
+    if (selectedPreset === 'advertising') {
+      const f = (op.field_of_study || '').toLowerCase();
+      const t = (op.title || '').toLowerCase();
+      return f.includes('advertising') || t.includes('marketing') || t.includes('creative') || t.includes('brand');
+    }
+    if (selectedPreset === 'fully_funded') {
+      return op.funding_level === 'fully_funded' || (op.stipend_text && op.stipend_text.includes('100%'));
+    }
+    return true;
+  });
 
-  // Pagination calculations
-  const totalPages = Math.ceil(opportunities.length / itemsPerPage) || 1;
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = Math.min(startIndex + itemsPerPage, opportunities.length);
-  const paginatedOpportunities = opportunities.slice(startIndex, endIndex);
+  const totalPages = Math.ceil(filteredOpportunities.length / itemsPerPage) || 1;
+  const paginatedOpportunities = filteredOpportunities.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-    if (feedTopRef.current) {
-      feedTopRef.current.scrollIntoView({ behavior: 'smooth' });
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+      if (feedTopRef.current) feedTopRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
   return (
-    <div className="min-h-screen dot-grid-canvas" data-theme={theme}>
+    <div className="min-h-screen app-container">
       
-      {/* 1. PRODEXA FLOATING NAVBAR */}
-      <header className="prodexa-navbar">
+      {/* 1. TOP NAVIGATION BAR */}
+      <nav className="prodexa-navbar">
         <div className="navbar-inner">
-          {/* Logo */}
-          <div className="prodexa-brand" onClick={() => { setActiveTab('explore'); resetFilters(); }}>
-            <div className="brand-icon-box">
-              <Compass size={20} />
+          
+          <div className="nav-brand" onClick={() => setActiveTab('explore')} style={{ cursor: 'pointer' }}>
+            <div className="nav-logo-box">
+              <Compass size={20} color="var(--primary-foreground)" />
             </div>
-            <span className="brand-name">Opportunity<span style={{ color: 'var(--accent-blue)' }}>Hub</span></span>
+            <div>
+              <span className="brand-title">OPPORTUNITY</span>
+              <span className="brand-badge-ai">AI 2.0</span>
+            </div>
           </div>
 
-          {/* Desktop Segmented Navigation Tab Switcher */}
-          <nav className="nav-pill-group">
+          <div className="nav-pill-group">
             <button 
-              className={`nav-pill-link ${activeTab === 'explore' ? 'active' : ''}`}
+              className={`nav-pill ${activeTab === 'explore' ? 'active' : ''}`}
               onClick={() => setActiveTab('explore')}
             >
-              <Compass size={15} /> Directory & Jobs
+              <Compass size={15} /> Discover & Match
             </button>
+
             <button 
-              className={`nav-pill-link ${activeTab === 'cv_studio' ? 'active' : ''}`}
+              className={`nav-pill ${activeTab === 'cv_studio' ? 'active' : ''}`}
               onClick={() => setActiveTab('cv_studio')}
             >
-              <FileText size={15} color="var(--accent-blue)" /> AI CV Studio
+              <FileText size={15} /> AI CV Studio
             </button>
+
             <button 
-              className={`nav-pill-link ${activeTab === 'interview' ? 'active' : ''}`}
+              className={`nav-pill ${activeTab === 'interview' ? 'active' : ''}`}
               onClick={() => setActiveTab('interview')}
             >
-              <Mic size={15} color="var(--accent-emerald)" /> AI Interview Room
+              <Mic size={15} /> Interview Coach
             </button>
+
             <button 
-              className={`nav-pill-link ${activeTab === 'tracker' ? 'active' : ''}`}
+              className={`nav-pill ${activeTab === 'tracker' ? 'active' : ''}`}
               onClick={() => setActiveTab('tracker')}
             >
-              <CheckSquare size={15} /> CRM <span className="nav-badge">{savedApps.length}</span>
+              <CheckSquare size={15} /> CRM Board ({savedApps.length})
             </button>
+
             <button 
-              className={`nav-pill-link ${activeTab === 'calendar' ? 'active' : ''}`}
+              className={`nav-pill ${activeTab === 'calendar' ? 'active' : ''}`}
               onClick={() => setActiveTab('calendar')}
             >
               <Calendar size={15} /> Deadlines
             </button>
+
             <button 
-              className={`nav-pill-link ${activeTab === 'admin' ? 'active' : ''}`}
+              className={`nav-pill ${activeTab === 'admin' ? 'active' : ''}`}
               onClick={() => setActiveTab('admin')}
             >
-              <ShieldCheck size={15} /> Scraper Ops <span className="nav-badge" style={{ background: 'var(--accent-emerald)', color: '#fff' }}>48+</span>
+              <ShieldCheck size={15} /> Scrapers (48+)
             </button>
-          </nav>
+          </div>
 
-          {/* Right Actions */}
-          <div className="navbar-right">
-            {compareList.length > 0 && (
-              <button className="btn btn-outline" onClick={() => setShowCompareModal(true)}>
-                <Scale size={14} /> Compare ({compareList.length})
-              </button>
-            )}
-
-            {/* Sync Live Button */}
-            <button className="icon-button" onClick={triggerScraper} title="Sync 48+ Scraper Sources">
-              <RefreshCw size={15} />
+          <div className="nav-actions-right">
+            <button className="icon-button" onClick={toggleTheme} title="Toggle Theme">
+              {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
             </button>
 
-            {/* Theme Toggle (Sun/Moon) */}
             <button 
-              className="icon-button" 
-              onClick={toggleTheme}
-              title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
-            >
-              {theme === 'dark' ? <Sun size={16} color="#fbbf24" /> : <Moon size={16} color="#18181b" />}
-            </button>
-
-            {/* User Profile Pill */}
-            <button 
-              className="btn btn-outline" 
-              style={{ padding: '0.45rem 0.95rem', gap: '0.5rem' }}
+              className="user-profile-badge" 
               onClick={() => setShowProfileModal(true)}
+              title="Edit Academic Profile & Qualification"
             >
-              <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: 'var(--primary)', color: 'var(--primary-foreground)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.72rem', fontWeight: '800' }}>
-                {userProfile?.name?.charAt(0) || 'A'}
-              </div>
-              <span style={{ fontSize: '0.84rem' }}>{userProfile?.name?.split(' ')[0] || 'Anas'}</span>
+              <User size={15} color="var(--accent-blue)" />
+              <span>{userProfile.name?.split(' ')[0] || 'Anas'} (BA)</span>
             </button>
 
-            {/* Mobile Hamburger Menu Button */}
-            <button 
-              className="icon-button mobile-menu-trigger" 
-              onClick={() => setMobileMenuOpen(true)}
-              title="Open Navigation Menu"
-            >
-              <Menu size={18} />
+            <button className="mobile-menu-trigger" onClick={() => setMobileMenuOpen(true)}>
+              <Menu size={20} />
             </button>
           </div>
+
         </div>
-      </header>
+      </nav>
 
-      {/* MOBILE SHEET NAVIGATION DRAWER */}
-      {mobileMenuOpen && (
-        <div className="mobile-sheet-backdrop" onClick={() => setMobileMenuOpen(false)}>
-          <div className="mobile-sheet-panel" onClick={(e) => e.stopPropagation()}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', paddingBottom: '0.75rem', borderBottom: '1px solid var(--border)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <div className="brand-icon-box" style={{ width: '28px', height: '28px' }}>
-                  <Compass size={15} />
-                </div>
-                <span className="brand-name" style={{ fontSize: '1.1rem' }}>OpportunityHub</span>
-              </div>
-              <button className="icon-button" onClick={() => setMobileMenuOpen(false)}>
-                <X size={16} />
-              </button>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', flex: 1 }}>
-              <button 
-                className={`mobile-sheet-link ${activeTab === 'explore' ? 'active' : ''}`}
-                onClick={() => { setActiveTab('explore'); setMobileMenuOpen(false); }}
-              >
-                <Compass size={18} /> Directory & Jobs
-              </button>
-              <button 
-                className={`mobile-sheet-link ${activeTab === 'cv_studio' ? 'active' : ''}`}
-                onClick={() => { setActiveTab('cv_studio'); setMobileMenuOpen(false); }}
-              >
-                <FileText size={18} color="var(--accent-blue)" /> AI CV Studio & ATS
-              </button>
-              <button 
-                className={`mobile-sheet-link ${activeTab === 'interview' ? 'active' : ''}`}
-                onClick={() => { setActiveTab('interview'); setMobileMenuOpen(false); }}
-              >
-                <Mic size={18} color="var(--accent-emerald)" /> AI Interview Practice
-              </button>
-              <button 
-                className={`mobile-sheet-link ${activeTab === 'tracker' ? 'active' : ''}`}
-                onClick={() => { setActiveTab('tracker'); setMobileMenuOpen(false); }}
-              >
-                <CheckSquare size={18} /> Application CRM ({savedApps.length})
-              </button>
-              <button 
-                className={`mobile-sheet-link ${activeTab === 'calendar' ? 'active' : ''}`}
-                onClick={() => { setActiveTab('calendar'); setMobileMenuOpen(false); }}
-              >
-                <Calendar size={18} /> Deadlines Timeline
-              </button>
-              <button 
-                className={`mobile-sheet-link ${activeTab === 'admin' ? 'active' : ''}`}
-                onClick={() => { setActiveTab('admin'); setMobileMenuOpen(false); }}
-              >
-                <ShieldCheck size={18} /> Scraper Intelligence (48+)
-              </button>
-              <button 
-                className="mobile-sheet-link"
-                onClick={() => { setShowProfileModal(true); setMobileMenuOpen(false); }}
-              >
-                <User size={18} /> Candidate Profile & Match
-              </button>
-            </div>
-
-            <div style={{ paddingTop: '1rem', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '0.84rem', color: 'var(--muted-foreground)' }}>Theme:</span>
-              <button className="btn btn-outline" onClick={toggleTheme}>
-                {theme === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 2. PRODEXA HERO SECTION (EXPLORE TAB) */}
-      {activeTab === 'explore' && (
-        <section className="prodexa-hero-section">
-          <div className="hero-bento-container">
-            
-            {/* Signature Prodexa Floating Cursor Badges */}
-            <div className="floating-cursor cursor-1">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="#3B82F6"><path d="M4 4l16 7.5-7.5 2-2 7.5L4 4z"/></svg>
-              <span className="cursor-label" style={{ background: '#3B82F6' }}>Anas (GPA 3.85)</span>
-            </div>
-            <div className="floating-cursor cursor-2">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="#F97316"><path d="M4 4l16 7.5-7.5 2-2 7.5L4 4z"/></svg>
-              <span className="cursor-label" style={{ background: '#F97316' }}>Ogilvy Fellowship</span>
-            </div>
-            <div className="floating-cursor cursor-3">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="#22C55E"><path d="M4 4l16 7.5-7.5 2-2 7.5L4 4z"/></svg>
-              <span className="cursor-label" style={{ background: '#22C55E' }}>100% Fully Funded</span>
-            </div>
-            <div className="floating-cursor cursor-4">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="#8B5CF6"><path d="M4 4l16 7.5-7.5 2-2 7.5L4 4z"/></svg>
-              <span className="cursor-label" style={{ background: '#8B5CF6' }}>Chevening & DAAD</span>
-            </div>
-
-            <div className="hero-pill-tag">
-              <Sparkles size={14} style={{ color: 'var(--accent-blue)' }} /> 
-              <span>AI-Powered Job & Scholarship Engine (Gemini AI)</span>
-            </div>
-
-            <h1 className="hero-title">
-              Discover, apply, and track <br />
-              <span className="hero-title-muted">all in one place.</span>
-            </h1>
-
-            <p className="hero-subtitle">
-              Verified global platform indexing jobs, advertising internships, and fully funded scholarships with AI CV enhancement and 1-click apply.
-            </p>
-
-            {/* Center Search Input (Powered by Gemini AI) */}
-            <form onSubmit={handleSmartSearch} className="hero-search-wrapper">
-              <Search size={18} style={{ color: 'var(--muted-foreground)', flexShrink: 0 }} />
-              <input 
-                type="text" 
-                placeholder="Search jobs, internships in Malaysia or worldwide..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-              <button 
-                type="submit" 
-                className="btn btn-primary" 
-                style={{ padding: '0.5rem 1.35rem', gap: '0.45rem', flexShrink: 0 }}
-                disabled={isGeminiSearching}
-              >
-                {isGeminiSearching ? (
-                  <>
-                    <RefreshCw size={14} className="spin" /> Searching...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles size={14} color="#60a5fa" /> AI Search
-                  </>
-                )}
-              </button>
-            </form>
-
-
-            {/* Gemini Live Search Badge */}
-            {geminiSearchSummary && (
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'var(--card)', border: '1px solid var(--accent-blue)', color: 'var(--foreground)', padding: '0.4rem 1.15rem', borderRadius: 'var(--radius-full)', fontSize: '0.82rem', fontWeight: '700', margin: '0 auto 1.25rem', boxShadow: 'var(--shadow-sm)' }}>
-                <Sparkles size={14} color="var(--accent-blue)" /> {geminiSearchSummary}
-                <button 
-                  onClick={() => { setGeminiSearchSummary(''); fetchOpportunities(); }} 
-                  style={{ background: 'transparent', border: 'none', color: 'var(--muted-foreground)', cursor: 'pointer', marginLeft: '0.35rem' }}
-                >
-                  ✕
-                </button>
-              </div>
-            )}
-
-
-            {/* Category Ribbon */}
-            <div className="category-ribbon">
-              <button 
-                className={`cat-pill ${selectedPreset === 'all' ? 'active' : ''}`}
-                onClick={() => setSelectedPreset('all')}
-              >
-                All Offers
-              </button>
-              <button 
-                className={`cat-pill ${selectedPreset === 'finance' ? 'active' : ''}`}
-                onClick={() => setSelectedPreset(selectedPreset === 'finance' ? 'all' : 'finance')}
-                style={{ borderColor: selectedPreset === 'finance' ? 'var(--accent-emerald)' : 'var(--border)' }}
-              >
-                💰 Finance & Banking
-              </button>
-              <button 
-                className={`cat-pill ${selectedPreset === 'advertising' ? 'ad-active' : ''}`}
-                onClick={() => setSelectedPreset(selectedPreset === 'advertising' ? 'all' : 'advertising')}
-              >
-                📢 Advertising & Media
-              </button>
-              <button 
-                className={`cat-pill ${selectedPreset === 'fully_funded' ? 'active' : ''}`}
-                onClick={() => setSelectedPreset(selectedPreset === 'fully_funded' ? 'all' : 'fully_funded')}
-              >
-                ✨ 100% Fully Funded
-              </button>
-              <button 
-                className={`cat-pill ${selectedPreset === 'linkedin' ? 'active' : ''}`}
-                onClick={() => setSelectedPreset(selectedPreset === 'linkedin' ? 'all' : 'linkedin')}
-              >
-                💼 Top Brand Internships
-              </button>
-              <button 
-                className={`cat-pill ${selectedPreset === 'no_ielts' ? 'active' : ''}`}
-                onClick={() => setSelectedPreset(selectedPreset === 'no_ielts' ? 'all' : 'no_ielts')}
-              >
-                🌍 No IELTS / Waiver
-              </button>
-            </div>
-
-          </div>
-        </section>
-      )}
-
-      {/* 3. PRODEXA TELEMETRY STATS STRIP */}
-      {activeTab === 'explore' && (
-        <section className="prodexa-stats-grid">
-          <div className="stat-card-bento">
-            <div className="stat-icon-wrap" style={{ background: 'var(--accent-emerald-light)', color: 'var(--accent-emerald)' }}>
-              <Coins size={22} />
-            </div>
-            <div>
-              <div className="stat-val">$18.4M+</div>
-              <div className="stat-lbl">In Verified Stipends Indexed</div>
-            </div>
-          </div>
-
-          <div className="stat-card-bento">
-            <div className="stat-icon-wrap" style={{ background: 'var(--accent-blue-light)', color: 'var(--accent-blue)' }}>
-              <Globe size={22} />
-            </div>
-            <div>
-              <div className="stat-val">48+ Portals</div>
-              <div className="stat-lbl">LinkedIn, Govt & Agency Feeds</div>
-            </div>
-          </div>
-
-          <div className="stat-card-bento">
-            <div className="stat-icon-wrap" style={{ background: 'var(--accent-amber-light)', color: 'var(--accent-amber)' }}>
-              <Megaphone size={22} />
-            </div>
-            <div>
-              <div className="stat-val">Top Brand Roles</div>
-              <div className="stat-lbl">Ogilvy, Google, Spotify & L'Oréal</div>
-            </div>
-          </div>
-
-          <div className="stat-card-bento">
-            <div className="stat-icon-wrap" style={{ background: 'var(--accent-violet-light)', color: 'var(--accent-violet)' }}>
-              <Zap size={22} />
-            </div>
-            <div>
-              <div className="stat-val">Gemini AI Career Suite</div>
-              <div className="stat-lbl">ATS CV Studio & Mock Interviews</div>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* 4. MAIN BODY WITH TABS */}
-      <main className="feed-section" ref={feedTopRef}>
+      {/* 2. MAIN VIEW SWITCHER */}
+      <main>
         
-        {/* TAB 1: EXPLORE DIRECTORY & JOBS */}
+        {/* TAB 1: CONVERSATIONAL AI DISCOVERY & OPPORTUNITIES */}
         {activeTab === 'explore' && (
-          <div className="tab-content-anim">
-            {/* Toolbar */}
-            <div className="feed-toolbar">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.88rem', color: 'var(--muted-foreground)' }}>
-                <span>Showing <strong style={{ color: 'var(--foreground)' }}>{opportunities.length === 0 ? 0 : `${startIndex + 1}–${endIndex}`}</strong> of <strong style={{ color: 'var(--foreground)' }}>{opportunities.length}</strong> listings</span>
-                <span>•</span>
-                <span>Page {currentPage} of {totalPages}</span>
-              </div>
+          <div>
+            <ConversationalHero 
+              onStartConversationalSearch={handleStartConversationalSearch}
+              isSearching={isSearchingPipeline}
+            />
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                <span style={{ fontSize: '0.82rem', color: 'var(--muted-foreground)' }}>Sort:</span>
-                <select 
-                  className="btn btn-outline" 
-                  style={{ padding: '0.35rem 0.75rem', fontSize: '0.82rem' }}
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                >
-                  <option value="deadline_asc">Upcoming Deadline</option>
-                  <option value="popular">Most Popular</option>
-                  <option value="trust">Trust Score (0-100)</option>
-                </select>
-
-                {/* View Switcher */}
-                <div style={{ display: 'flex', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: '0.15rem' }}>
+            <div className="content-container" ref={feedTopRef} style={{ marginTop: '2.5rem' }}>
+              
+              {/* Active Search Summary Badge */}
+              {searchSummaryBadge && (
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'var(--card)', border: '1px solid var(--accent-blue)', color: 'var(--foreground)', padding: '0.45rem 1.25rem', borderRadius: 'var(--radius-full)', fontSize: '0.84rem', fontWeight: '800', margin: '0 auto 1.75rem', boxShadow: 'var(--shadow-sm)' }}>
+                  <Sparkles size={15} color="var(--accent-blue)" /> {searchSummaryBadge}
                   <button 
-                    className="icon-button"
-                    style={{ width: '32px', height: '32px', border: 'none', background: viewMode === 'grid' ? 'var(--muted)' : 'transparent', color: viewMode === 'grid' ? 'var(--foreground)' : 'var(--muted-foreground)' }}
-                    onClick={() => setViewMode('grid')}
-                    title="Bento Grid View"
+                    onClick={() => { setSearchSummaryBadge(''); fetchOpportunities(''); }} 
+                    style={{ background: 'transparent', border: 'none', color: 'var(--muted-foreground)', cursor: 'pointer', marginLeft: '0.45rem', fontSize: '0.9rem' }}
                   >
-                    <LayoutGrid size={15} />
-                  </button>
-                  <button 
-                    className="icon-button"
-                    style={{ width: '32px', height: '32px', border: 'none', background: viewMode === 'list' ? 'var(--muted)' : 'transparent', color: viewMode === 'list' ? 'var(--foreground)' : 'var(--muted-foreground)' }}
-                    onClick={() => setViewMode('list')}
-                    title="Table View"
-                  >
-                    <List size={15} />
+                    ✕
                   </button>
                 </div>
-              </div>
-            </div>
+              )}
 
-            {/* Feed Component */}
-            {isLoading ? (
-              <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--muted-foreground)' }}>
-                <RefreshCw size={28} className="spin" style={{ marginBottom: '1rem', color: 'var(--primary)' }} />
-                <p style={{ fontWeight: '600' }}>Loading opportunities from database...</p>
-              </div>
-            ) : paginatedOpportunities.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '4rem', background: 'var(--card)', borderRadius: 'var(--radius-2xl)', border: '1px solid var(--border)' }}>
-                <p style={{ fontSize: '1.1rem', fontWeight: '700', color: 'var(--foreground)', marginBottom: '0.5rem' }}>No offers found matching your criteria</p>
-                <button className="btn btn-outline" onClick={resetFilters}>Reset All Filters</button>
-              </div>
-            ) : viewMode === 'grid' ? (
-              <OpportunityGridView 
-                opportunities={paginatedOpportunities}
-                selectedOpId={drawerOp?.id}
-                onSelectOp={(op) => setDrawerOp(op)}
-                onToggleSave={toggleSaveApp}
-                savedIds={savedApps.map(a => a.id)}
-                onAutoApply={(op) => setAutoApplyOp(op)}
-                onEmailOutreach={(op) => setEmailOutreachOp(op)}
-                calculateMatchScore={calculateMatchScore}
-              />
-            ) : (
-              <OpportunityListView 
-                opportunities={paginatedOpportunities}
-                selectedOpId={drawerOp?.id}
-                onSelectOp={(op) => setDrawerOp(op)}
-                onToggleSave={toggleSaveApp}
-                savedIds={savedApps.map(a => a.id)}
-                onAutoApply={(op) => setAutoApplyOp(op)}
-                onEmailOutreach={(op) => setEmailOutreachOp(op)}
-                calculateMatchScore={calculateMatchScore}
-              />
-            )}
-
-            {/* PAGINATION CONTROLS */}
-            {totalPages > 1 && (
-              <div className="pagination-wrapper">
-                <div className="pagination-info">
-                  Showing <strong>{startIndex + 1}–{endIndex}</strong> of <strong>{opportunities.length}</strong> listings
+              {/* Feed Toolbar */}
+              <div className="feed-toolbar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.75rem', gap: '1rem', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                  <span style={{ fontSize: '1.15rem', fontWeight: '900', color: 'var(--foreground)' }}>
+                    Verified Opportunities ({filteredOpportunities.length})
+                  </span>
+                  <span className="bento-tag" style={{ background: 'var(--accent-emerald-light)', color: 'var(--accent-emerald)', borderColor: 'var(--accent-emerald)', fontWeight: '800' }}>
+                    Deterministic Ranked
+                  </span>
                 </div>
 
-                <div className="pagination-controls">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <div style={{ display: 'flex', gap: '0.35rem', background: 'var(--card)', border: '1px solid var(--border)', padding: '0.25rem', borderRadius: 'var(--radius-md)' }}>
+                    <button 
+                      className={`icon-button ${viewMode === 'grid' ? 'active' : ''}`}
+                      onClick={() => setViewMode('grid')}
+                      style={{ width: '32px', height: '32px', background: viewMode === 'grid' ? 'var(--muted)' : 'transparent' }}
+                      title="Grid View"
+                    >
+                      <LayoutGrid size={15} />
+                    </button>
+                    <button 
+                      className={`icon-button ${viewMode === 'list' ? 'active' : ''}`}
+                      onClick={() => setViewMode('list')}
+                      style={{ width: '32px', height: '32px', background: viewMode === 'list' ? 'var(--muted)' : 'transparent' }}
+                      title="List View"
+                    >
+                      <List size={15} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Opportunities Grid / List */}
+              {isLoading ? (
+                <div style={{ textAlign: 'center', padding: '4rem 1rem' }}>
+                  <RefreshCw size={28} className="spin" color="var(--accent-blue)" style={{ margin: '0 auto 1rem' }} />
+                  <p style={{ fontWeight: '700', color: 'var(--foreground)' }}>Loading verified opportunities...</p>
+                </div>
+              ) : viewMode === 'grid' ? (
+                <OpportunityGridView 
+                  opportunities={paginatedOpportunities}
+                  onSelectOp={(op) => setDrawerOp(op)}
+                  onPrepareApplication={(op) => setPrepareAppOp(op)}
+                  onToggleSave={toggleSaveApp}
+                  savedIds={savedApps.map(a => a.id)}
+                />
+              ) : (
+                <OpportunityListView 
+                  opportunities={paginatedOpportunities}
+                  onSelectOp={(op) => setDrawerOp(op)}
+                  onToggleSave={toggleSaveApp}
+                  savedIds={savedApps.map(a => a.id)}
+                  onAutoApply={(op) => setPrepareAppOp(op)}
+                  onEmailOutreach={(op) => setEmailOutreachOp(op)}
+                />
+              )}
+
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <div className="pagination-bar" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.65rem', marginTop: '2.5rem', paddingBottom: '3rem' }}>
                   <button 
-                    className="page-btn"
+                    className="btn btn-outline"
                     onClick={() => handlePageChange(currentPage - 1)}
                     disabled={currentPage === 1}
-                    title="Previous Page"
+                    style={{ padding: '0.45rem 0.95rem', fontSize: '0.85rem' }}
                   >
-                    <ChevronLeft size={16} /> Previous
+                    <ChevronLeft size={15} /> Previous
                   </button>
-
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                    <button
-                      key={page}
-                      className={`page-btn ${currentPage === page ? 'active' : ''}`}
-                      onClick={() => handlePageChange(page)}
-                    >
-                      {page}
-                    </button>
-                  ))}
-
+                  <span style={{ fontSize: '0.88rem', fontWeight: '800', color: 'var(--foreground)', padding: '0 0.5rem' }}>
+                    Page {currentPage} of {totalPages}
+                  </span>
                   <button 
-                    className="page-btn"
+                    className="btn btn-outline"
                     onClick={() => handlePageChange(currentPage + 1)}
                     disabled={currentPage === totalPages}
-                    title="Next Page"
+                    style={{ padding: '0.45rem 0.95rem', fontSize: '0.85rem' }}
                   >
-                    Next <ChevronRight size={16} />
+                    Next <ChevronRight size={15} />
                   </button>
                 </div>
-              </div>
-            )}
+              )}
 
+            </div>
           </div>
         )}
 
@@ -847,7 +487,7 @@ export default function App() {
           </div>
         )}
 
-        {/* TAB 3: AI MOCK INTERVIEW ROOM */}
+        {/* TAB 3: AI MOCK INTERVIEW COACH */}
         {activeTab === 'interview' && (
           <div className="tab-content-anim">
             <InterviewCoach userProfile={userProfile} triggerToast={triggerToast} />
@@ -856,56 +496,50 @@ export default function App() {
 
         {/* TAB 4: KANBAN CRM BOARD */}
         {activeTab === 'tracker' && (
-          <div className="tab-content-anim" style={{ marginTop: '1rem' }}>
+          <div className="tab-content-anim content-container" style={{ marginTop: '2rem' }}>
             <div style={{ marginBottom: '1.75rem' }}>
-              <h2 style={{ fontSize: '1.45rem', fontWeight: '800', color: 'var(--foreground)', marginBottom: '0.3rem' }}>
-                Application Board CRM
+              <h2 style={{ fontSize: '1.5rem', fontWeight: '900', color: 'var(--foreground)', marginBottom: '0.3rem' }}>
+                Application Pipeline CRM
               </h2>
-              <p style={{ color: 'var(--muted-foreground)', fontSize: '0.88rem' }}>
-                Track your ongoing applications, review submission receipts, and manage interview schedules.
+              <p style={{ color: 'var(--muted-foreground)', fontSize: '0.9rem' }}>
+                Track your active applications across Saved, Preparing, Submitted, and Interview stages.
               </p>
             </div>
-
 
             <div className="kanban-board-scroll">
               {['saved', 'preparing', 'submitted', 'interview', 'accepted'].map(st => {
                 const colApps = savedApps.filter(a => a.stage === st || (st === 'saved' && !a.stage));
                 return (
-                  <div key={st} className="kanban-col-bento">
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '0.75rem', borderBottom: '1px solid var(--border)', marginBottom: '0.85rem' }}>
-                      <span style={{ textTransform: 'capitalize', fontSize: '0.86rem', fontWeight: '800', color: 'var(--foreground)' }}>{st}</span>
-                      <span className="nav-badge">{colApps.length}</span>
+                  <div key={st} className="kanban-col">
+                    <div className="kanban-col-header">
+                      <span className="col-title" style={{ textTransform: 'capitalize' }}>{st}</span>
+                      <span className="col-count">{colApps.length}</span>
                     </div>
 
-                    {colApps.map(app => (
-                      <div key={app.id} style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: '0.85rem', marginBottom: '0.75rem', boxShadow: 'var(--shadow-sm)' }}>
-                        <div style={{ fontWeight: '700', fontSize: '0.86rem', color: 'var(--foreground)', marginBottom: '0.2rem' }}>{app.title}</div>
-                        <div style={{ fontSize: '0.76rem', color: 'var(--muted-foreground)', marginBottom: '0.6rem' }}>{app.organization}</div>
-                        
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.4rem' }}>
-                          <select 
-                            className="btn btn-outline" 
-                            style={{ padding: '0.25rem 0.5rem', fontSize: '0.74rem', flex: 1 }}
-                            value={app.stage || 'saved'}
-                            onChange={(e) => updateAppStage(app.id, e.target.value)}
-                          >
-                            <option value="saved">Saved</option>
-                            <option value="preparing">Preparing</option>
-                            <option value="submitted">Submitted</option>
-                            <option value="interview">Interviewing</option>
-                            <option value="accepted">Awarded 🎉</option>
-                          </select>
-                          <button 
-                            className="icon-button"
-                            style={{ width: '28px', height: '28px' }}
-                            onClick={() => setAutoApplyOp(app)}
-                            title="1-Click Auto Apply"
-                          >
-                            <Zap size={12} color="var(--accent-emerald)" />
-                          </button>
+                    <div className="kanban-col-body">
+                      {colApps.map(app => (
+                        <div key={app.id} className="kanban-card">
+                          <div style={{ fontWeight: '800', color: 'var(--foreground)', fontSize: '0.92rem', marginBottom: '0.25rem' }}>{app.title}</div>
+                          <div style={{ fontSize: '0.8rem', color: 'var(--muted-foreground)' }}>{app.organization}</div>
+                          <div style={{ display: 'flex', gap: '0.45rem', marginTop: '0.75rem' }}>
+                            <button 
+                              className="btn btn-emerald"
+                              style={{ fontSize: '0.75rem', padding: '0.3rem 0.65rem' }}
+                              onClick={() => setPrepareAppOp(app)}
+                            >
+                              <Zap size={12} /> Prep Kit
+                            </button>
+                            <button 
+                              className="btn btn-outline"
+                              style={{ fontSize: '0.75rem', padding: '0.3rem 0.65rem' }}
+                              onClick={() => setDrawerOp(app)}
+                            >
+                              Details
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 );
               })}
@@ -913,20 +547,22 @@ export default function App() {
           </div>
         )}
 
-        {/* TAB 5: DEADLINES CALENDAR */}
+        {/* TAB 5: DEADLINES TIMELINE */}
         {activeTab === 'calendar' && (
-          <div style={{ maxWidth: '840px', margin: '1rem auto' }}>
+          <div className="content-container" style={{ maxWidth: '860px', margin: '2rem auto' }}>
             <div style={{ marginBottom: '1.75rem' }}>
-              <h2 style={{ fontSize: '1.45rem', fontWeight: '800', color: 'var(--foreground)', marginBottom: '0.3rem' }}>
+              <h2 style={{ fontSize: '1.5rem', fontWeight: '900', color: 'var(--foreground)', marginBottom: '0.3rem' }}>
                 Application Deadlines Timeline
               </h2>
-              <p style={{ color: 'var(--muted-foreground)', fontSize: '0.88rem' }}>Chronological view of intake deadlines and verified submission cut-offs.</p>
+              <p style={{ color: 'var(--muted-foreground)', fontSize: '0.9rem' }}>
+                Chronological schedule of intake cut-offs and verified submission deadlines.
+              </p>
             </div>
 
             {opportunities.map(op => (
               <div key={op.id} style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-xl)', padding: '1.35rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', boxShadow: 'var(--shadow-sm)' }}>
                 <div>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--accent-blue)', fontWeight: '700', marginBottom: '0.25rem' }}>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--accent-blue)', fontWeight: '800', marginBottom: '0.25rem' }}>
                     📅 Deadline: {op.deadline_utc}
                   </div>
                   <div style={{ fontWeight: '800', fontSize: '1.05rem', color: 'var(--foreground)' }}>{op.title}</div>
@@ -934,10 +570,10 @@ export default function App() {
                 </div>
 
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  <button className="btn btn-emerald" style={{ fontSize: '0.8rem' }} onClick={() => setAutoApplyOp(op)}>
-                    <Zap size={13} /> Auto-Apply
+                  <button className="btn btn-emerald" style={{ fontSize: '0.82rem', padding: '0.45rem 0.95rem' }} onClick={() => setPrepareAppOp(op)}>
+                    <Zap size={14} /> Prepare Kit
                   </button>
-                  <button className="btn btn-outline" style={{ fontSize: '0.8rem' }} onClick={() => setDrawerOp(op)}>
+                  <button className="btn btn-outline" style={{ fontSize: '0.82rem', padding: '0.45rem 0.85rem' }} onClick={() => setDrawerOp(op)}>
                     Inspect
                   </button>
                 </div>
@@ -953,8 +589,29 @@ export default function App() {
 
       </main>
 
-      {/* Floating 24/7 AI Career Copilot */}
-      <AiCareerCopilot userProfile={userProfile} triggerToast={triggerToast} />
+      {/* Dynamic AI Question Modal (Section 3) */}
+      <AIQuestionModal 
+        isOpen={Boolean(activeQuestion)}
+        questionData={activeQuestion}
+        onAnswerSelected={handleAnswerQuestion}
+        onSkip={handleSkipQuestion}
+      />
+
+      {/* Transparent Search Progress Experience (Section 21 & 22) */}
+      <SearchProgressExperience 
+        isActive={isSearchingPipeline}
+      />
+
+      {/* Application Readiness Kit Drawer (Section 11) */}
+      {prepareAppOp && (
+        <ApplicationKitDrawer 
+          opportunity={prepareAppOp}
+          userProfile={userProfile}
+          onClose={() => setPrepareAppOp(null)}
+          onApplied={handleApplySuccess}
+          triggerToast={triggerToast}
+        />
+      )}
 
       {/* Slide-Over Inspection Drawer */}
       {drawerOp && (
@@ -963,43 +620,19 @@ export default function App() {
           onClose={() => setDrawerOp(null)}
           onToggleSave={toggleSaveApp}
           isSaved={savedApps.some(a => a.id === drawerOp.id)}
-          onAutoApply={(op) => { setAutoApplyOp(op); setDrawerOp(null); }}
+          onAutoApply={(op) => { setPrepareAppOp(op); setDrawerOp(null); }}
           onEmailOutreach={(op) => { setEmailOutreachOp(op); setDrawerOp(null); }}
-          onVerifiedUpdate={(id) => {
-            setOpportunities(prev => prev.map(o => o.id === id ? { ...o, verification_status: 'official_verified', trust_score: 98 } : o));
-          }}
           triggerToast={triggerToast}
         />
       )}
 
-      {/* 1-Click Auto Apply Modal */}
-      {autoApplyOp && (
-        <AutoApplyModal 
-          opportunity={autoApplyOp}
-          userProfile={userProfile}
-          onClose={() => setAutoApplyOp(null)}
-          onApplied={handleApplySuccess}
-          triggerToast={triggerToast}
-        />
-      )}
-
-      {/* 1-Click Email Outreach Modal */}
+      {/* Email Outreach Modal */}
       {emailOutreachOp && (
         <EmailOutreachModal 
           opportunity={emailOutreachOp}
           userProfile={userProfile}
           onClose={() => setEmailOutreachOp(null)}
           triggerToast={triggerToast}
-        />
-      )}
-
-      {/* Comparison Modal */}
-      {showCompareModal && (
-        <ComparisonModal 
-          opportunities={compareList}
-          onClose={() => setShowCompareModal(false)}
-          onSave={toggleSaveApp}
-          savedIds={savedApps.map(a => a.id)}
         />
       )}
 
@@ -1012,6 +645,9 @@ export default function App() {
           triggerToast={triggerToast}
         />
       )}
+
+      {/* Floating 24/7 AI Career Copilot */}
+      <AiCareerCopilot userProfile={userProfile} triggerToast={triggerToast} />
 
       {/* Toast Notification */}
       {toastMessage && (
