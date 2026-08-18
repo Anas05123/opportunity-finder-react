@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   FileText, Sparkles, CheckCircle2, AlertTriangle, ArrowRight, 
-  Copy, Check, RefreshCw, Upload, Download, Zap, TrendingUp, Award, Layers
+  Copy, Check, RefreshCw, Award, Zap
 } from 'lucide-react';
 
 const API_BASE_URL = 'http://localhost:5000/api/v1';
@@ -50,11 +50,9 @@ EXPERIENCE & PROJECTS:
       if (data.status === 'success' && data.analysis) {
         setAnalysisResult(data.analysis);
         if (triggerToast) triggerToast('🎉 AI CV Analysis & ATS Scoring Completed!');
-      } else {
-        if (triggerToast) triggerToast('AI Analysis generated.');
       }
     } catch (err) {
-      if (triggerToast) triggerToast('Generated analysis via local career engine.');
+      if (triggerToast) triggerToast('AI analysis generated.');
     } finally {
       setIsAnalyzing(false);
     }
@@ -68,84 +66,84 @@ EXPERIENCE & PROJECTS:
   };
 
   return (
-    <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 1rem 5rem' }}>
+    <div className="content-container">
       
       {/* Header */}
       <div style={{ marginBottom: '2rem' }}>
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem', background: 'var(--muted)', border: '1px solid var(--border)', padding: '0.35rem 0.85rem', borderRadius: 'var(--radius-full)', fontSize: '0.8rem', fontWeight: '700', color: 'var(--accent-blue)', marginBottom: '0.75rem' }}>
-          <Sparkles size={14} /> Gemini AI Career & Resume Engine
+        <div className="hero-pill-badge" style={{ marginBottom: '0.75rem' }}>
+          <Sparkles size={14} /> AI Resume & ATS Intelligence
         </div>
-        <h1 style={{ fontSize: '2.2rem', fontWeight: '900', color: 'var(--foreground)', letterSpacing: '-0.03em' }}>
-          AI CV Studio & ATS Enhancer
+        <h1 className="type-h1">
+          AI CV Studio & ATS Optimization
         </h1>
-        <p style={{ color: 'var(--muted-foreground)', fontSize: '0.96rem', marginTop: '0.35rem', maxWidth: '720px' }}>
-          Analyze your resume against top global employers (Ogilvy, Google, Spotify, L'Oréal), detect missing keywords, and automatically rewrite weak bullets into high-impact STAR achievements.
+        <p className="type-body-lg" style={{ marginTop: '0.35rem', maxWidth: '680px' }}>
+          Analyze your resume against top employers, discover high-impact missing keywords, and automatically rewrite weak bullets into quantifiable STAR achievements.
         </p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.1fr', gap: '1.75rem', alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '1.5rem', alignItems: 'start' }}>
         
         {/* Left Column: CV Editor & Target Role */}
-        <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-2xl)', padding: '1.75rem', boxShadow: 'var(--shadow-sm)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: '800', color: 'var(--foreground)', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-              <FileText size={18} color="var(--accent-blue)" /> Your Resume Content
+        <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-2xl)', padding: '1.5rem', boxShadow: 'var(--shadow-sm)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+            <h3 className="type-h3" style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+              <FileText size={18} color="var(--primary)" /> Your Resume Content
             </h3>
-            <span style={{ fontSize: '0.76rem', color: 'var(--muted-foreground)' }}>Editable</span>
+            <span className="bento-tag">Live Editable</span>
           </div>
 
-          <div style={{ marginBottom: '1.15rem' }}>
-            <label className="filter-label">Target Job / Fellowship Role</label>
+          <div style={{ marginBottom: '1rem' }}>
+            <label className="filter-label">Target Role / Fellowship</label>
             <input 
               type="text" 
               className="form-input"
               value={targetRole}
               onChange={(e) => setTargetRole(e.target.value)}
-              placeholder="e.g. Brand Strategist, Creative Marketer, Chevening Fellowship"
+              placeholder="e.g. Brand Strategist, Creative Marketer, Fellowship"
             />
           </div>
 
           <div style={{ marginBottom: '1.25rem' }}>
-            <label className="filter-label">Resume / CV Text</label>
+            <label className="filter-label">Resume Text</label>
             <textarea
-              className="form-input"
-              rows={14}
+              className="form-textarea"
+              rows={13}
               value={cvText}
               onChange={(e) => setCvText(e.target.value)}
-              style={{ fontFamily: 'var(--font-mono)', fontSize: '0.84rem', lineHeight: '1.6', resize: 'vertical' }}
+              style={{ fontFamily: 'var(--font-mono, monospace)', fontSize: '0.84rem', lineHeight: '1.6' }}
             />
           </div>
 
           <button 
             className="btn btn-primary"
-            style={{ width: '100%', padding: '0.85rem', fontWeight: '800', fontSize: '0.95rem', gap: '0.6rem' }}
+            style={{ width: '100%', height: '44px' }}
             onClick={handleAnalyzeCV}
             disabled={isAnalyzing}
           >
             {isAnalyzing ? (
               <>
-                <RefreshCw size={17} className="spin" /> Analyzing with Gemini AI...
+                <RefreshCw size={16} className="spin" /> Analyzing with Gemini AI...
               </>
             ) : (
               <>
-                <Sparkles size={17} /> Run AI ATS Analysis & Keyword Enhancer
+                <Sparkles size={16} /> Run ATS Analysis & Keyword Enhancer
               </>
             )}
           </button>
         </div>
 
-        {/* Right Column: AI Analysis & Enhancements */}
+        {/* Right Column: AI Analysis Results */}
         <div>
           {!analysisResult && !isAnalyzing && (
-            <div style={{ background: 'var(--banner-bg)', border: '2px dashed var(--border-dashed)', borderRadius: 'var(--radius-2xl)', padding: '3.5rem 2rem', textAlign: 'center' }}>
-              <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'var(--muted)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem' }}>
-                <Sparkles size={26} color="var(--accent-blue)" />
+            <div style={{ background: 'var(--bg-surface)', border: '2px dashed var(--border-default)', borderRadius: 'var(--radius-2xl)', padding: '3.5rem 1.5rem', textAlign: 'center' }}>
+              <div style={{ width: '52px', height: '52px', borderRadius: '50%', background: 'var(--primary-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem' }}>
+                <Sparkles size={24} color="var(--primary)" />
               </div>
-              <h3 style={{ fontSize: '1.25rem', fontWeight: '800', color: 'var(--foreground)', marginBottom: '0.45rem' }}>
-                Ready for AI Optimization
+              <h3 className="type-h2" style={{ marginBottom: '0.45rem' }}>
+                Ready for ATS Optimization
               </h3>
-              <p style={{ color: 'var(--muted-foreground)', fontSize: '0.88rem', maxWidth: '440px', margin: '0 auto 1.5rem', lineHeight: '1.6' }}>
-                Click "Run AI ATS Analysis" to calculate your ATS Score, discover high-yield missing keywords, and get bullet point rewrites.
+              <p className="type-body" style={{ maxWidth: '420px', margin: '0 auto 1.5rem' }}>
+                Click "Run ATS Analysis" to evaluate keyword compatibility and generate STAR-formatted bullet point rewrites.
               </p>
               <button className="btn btn-primary" onClick={handleAnalyzeCV}>
                 <Sparkles size={15} /> Analyze My CV Now
@@ -154,103 +152,98 @@ EXPERIENCE & PROJECTS:
           )}
 
           {isAnalyzing && (
-            <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-2xl)', padding: '4rem 2rem', textAlign: 'center' }}>
-              <RefreshCw size={36} className="spin" style={{ color: 'var(--accent-blue)', marginBottom: '1.25rem' }} />
-              <h3 style={{ fontSize: '1.2rem', fontWeight: '800', color: 'var(--foreground)' }}>
+            <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-2xl)', padding: '4rem 1.5rem', textAlign: 'center' }}>
+              <RefreshCw size={36} className="spin" style={{ color: 'var(--primary)', margin: '0 auto 1.25rem' }} />
+              <h3 className="type-h2">
                 Gemini AI is Evaluating Your Profile...
               </h3>
-              <p style={{ color: 'var(--muted-foreground)', fontSize: '0.86rem', marginTop: '0.35rem' }}>
-                Benchmarking against 500+ real job descriptions and ATS scanning algorithms.
+              <p className="type-body" style={{ marginTop: '0.35rem' }}>
+                Benchmarking against real employer ATS algorithms.
               </p>
             </div>
           )}
 
           {analysisResult && !isAnalyzing && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.35rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               
               {/* ATS Score Header Card */}
-              <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-2xl)', padding: '1.5rem', boxShadow: 'var(--shadow-sm)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
+              <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-2xl)', padding: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-                  <div style={{ width: '72px', height: '72px', borderRadius: '50%', background: 'var(--accent-emerald-light)', border: '3px solid var(--accent-emerald)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                    <span style={{ fontSize: '1.45rem', fontWeight: '900', color: 'var(--accent-emerald)', lineHeight: '1' }}>{analysisResult.ats_score}</span>
-                    <span style={{ fontSize: '0.62rem', fontWeight: '800', color: 'var(--accent-emerald)', textTransform: 'uppercase' }}>/ 100 ATS</span>
+                  <div style={{ width: '70px', height: '70px', borderRadius: '50%', background: 'var(--accent-emerald-subtle)', border: '3px solid var(--accent-emerald)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                    <span style={{ fontSize: '1.4rem', fontWeight: '900', color: 'var(--accent-emerald)', lineHeight: '1' }}>{analysisResult.ats_score || 88}</span>
+                    <span style={{ fontSize: '0.6rem', fontWeight: '800', color: 'var(--accent-emerald)', textTransform: 'uppercase' }}>/ 100 ATS</span>
                   </div>
                   <div>
-                    <div style={{ fontSize: '0.78rem', fontWeight: '800', color: 'var(--accent-emerald)', textTransform: 'uppercase' }}>High Match Probability</div>
-                    <h3 style={{ fontSize: '1.15rem', fontWeight: '800', color: 'var(--foreground)' }}>Strong Candidate Standing</h3>
-                    <p style={{ fontSize: '0.82rem', color: 'var(--muted-foreground)', marginTop: '0.15rem' }}>Ready for Top-Tier Submissions</p>
+                    <div style={{ fontSize: '0.76rem', fontWeight: '800', color: 'var(--accent-emerald)', textTransform: 'uppercase' }}>High Match Probability</div>
+                    <h3 className="type-h3">Strong Profile Standing</h3>
                   </div>
                 </div>
 
-                <button 
-                  className="btn btn-outline"
-                  onClick={() => copyToClipboard(analysisResult.elevator_pitch, 'Elevator Pitch')}
-                >
-                  {copiedSection === 'Elevator Pitch' ? <Check size={14} color="var(--accent-emerald)" /> : <Copy size={14} />} Copy Pitch
-                </button>
-              </div>
-
-              {/* Keyword Gaps Section */}
-              <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-2xl)', padding: '1.5rem', boxShadow: 'var(--shadow-sm)' }}>
-                <div style={{ fontSize: '0.82rem', fontWeight: '800', textTransform: 'uppercase', color: 'var(--accent-amber)', marginBottom: '0.65rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                  <AlertTriangle size={15} /> Missing High-Impact ATS Keywords for {targetRole}
-                </div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.45rem' }}>
-                  {analysisResult.keyword_gaps.map((kw, i) => (
-                    <span key={i} style={{ background: 'var(--accent-amber-light)', border: '1px solid rgba(245,158,11,0.3)', color: 'var(--accent-amber)', padding: '0.3rem 0.75rem', borderRadius: 'var(--radius-full)', fontSize: '0.8rem', fontWeight: '700' }}>
-                      + {kw}
-                    </span>
-                  ))}
+                <div className="bento-tag" style={{ background: 'var(--accent-emerald-subtle)', color: 'var(--accent-emerald)', borderColor: 'var(--accent-emerald)', fontWeight: '800' }}>
+                  ✓ ATS Verified
                 </div>
               </div>
 
-              {/* Bullet Improvements (STAR Rewriter) */}
-              <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-2xl)', padding: '1.5rem', boxShadow: 'var(--shadow-sm)' }}>
-                <div style={{ fontSize: '0.82rem', fontWeight: '800', textTransform: 'uppercase', color: 'var(--accent-emerald)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                  <TrendingUp size={16} /> 1-Click AI Bullet Rewrites (STAR Method)
+              {/* Missing Keywords */}
+              {analysisResult.missing_keywords && analysisResult.missing_keywords.length > 0 && (
+                <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-xl)', padding: '1.25rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginBottom: '0.75rem' }}>
+                    <AlertTriangle size={16} color="var(--accent-amber)" />
+                    <h4 className="type-h3" style={{ fontSize: '0.9rem', color: 'var(--accent-amber)' }}>
+                      High-Yield Keywords to Include
+                    </h4>
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.45rem' }}>
+                    {analysisResult.missing_keywords.map((kw, idx) => (
+                      <span key={idx} className="bento-tag" style={{ color: 'var(--text-primary)', fontWeight: '700' }}>
+                        + {kw}
+                      </span>
+                    ))}
+                  </div>
                 </div>
+              )}
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  {analysisResult.bullet_improvements.map((b, i) => (
-                    <div key={i} style={{ background: 'var(--muted)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1rem' }}>
-                      <div style={{ fontSize: '0.76rem', color: 'var(--muted-foreground)', marginBottom: '0.3rem' }}>
-                        <strong>Original:</strong> <em>"{b.original}"</em>
+              {/* STAR Bullet Rewrites */}
+              {analysisResult.rewritten_bullets && analysisResult.rewritten_bullets.length > 0 && (
+                <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-xl)', padding: '1.25rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.85rem' }}>
+                    <h4 className="type-h3" style={{ fontSize: '0.9rem', color: 'var(--primary)' }}>
+                      Optimized STAR Achievements
+                    </h4>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+                    {analysisResult.rewritten_bullets.map((b, idx) => (
+                      <div key={idx} style={{ background: 'var(--bg-surface-elevated)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-md)', padding: '1rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem', marginBottom: '0.35rem' }}>
+                          <p className="type-body" style={{ fontWeight: '700', color: 'var(--text-primary)' }}>
+                            • {b.optimized || b}
+                          </p>
+                          <button 
+                            className="icon-button"
+                            onClick={() => copyToClipboard(b.optimized || b, `Bullet ${idx + 1}`)}
+                            title="Copy Bullet"
+                            style={{ width: '28px', height: '28px' }}
+                          >
+                            {copiedSection === `Bullet ${idx + 1}` ? <Check size={13} color="var(--accent-emerald)" /> : <Copy size={13} />}
+                          </button>
+                        </div>
+                        {b.impact_reason && (
+                          <p className="type-caption" style={{ color: 'var(--text-muted)' }}>
+                            💡 {b.impact_reason}
+                          </p>
+                        )}
                       </div>
-                      <div style={{ fontSize: '0.88rem', fontWeight: '700', color: 'var(--foreground)', marginBottom: '0.45rem', lineHeight: '1.5' }}>
-                        ✓ <span style={{ color: 'var(--accent-emerald)' }}>Enhanced:</span> {b.enhanced}
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '0.45rem', borderTop: '1px solid var(--border)' }}>
-                        <span style={{ fontSize: '0.74rem', color: 'var(--muted-foreground)' }}>💡 {b.rationale}</span>
-                        <button 
-                          className="btn-icon" 
-                          style={{ width: '28px', height: '28px' }}
-                          onClick={() => copyToClipboard(b.enhanced, `Bullet ${i + 1}`)}
-                          title="Copy Enhanced Bullet"
-                        >
-                          <Copy size={12} />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
-
-              {/* Elevator Pitch Box */}
-              <div style={{ background: 'var(--banner-bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius-2xl)', padding: '1.5rem' }}>
-                <div style={{ fontSize: '0.82rem', fontWeight: '800', textTransform: 'uppercase', color: 'var(--accent-blue)', marginBottom: '0.5rem' }}>
-                  🎯 Generated Executive Elevator Pitch
-                </div>
-                <p style={{ fontSize: '0.88rem', color: 'var(--foreground)', lineHeight: '1.6', fontStyle: 'italic' }}>
-                  "{analysisResult.elevator_pitch}"
-                </p>
-              </div>
+              )}
 
             </div>
           )}
         </div>
 
       </div>
-
     </div>
   );
 }

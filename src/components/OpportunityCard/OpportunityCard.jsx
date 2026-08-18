@@ -1,9 +1,8 @@
 import React from 'react';
 import { 
-  Building2, MapPin, Coins, Clock, CheckCircle2, 
-  ExternalLink, Bookmark, Zap, Globe, Sparkles, Check, AlertTriangle, ShieldCheck
+  Building2, MapPin, Coins, CheckCircle2, 
+  Bookmark, Zap, ShieldCheck, Check, AlertTriangle, Sparkles
 } from 'lucide-react';
-import { resolveSafeJobUrl, resolveLinkedInSearchUrl, resolveGoogleJobsUrl } from '../../utils/urlResolver.js';
 
 export default function OpportunityCard({ 
   opportunity, 
@@ -15,12 +14,16 @@ export default function OpportunityCard({
   if (!opportunity) return null;
 
   const score = opportunity.match_score || 92;
-  const scoreColor = score >= 90 ? 'var(--accent-emerald)' : score >= 80 ? 'var(--accent-blue)' : 'var(--accent-amber)';
-  const scoreBg = score >= 90 ? 'var(--accent-emerald-light, rgba(34, 197, 94, 0.12))' : score >= 80 ? 'rgba(59, 130, 246, 0.12)' : 'rgba(245, 158, 11, 0.12)';
+  const isHighMatch = score >= 90;
+  const isGoodMatch = score >= 80;
+
+  const badgeColor = isHighMatch ? 'var(--accent-emerald)' : isGoodMatch ? 'var(--accent-blue)' : 'var(--accent-amber)';
+  const badgeBg = isHighMatch ? 'var(--accent-emerald-subtle)' : isGoodMatch ? 'var(--accent-blue-subtle)' : 'var(--accent-amber-subtle)';
+  const badgeLabel = isHighMatch ? 'EXCELLENT MATCH' : isGoodMatch ? 'STRONG MATCH' : 'GOOD MATCH';
 
   const reasons = opportunity.match_reasons || [
     `✓ Location matches (${opportunity.location_country || 'Malaysia'})`,
-    '✓ Specialization matches your academic background',
+    '✓ Discipline aligns with your profile',
     opportunity.no_ielts ? '✓ Accepts English Medium of Instruction waiver' : '✓ Standard eligibility confirmed'
   ];
 
@@ -36,27 +39,27 @@ export default function OpportunityCard({
   return (
     <div className="opportunity-bento-card" onClick={() => onSelectOp(opportunity)}>
       
-      {/* Top Header Row: Match Badge & Save */}
+      {/* Top Header: Score & Save */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.85rem' }}>
         <div 
           className="match-score-badge"
-          style={{ background: scoreBg, color: scoreColor, borderColor: scoreColor }}
+          style={{ background: badgeBg, color: badgeColor, borderColor: badgeColor }}
         >
-          <span className="match-dot" style={{ background: scoreColor }} />
-          <span>{score}% MATCH</span>
+          <span className="match-dot" style={{ background: badgeColor }} />
+          <span>{score}% • {badgeLabel}</span>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-          <span className="bento-tag" style={{ textTransform: 'uppercase', fontSize: '0.72rem', fontWeight: '800' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+          <span className="bento-tag" style={{ textTransform: 'uppercase' }}>
             {opportunity.opportunity_type || opportunity.type || 'Internship'}
           </span>
           <button 
             className="icon-button"
             onClick={(e) => { e.stopPropagation(); onToggleSave(opportunity); }}
             title={isSaved ? 'Remove from Saved' : 'Save Opportunity'}
-            style={{ width: '30px', height: '30px' }}
+            style={{ width: '32px', height: '32px' }}
           >
-            <Bookmark size={14} fill={isSaved ? 'var(--primary)' : 'none'} color={isSaved ? 'var(--primary)' : 'var(--muted-foreground)'} />
+            <Bookmark size={14} fill={isSaved ? 'var(--primary)' : 'none'} color={isSaved ? 'var(--primary)' : 'var(--text-muted)'} />
           </button>
         </div>
       </div>
@@ -70,10 +73,10 @@ export default function OpportunityCard({
           <h3 className="card-title-clamp" title={opportunity.title}>
             {opportunity.title}
           </h3>
-          <div style={{ fontSize: '0.82rem', color: 'var(--muted-foreground)', marginTop: '0.2rem', display: 'flex', alignItems: 'center', gap: '0.35rem', flexWrap: 'wrap' }}>
-            <span style={{ fontWeight: '700', color: 'var(--foreground)' }}>{opportunity.organization || opportunity.company}</span>
+          <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginTop: '0.2rem', display: 'flex', alignItems: 'center', gap: '0.35rem', flexWrap: 'wrap' }}>
+            <span style={{ fontWeight: '700', color: 'var(--text-primary)' }}>{opportunity.organization || opportunity.company}</span>
             <span>•</span>
-            <span><MapPin size={12} style={{ display: 'inline', marginRight: '0.2rem' }} />{opportunity.location_city || opportunity.location_country || 'Malaysia'}</span>
+            <span><MapPin size={12} style={{ display: 'inline', marginRight: '0.15rem' }} />{opportunity.location_city || opportunity.location_country || 'Malaysia'}</span>
           </div>
         </div>
       </div>
@@ -88,13 +91,13 @@ export default function OpportunityCard({
       <div className="match-reasons-list">
         {reasons.slice(0, 3).map((r, idx) => (
           <div key={idx} className="match-reason-item">
-            <Check size={13} color="var(--accent-emerald)" className="check-icon" />
+            <Check size={13} color="var(--accent-emerald)" style={{ flexShrink: 0 }} />
             <span>{r.replace(/^✓\s*/, '')}</span>
           </div>
         ))}
         {flags.slice(0, 1).map((f, idx) => (
           <div key={`flag-${idx}`} className="match-flag-item">
-            <AlertTriangle size={13} color="var(--accent-amber)" className="flag-icon" />
+            <AlertTriangle size={13} color="var(--accent-amber)" style={{ flexShrink: 0 }} />
             <span>{f.replace(/^⚠\s*/, '')}</span>
           </div>
         ))}
@@ -104,7 +107,7 @@ export default function OpportunityCard({
       {opportunity.why_matches_you && (
         <div className="why-matches-box">
           <div className="why-matches-header">
-            <Sparkles size={12} color="var(--accent-blue)" />
+            <Sparkles size={11} color="var(--primary)" />
             <span>WHY THIS MATCHES YOU</span>
           </div>
           <p className="why-matches-text">
@@ -113,29 +116,34 @@ export default function OpportunityCard({
         </div>
       )}
 
-      {/* Source Provenance & Last Verified */}
-      <div className="card-provenance-footer">
-        <div className="provenance-info">
-          <span>SOURCE: <strong>{opportunity.source_name || 'Official Corporate Careers'}</strong></span>
-          <span>•</span>
-          <span><ShieldCheck size={11} color="var(--accent-emerald)" style={{ display: 'inline', marginRight: '0.15rem' }} /> Verified Active</span>
+      {/* Footer Area: Provenance + Actions (Locked to bottom) */}
+      <div style={{ marginTop: 'auto' }}>
+        <div className="card-provenance-footer">
+          <div className="provenance-info">
+            <span>SOURCE: <strong style={{ color: 'var(--text-primary)' }}>{opportunity.source_name || 'Official Portal'}</strong></span>
+            <span>•</span>
+            <span style={{ color: 'var(--accent-emerald)', display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}>
+              <ShieldCheck size={12} /> Verified Active
+            </span>
+          </div>
         </div>
-      </div>
 
-      {/* Action Buttons */}
-      <div className="card-actions-row" onClick={(e) => e.stopPropagation()}>
-        <button 
-          className="btn btn-outline btn-details-action"
-          onClick={() => onSelectOp(opportunity)}
-        >
-          View Details
-        </button>
-        <button 
-          className="btn btn-emerald btn-prepare-action"
-          onClick={() => onPrepareApplication(opportunity)}
-        >
-          <Zap size={14} /> Prepare Application
-        </button>
+        <div className="card-actions-row" onClick={(e) => e.stopPropagation()}>
+          <button 
+            className="btn btn-outline"
+            style={{ flex: 1, height: '36px', fontSize: '0.82rem' }}
+            onClick={() => onSelectOp(opportunity)}
+          >
+            View Details
+          </button>
+          <button 
+            className="btn btn-emerald"
+            style={{ flex: 1.4, height: '36px', fontSize: '0.82rem' }}
+            onClick={() => onPrepareApplication(opportunity)}
+          >
+            <Zap size={14} /> Prepare Application
+          </button>
+        </div>
       </div>
 
     </div>
