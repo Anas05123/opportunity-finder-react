@@ -147,8 +147,9 @@ export default function InterviewCoach({ userProfile, triggerToast }) {
           </h2>
 
           <div style={{ marginBottom: '1.25rem' }}>
-            <label className="filter-label">Your Response (Type or Dictate using STAR method)</label>
+            <label htmlFor="interview-response-textarea" className="filter-label">Your Response (Type or Dictate using STAR method)</label>
             <textarea
+              id="interview-response-textarea"
               className="form-textarea"
               rows={9}
               placeholder="Structure your answer: Situation, Task, Action taken, and Measurable Result..."

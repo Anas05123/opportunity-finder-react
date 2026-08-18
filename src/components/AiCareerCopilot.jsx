@@ -78,10 +78,10 @@ export default function AiCareerCopilot({ userProfile, triggerToast }) {
   };
 
   const quickPrompts = [
-    { label: "✉️ Ogilvy Cover Letter", text: "Write a high-impact cover letter for an Advertising Brand Strategy role at Ogilvy for Anas (GPA 3.85)" },
-    { label: "🎙️ Marketing Interview Prep", text: "Give me 3 tough behavioral interview questions for a Brand Strategist role and how to answer them using STAR method" },
-    { label: "🌍 English Waiver Scholarships", text: "Which top fully funded scholarships in Europe & Asia accept English Medium of Instruction waiver without IELTS?" },
-    { label: "💼 Salary & Positioning", text: "What is the typical salary range and career progression for an entry-level Brand Strategist at a multinational agency?" }
+    { label: "Ogilvy Cover Letter", text: "Write a high-impact cover letter for an Advertising Brand Strategy role at Ogilvy for Anas (GPA 3.85)" },
+    { label: "Marketing Interview Prep", text: "Give me 3 tough behavioral interview questions for a Brand Strategist role and how to answer them using STAR method" },
+    { label: "English Waiver Scholarships", text: "Which top fully funded scholarships in Europe & Asia accept English Medium of Instruction waiver without IELTS?" },
+    { label: "Salary & Positioning", text: "What is the typical salary range and career progression for an entry-level Brand Strategist at a multinational agency?" }
   ];
 
   return (

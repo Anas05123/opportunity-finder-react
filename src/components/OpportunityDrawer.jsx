@@ -23,6 +23,14 @@ export default function OpportunityDrawer({
   const [activeTab, setActiveTab] = useState('overview');
   const [isOfficial, setIsOfficial] = useState(opportunity.verification_status === 'official_verified');
 
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
   const safePortalUrl = resolveSafeJobUrl(opportunity);
   const liveLinkedInUrl = resolveLinkedInSearchUrl(opportunity);
 
@@ -36,8 +44,14 @@ export default function OpportunityDrawer({
   };
 
   return (
-    <div className="drawer-backdrop" onClick={onClose}>
-      <div className="drawer-panel-prodexa" onClick={(e) => e.stopPropagation()}>
+    <div className="drawer-backdrop" onClick={onClose} role="presentation">
+      <div 
+        className="drawer-panel-prodexa" 
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="op-drawer-title"
+      >
         
         {/* Header */}
         <div className="app-kit-header">
@@ -51,7 +65,7 @@ export default function OpportunityDrawer({
               </span>
             </div>
             
-            <h2 className="type-h2">
+            <h2 id="op-drawer-title" className="type-h2">
               {opportunity.title}
             </h2>
             
@@ -66,7 +80,7 @@ export default function OpportunityDrawer({
             </div>
           </div>
 
-          <button className="icon-button" onClick={onClose} title="Close Drawer">
+          <button className="icon-button" onClick={onClose} aria-label="Close details drawer" title="Close Drawer">
             <X size={16} />
           </button>
         </div>
@@ -123,7 +137,7 @@ export default function OpportunityDrawer({
               </div>
 
               {/* Specs Grid */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.85rem' }}>
+              <div className="responsive-grid-2col">
                 <div style={{ background: 'var(--bg-surface-elevated)', border: '1px solid var(--border-subtle)', padding: '0.85rem 1rem', borderRadius: 'var(--radius-md)' }}>
                   <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.74rem', fontWeight: '700' }}>Academic Standing</span>
                   <strong style={{ textTransform: 'capitalize', color: 'var(--text-primary)', fontSize: '0.88rem' }}>

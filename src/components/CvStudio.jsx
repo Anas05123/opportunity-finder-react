@@ -93,8 +93,9 @@ EXPERIENCE & PROJECTS:
           </div>
 
           <div style={{ marginBottom: '1rem' }}>
-            <label className="filter-label">Target Role / Fellowship</label>
+            <label htmlFor="target-role-input" className="filter-label">Target Role / Fellowship</label>
             <input 
+              id="target-role-input"
               type="text" 
               className="form-input"
               value={targetRole}
@@ -104,8 +105,9 @@ EXPERIENCE & PROJECTS:
           </div>
 
           <div style={{ marginBottom: '1.25rem' }}>
-            <label className="filter-label">Resume Text</label>
+            <label htmlFor="cv-text-input" className="filter-label">Resume Text</label>
             <textarea
+              id="cv-text-input"
               className="form-textarea"
               rows={13}
               value={cvText}

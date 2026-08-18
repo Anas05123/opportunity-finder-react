@@ -65,9 +65,23 @@ export default function ApplicationKitDrawer({ opportunity, userProfile, onClose
     if (triggerToast) triggerToast(`Opened email client pre-filled to ${recipient}!`);
   };
 
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
   return (
-    <div className="drawer-backdrop" onClick={onClose}>
-      <div className="drawer-panel-prodexa app-kit-drawer" onClick={(e) => e.stopPropagation()}>
+    <div className="drawer-backdrop" onClick={onClose} role="presentation">
+      <div 
+        className="drawer-panel-prodexa app-kit-drawer" 
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="app-kit-title"
+      >
         
         {/* Header */}
         <div className="app-kit-header">
@@ -81,7 +95,7 @@ export default function ApplicationKitDrawer({ opportunity, userProfile, onClose
               </span>
             </div>
 
-            <h2 style={{ fontSize: '1.25rem', fontWeight: '900', color: 'var(--foreground)', lineHeight: '1.3' }}>
+            <h2 id="app-kit-title" style={{ fontSize: '1.25rem', fontWeight: '900', color: 'var(--foreground)', lineHeight: '1.3' }}>
               {opportunity.title}
             </h2>
             <div style={{ fontSize: '0.84rem', color: 'var(--muted-foreground)', marginTop: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
@@ -89,7 +103,7 @@ export default function ApplicationKitDrawer({ opportunity, userProfile, onClose
             </div>
           </div>
 
-          <button className="icon-button" onClick={onClose} title="Close">
+          <button className="icon-button" onClick={onClose} aria-label="Close application kit drawer" title="Close">
             <X size={16} />
           </button>
         </div>
@@ -212,7 +226,8 @@ export default function ApplicationKitDrawer({ opportunity, userProfile, onClose
 
                   <textarea 
                     className="form-input"
-                    style={{ width: '100%', height: '340px', fontFamily: 'monospace', fontSize: '0.86rem', lineHeight: '1.65', resize: 'vertical' }}
+                    aria-label="Generated custom cover letter"
+                    style={{ width: '100%', height: 'min(340px, 45vh)', fontFamily: 'monospace', fontSize: '0.86rem', lineHeight: '1.65', resize: 'vertical' }}
                     value={kit?.custom_cover_letter || ''}
                     readOnly
                   />
@@ -278,7 +293,7 @@ export default function ApplicationKitDrawer({ opportunity, userProfile, onClose
             <Mail size={15} /> Email Recruiter Directly
           </button>
           <button className="btn btn-emerald" onClick={handleLaunchPortal} title="Copy cover letter and launch official portal">
-            <ExternalLink size={15} /> 🚀 Launch Official Portal & Paste Dossier
+            <ExternalLink size={15} /> Launch Official Portal & Paste Dossier
           </button>
         </div>
 

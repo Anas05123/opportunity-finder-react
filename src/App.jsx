@@ -346,7 +346,7 @@ export default function App() {
           </div>
 
           <div className="nav-actions-right">
-            <button className="icon-button" onClick={toggleTheme} title="Toggle Theme">
+            <button className="icon-button" onClick={toggleTheme} aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}>
               {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
             </button>
 
@@ -359,13 +359,59 @@ export default function App() {
               <span>{userProfile.name?.split(' ')[0] || 'Anas'} (BA)</span>
             </button>
 
-            <button className="mobile-menu-trigger" onClick={() => setMobileMenuOpen(true)}>
+            <button className="mobile-menu-trigger" onClick={() => setMobileMenuOpen(true)} aria-label="Open navigation menu" aria-expanded={mobileMenuOpen}>
               <Menu size={20} />
             </button>
           </div>
 
         </div>
       </nav>
+
+      {/* MOBILE NAVIGATION DRAWER */}
+      {mobileMenuOpen && (
+        <>
+          <div className="mobile-nav-overlay" onClick={() => setMobileMenuOpen(false)} />
+          <div className="mobile-nav-panel" role="dialog" aria-modal="true" aria-label="Navigation menu">
+            <div className="mobile-nav-header">
+              <span style={{ fontWeight: '900', fontSize: '1rem', color: 'var(--text-primary)' }}>Navigation</span>
+              <button className="icon-button" onClick={() => setMobileMenuOpen(false)} aria-label="Close navigation">
+                <X size={16} />
+              </button>
+            </div>
+            <div className="mobile-nav-items">
+              {[
+                { id: 'explore', icon: <Compass size={18} />, label: 'Discover & Match' },
+                { id: 'cv_studio', icon: <FileText size={18} />, label: 'AI CV Studio' },
+                { id: 'interview', icon: <Mic size={18} />, label: 'Interview Coach' },
+                { id: 'tracker', icon: <CheckSquare size={18} />, label: `CRM Board (${savedApps.length})` },
+                { id: 'calendar', icon: <Calendar size={18} />, label: 'Deadlines' },
+                { id: 'admin', icon: <ShieldCheck size={18} />, label: 'Scrapers (48+)' }
+              ].map(item => (
+                <button
+                  key={item.id}
+                  className={`mobile-nav-item ${activeTab === item.id ? 'active' : ''}`}
+                  onClick={() => { setActiveTab(item.id); setMobileMenuOpen(false); }}
+                >
+                  {item.icon}
+                  {item.label}
+                </button>
+              ))}
+            </div>
+            <div style={{ marginTop: 'auto', paddingTop: '1rem', borderTop: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+              <button className="icon-button" onClick={toggleTheme} aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}>
+                {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
+              </button>
+              <button 
+                className="user-profile-badge" 
+                onClick={() => { setShowProfileModal(true); setMobileMenuOpen(false); }}
+              >
+                <User size={15} color="var(--accent-blue)" />
+                <span>{userProfile.name?.split(' ')[0] || 'Anas'} (BA)</span>
+              </button>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* 2. MAIN VIEW SWITCHER */}
       <main>
@@ -399,25 +445,25 @@ export default function App() {
                   className={`cat-pill ${selectedPreset === 'all' ? 'active' : ''}`}
                   onClick={() => setSelectedPreset('all')}
                 >
-                  ✨ All Offers
+                  <Sparkles size={14} /> All Offers
                 </button>
                 <button 
                   className={`cat-pill ${selectedPreset === 'advertising' ? 'ad-active' : ''}`}
                   onClick={() => setSelectedPreset(selectedPreset === 'advertising' ? 'all' : 'advertising')}
                 >
-                  📢 Advertising & Marketing
+                  <Megaphone size={14} /> Advertising & Marketing
                 </button>
                 <button 
                   className={`cat-pill ${selectedPreset === 'finance' ? 'active' : ''}`}
                   onClick={() => setSelectedPreset(selectedPreset === 'finance' ? 'all' : 'finance')}
                 >
-                  💰 Finance & Banking
+                  <Briefcase size={14} /> Finance & Banking
                 </button>
                 <button 
                   className={`cat-pill ${selectedPreset === 'fully_funded' ? 'active' : ''}`}
                   onClick={() => setSelectedPreset(selectedPreset === 'fully_funded' ? 'all' : 'fully_funded')}
                 >
-                  🎓 100% Fully Funded Scholarships
+                  <GraduationCap size={14} /> Fully Funded Scholarships
                 </button>
               </div>
 
@@ -591,8 +637,8 @@ export default function App() {
             {opportunities.map(op => (
               <div key={op.id} style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-xl)', padding: '1.35rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', boxShadow: 'var(--shadow-sm)' }}>
                 <div>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--accent-blue)', fontWeight: '800', marginBottom: '0.25rem' }}>
-                    📅 Deadline: {op.deadline_utc}
+                  <div style={{ fontSize: '0.8rem', color: 'var(--accent-blue)', fontWeight: '800', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <Calendar size={14} /> Deadline: {op.deadline_utc}
                   </div>
                   <div style={{ fontWeight: '800', fontSize: '1.05rem', color: 'var(--foreground)' }}>{op.title}</div>
                   <div style={{ fontSize: '0.82rem', color: 'var(--muted-foreground)', marginTop: '0.15rem' }}>{op.organization} • {op.location_country}</div>
@@ -680,7 +726,7 @@ export default function App() {
 
       {/* Toast Notification */}
       {toastMessage && (
-        <div style={{
+        <div role="status" aria-live="polite" style={{
           position: 'fixed',
           bottom: '2rem',
           left: '2rem',

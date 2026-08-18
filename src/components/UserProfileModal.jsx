@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User, Check, X, Shield, Phone, Mail, Award, BookOpen, GraduationCap } from 'lucide-react';
 
 export default function UserProfileModal({ profile, onClose, onSaveProfile, triggerToast }) {
@@ -14,6 +14,14 @@ export default function UserProfileModal({ profile, onClose, onSaveProfile, trig
     target_country: profile?.target_country || 'Malaysia / Global / Europe / US'
   });
 
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
   const handleSubmit = (e) => {
     e.preventDefault();
     onSaveProfile(formData);
@@ -22,30 +30,38 @@ export default function UserProfileModal({ profile, onClose, onSaveProfile, trig
   };
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal-card modal-medium" onClick={(e) => e.stopPropagation()} style={{ padding: '2.25rem', position: 'relative' }}>
+    <div className="modal-backdrop" onClick={onClose} role="presentation">
+      <div 
+        className="modal-card modal-medium" 
+        onClick={(e) => e.stopPropagation()} 
+        role="dialog" 
+        aria-modal="true" 
+        aria-labelledby="user-profile-title"
+        style={{ padding: '2rem', position: 'relative' }}
+      >
         <button className="modal-close" onClick={onClose} aria-label="Close Modal">
           <X size={16} />
         </button>
 
         {/* Modal Header */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', marginBottom: '1.75rem' }}>
-          <div style={{ width: '44px', height: '44px', borderRadius: 'var(--radius-md)', background: 'var(--muted)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <User size={22} color="var(--accent-blue)" />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', marginBottom: '1.5rem' }}>
+          <div style={{ width: '44px', height: '44px', borderRadius: 'var(--radius-md)', background: 'var(--primary-subtle)', border: '1px solid var(--border-default)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <User size={22} color="var(--primary)" />
           </div>
           <div>
-            <h3 style={{ fontSize: '1.3rem', color: 'var(--foreground)', fontWeight: '800' }}>Academic & Candidate Profile</h3>
-            <p style={{ color: 'var(--muted-foreground)', fontSize: '0.84rem', marginTop: '0.15rem' }}>Set your exact degree qualification (BA/BSc/BBA), GPA, and phone number.</p>
+            <h3 id="user-profile-title" className="type-h2">Academic & Candidate Profile</h3>
+            <p className="type-body" style={{ marginTop: '0.15rem' }}>Set your exact degree qualification (BA/BSc/BBA), GPA, and phone number.</p>
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.15rem' }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           
           {/* Row 1: Name & Phone */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+          <div className="responsive-grid-2col">
             <div>
-              <label className="filter-label">Full Name</label>
+              <label htmlFor="user-fullname" className="filter-label">Full Name</label>
               <input 
+                id="user-fullname"
                 type="text" 
                 className="form-input" 
                 value={formData.name}
@@ -54,8 +70,9 @@ export default function UserProfileModal({ profile, onClose, onSaveProfile, trig
               />
             </div>
             <div>
-              <label className="filter-label">Phone Number *</label>
+              <label htmlFor="user-phone" className="filter-label">Phone Number *</label>
               <input 
+                id="user-phone"
                 type="text" 
                 className="form-input" 
                 value={formData.phone}
@@ -66,10 +83,11 @@ export default function UserProfileModal({ profile, onClose, onSaveProfile, trig
           </div>
 
           {/* Row 2: Email & GPA */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+          <div className="responsive-grid-2col">
             <div>
-              <label className="filter-label">Email Address</label>
+              <label htmlFor="user-email" className="filter-label">Email Address</label>
               <input 
+                id="user-email"
                 type="email" 
                 className="form-input" 
                 value={formData.email}
@@ -78,8 +96,9 @@ export default function UserProfileModal({ profile, onClose, onSaveProfile, trig
               />
             </div>
             <div>
-              <label className="filter-label">Cumulative GPA (Out of 4.0)</label>
+              <label htmlFor="user-gpa" className="filter-label">Cumulative GPA (Out of 4.0)</label>
               <input 
+                id="user-gpa"
                 type="number" 
                 step="0.01" 
                 max="4.0" 
@@ -91,11 +110,12 @@ export default function UserProfileModal({ profile, onClose, onSaveProfile, trig
             </div>
           </div>
 
-          {/* Row 3: Degree Title & Qualification (BA / BSc / BBA / etc.) */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+          {/* Row 3: Degree Title & Major */}
+          <div className="responsive-grid-2col">
             <div>
-              <label className="filter-label">Exact Degree Qualification *</label>
+              <label htmlFor="user-degree-title" className="filter-label">Exact Degree Qualification *</label>
               <input 
+                id="user-degree-title"
                 type="text" 
                 className="form-input" 
                 value={formData.degree_title}
@@ -105,8 +125,9 @@ export default function UserProfileModal({ profile, onClose, onSaveProfile, trig
               />
             </div>
             <div>
-              <label className="filter-label">Academic Major / Specialization *</label>
+              <label htmlFor="user-major" className="filter-label">Academic Major / Specialization *</label>
               <input 
+                id="user-major"
                 type="text" 
                 className="form-input" 
                 value={formData.major}
@@ -117,12 +138,14 @@ export default function UserProfileModal({ profile, onClose, onSaveProfile, trig
           </div>
 
           {/* English Waiver Checkbox Box */}
-          <div style={{ background: 'var(--muted)', padding: '1rem 1.25rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ background: 'var(--bg-surface-elevated)', padding: '1rem 1.25rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-default)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
-              <div style={{ fontSize: '0.88rem', fontWeight: '800', color: 'var(--foreground)' }}>No IELTS / English Medium Waiver Preferred</div>
-              <div style={{ fontSize: '0.78rem', color: 'var(--muted-foreground)', marginTop: '0.15rem' }}>Boosts matching opportunities that accept Medium of Instruction certificates.</div>
+              <div style={{ fontSize: '0.88rem', fontWeight: '800', color: 'var(--text-primary)' }}>No IELTS / English Medium Waiver Preferred</div>
+              <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '0.15rem' }}>Boosts matching opportunities that accept Medium of Instruction certificates.</div>
             </div>
             <input 
+              id="user-no-ielts"
+              aria-label="No IELTS / English Medium Waiver Preferred"
               type="checkbox" 
               checked={formData.no_ielts_preference === 1}
               onChange={(e) => setFormData({ ...formData, no_ielts_preference: e.target.checked ? 1 : 0 })}
@@ -131,7 +154,7 @@ export default function UserProfileModal({ profile, onClose, onSaveProfile, trig
           </div>
 
           {/* Modal Footer Actions */}
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '0.75rem', paddingTop: '1rem', borderTop: '1px solid var(--border)' }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '0.5rem', paddingTop: '1rem', borderTop: '1px solid var(--border-subtle)' }}>
             <button type="button" className="btn btn-outline" onClick={onClose}>
               Cancel
             </button>

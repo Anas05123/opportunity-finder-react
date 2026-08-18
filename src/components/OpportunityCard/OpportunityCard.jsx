@@ -37,7 +37,19 @@ export default function OpportunityCard({
   };
 
   return (
-    <div className="opportunity-bento-card" onClick={() => onSelectOp(opportunity)}>
+    <div 
+      className="opportunity-bento-card" 
+      onClick={() => onSelectOp(opportunity)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onSelectOp(opportunity);
+        }
+      }}
+      role="article"
+      tabIndex={0}
+      aria-label={`${opportunity.title} at ${opportunity.organization || opportunity.company}`}
+    >
       
       {/* Top Header: Score & Save */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.85rem' }}>
@@ -56,6 +68,7 @@ export default function OpportunityCard({
           <button 
             className="icon-button"
             onClick={(e) => { e.stopPropagation(); onToggleSave(opportunity); }}
+            aria-label={isSaved ? 'Remove from Saved' : 'Save Opportunity'}
             title={isSaved ? 'Remove from Saved' : 'Save Opportunity'}
             style={{ width: '32px', height: '32px' }}
           >
