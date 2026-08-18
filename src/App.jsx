@@ -393,8 +393,37 @@ export default function App() {
                 </div>
               )}
 
+              {/* Category Ribbon */}
+              <div className="category-ribbon">
+                <button 
+                  className={`cat-pill ${selectedPreset === 'all' ? 'active' : ''}`}
+                  onClick={() => setSelectedPreset('all')}
+                >
+                  ✨ All Offers
+                </button>
+                <button 
+                  className={`cat-pill ${selectedPreset === 'advertising' ? 'ad-active' : ''}`}
+                  onClick={() => setSelectedPreset(selectedPreset === 'advertising' ? 'all' : 'advertising')}
+                >
+                  📢 Advertising & Marketing
+                </button>
+                <button 
+                  className={`cat-pill ${selectedPreset === 'finance' ? 'active' : ''}`}
+                  onClick={() => setSelectedPreset(selectedPreset === 'finance' ? 'all' : 'finance')}
+                >
+                  💰 Finance & Banking
+                </button>
+                <button 
+                  className={`cat-pill ${selectedPreset === 'fully_funded' ? 'active' : ''}`}
+                  onClick={() => setSelectedPreset(selectedPreset === 'fully_funded' ? 'all' : 'fully_funded')}
+                >
+                  🎓 100% Fully Funded Scholarships
+                </button>
+              </div>
+
               {/* Feed Toolbar */}
               <div className="feed-toolbar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.75rem', gap: '1rem', flexWrap: 'wrap' }}>
+
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
                   <span style={{ fontSize: '1.15rem', fontWeight: '900', color: 'var(--foreground)' }}>
                     Verified Opportunities ({filteredOpportunities.length})
