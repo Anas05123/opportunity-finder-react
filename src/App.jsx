@@ -49,6 +49,16 @@ export default function App() {
     localStorage.setItem('opp_theme', theme);
   }, [theme]);
 
+  // Navbar Scroll State
+  const [isScrolled, setIsScrolled] = useState(false);
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   const toggleTheme = () => {
     const nextTheme = theme === 'dark' ? 'light' : 'dark';
     setTheme(nextTheme);
@@ -288,23 +298,29 @@ export default function App() {
     <div className="min-h-screen app-container">
       
       {/* 1. TOP NAVIGATION BAR */}
-      <nav className="prodexa-navbar">
+      <nav className={`prodexa-navbar ${isScrolled ? 'scrolled' : ''}`}>
         <div className="navbar-inner">
           
-          <div className="nav-brand" onClick={() => setActiveTab('explore')} style={{ cursor: 'pointer' }}>
+          <div className="nav-brand" onClick={() => setActiveTab('explore')} role="button" tabIndex={0} aria-label="Go to Discover Homepage">
             <div className="nav-logo-box">
-              <Compass size={20} color="var(--primary-foreground)" />
+              <Compass size={19} color="#ffffff" />
             </div>
             <div>
-              <span className="brand-title">OPPORTUNITY</span>
-              <span className="brand-badge-ai">AI 2.0</span>
+              <span className="brand-title">
+                OPPORTUNITY
+                <span className="brand-badge-ai">
+                  <span className="nav-live-dot" /> AI 2.0
+                </span>
+              </span>
             </div>
           </div>
 
-          <div className="nav-pill-group">
+          <div className="nav-pill-group" role="tablist" aria-label="Primary Application Navigation">
             <button 
               className={`nav-pill ${activeTab === 'explore' ? 'active' : ''}`}
               onClick={() => setActiveTab('explore')}
+              role="tab"
+              aria-selected={activeTab === 'explore'}
             >
               <Compass size={15} /> Discover & Match
             </button>
@@ -312,6 +328,8 @@ export default function App() {
             <button 
               className={`nav-pill ${activeTab === 'cv_studio' ? 'active' : ''}`}
               onClick={() => setActiveTab('cv_studio')}
+              role="tab"
+              aria-selected={activeTab === 'cv_studio'}
             >
               <FileText size={15} /> AI CV Studio
             </button>
@@ -319,6 +337,8 @@ export default function App() {
             <button 
               className={`nav-pill ${activeTab === 'interview' ? 'active' : ''}`}
               onClick={() => setActiveTab('interview')}
+              role="tab"
+              aria-selected={activeTab === 'interview'}
             >
               <Mic size={15} /> Interview Coach
             </button>
@@ -326,13 +346,20 @@ export default function App() {
             <button 
               className={`nav-pill ${activeTab === 'tracker' ? 'active' : ''}`}
               onClick={() => setActiveTab('tracker')}
+              role="tab"
+              aria-selected={activeTab === 'tracker'}
             >
-              <CheckSquare size={15} /> CRM Board ({savedApps.length})
+              <CheckSquare size={15} /> CRM Board
+              {savedApps.length > 0 && (
+                <span className="nav-count-badge">{savedApps.length}</span>
+              )}
             </button>
 
             <button 
               className={`nav-pill ${activeTab === 'calendar' ? 'active' : ''}`}
               onClick={() => setActiveTab('calendar')}
+              role="tab"
+              aria-selected={activeTab === 'calendar'}
             >
               <Calendar size={15} /> Deadlines
             </button>
@@ -340,23 +367,30 @@ export default function App() {
             <button 
               className={`nav-pill ${activeTab === 'admin' ? 'active' : ''}`}
               onClick={() => setActiveTab('admin')}
+              role="tab"
+              aria-selected={activeTab === 'admin'}
             >
-              <ShieldCheck size={15} /> Scrapers (48+)
+              <ShieldCheck size={15} /> Scrapers
+              <span className="bento-tag" style={{ fontSize: '0.62rem', padding: '0.05rem 0.35rem' }}>48+</span>
             </button>
           </div>
 
           <div className="nav-actions-right">
             <button className="icon-button" onClick={toggleTheme} aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}>
-              {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
+              {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
             </button>
 
             <button 
               className="user-profile-badge" 
               onClick={() => setShowProfileModal(true)}
+              aria-label="Edit Academic Profile & Qualification"
               title="Edit Academic Profile & Qualification"
             >
-              <User size={15} color="var(--accent-blue)" />
-              <span>{userProfile.name?.split(' ')[0] || 'Anas'} (BA)</span>
+              <div className="nav-avatar-circle">
+                {userProfile.name ? userProfile.name[0].toUpperCase() : 'A'}
+              </div>
+              <span style={{ fontWeight: '700' }}>{userProfile.name?.split(' ')[0] || 'Anas'}</span>
+              <span className="nav-degree-tag">BA</span>
             </button>
 
             <button className="mobile-menu-trigger" onClick={() => setMobileMenuOpen(true)} aria-label="Open navigation menu" aria-expanded={mobileMenuOpen}>
