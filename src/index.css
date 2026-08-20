@@ -438,7 +438,7 @@ html, body {
   top: 0;
   z-index: var(--z-nav);
   width: 100%;
-  background: rgba(10, 14, 26, 0.85);
+  background: var(--bg-glass-strong);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border-default);
@@ -446,8 +446,8 @@ html, body {
 }
 
 .prodexa-navbar.scrolled {
-  background: rgba(10, 14, 26, 0.95);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  background: var(--bg-surface);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 
 .navbar-inner {
@@ -476,29 +476,29 @@ html, body {
 }
 
 .nav-logo-box {
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   border-radius: 9px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--border-default);
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 14px rgba(56, 189, 248, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   transition: all 0.25s var(--ease-spring);
   flex-shrink: 0;
   overflow: hidden;
+  padding: 3px;
 }
 
 .nav-logo-box img {
-  width: 26px;
-  height: 26px;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
-  filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.4));
 }
 
 .brand-title {
-  font-size: 1.02rem;
+  font-size: 1.05rem;
   font-weight: 900;
   letter-spacing: -0.025em;
   color: var(--text-primary);
@@ -511,9 +511,9 @@ html, body {
 .brand-badge-ai {
   font-size: 0.65rem;
   font-weight: 800;
-  background: rgba(99, 102, 241, 0.12);
+  background: var(--primary-subtle);
   border: 1px solid rgba(99, 102, 241, 0.25);
-  color: #818cf8;
+  color: var(--primary);
   padding: 0.12rem 0.45rem;
   border-radius: var(--radius-full);
   display: inline-flex;
@@ -545,10 +545,10 @@ html, body {
   display: flex;
   align-items: center;
   gap: 0.25rem;
-  background: rgba(255, 255, 255, 0.035);
+  background: var(--bg-surface-elevated);
   padding: 0.25rem;
   border-radius: var(--radius-full);
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--border-default);
   flex-shrink: 1;
 }
 
@@ -559,7 +559,7 @@ html, body {
   padding: 0.4rem 0.85rem;
   border-radius: var(--radius-full);
   font-size: 0.82rem;
-  font-weight: 500;
+  font-weight: 600;
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
@@ -571,19 +571,19 @@ html, body {
 
 .nav-pill:hover {
   color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-surface-hover);
 }
 
 .nav-pill.active {
-  background: var(--bg-surface-elevated, #1e293b);
-  border-color: rgba(255, 255, 255, 0.1);
-  color: #ffffff;
+  background: var(--bg-surface);
+  border-color: var(--border-default);
+  color: var(--primary);
   font-weight: 700;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .nav-pill.active svg {
-  color: #818cf8;
+  color: var(--primary);
 }
 
 .nav-count-badge {
@@ -607,7 +607,7 @@ html, body {
 }
 
 .user-profile-badge {
-  background: rgba(255, 255, 255, 0.035);
+  background: var(--bg-surface-elevated);
   border: 1px solid var(--border-default);
   color: var(--text-primary);
   height: 34px;
@@ -625,7 +625,7 @@ html, body {
 }
 .user-profile-badge:hover {
   border-color: var(--border-hover);
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--bg-surface-hover);
 }
 
 .nav-avatar-circle {
