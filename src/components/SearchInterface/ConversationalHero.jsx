@@ -64,8 +64,30 @@ export default function ConversationalHero({ onStartConversationalSearch, isSear
 
         {/* Vision Title */}
         <h1 className="conversational-title">
-          <span>Find your next opportunity with Careerly.</span><br />
-          <span className="conversational-title-sub" style={{ letterSpacing: '0.08em', fontSize: 'clamp(1.1rem, 2.5vw, 1.45rem)', textTransform: 'uppercase', color: 'var(--primary)' }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.65rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <span>Find your next opportunity with</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem' }}>
+              <span style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '42px',
+                height: '42px',
+                background: '#ffffff',
+                borderRadius: '12px',
+                border: '1px solid rgba(0, 0, 0, 0.08)',
+                boxShadow: '0 4px 14px rgba(0, 0, 0, 0.08)',
+                padding: '4px',
+                verticalAlign: 'middle',
+                flexShrink: 0
+              }}>
+                <img src="/careerly-logo.png" alt="Careerly Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+              </span>
+              <span>Careerly.</span>
+            </span>
+          </span>
+          <br />
+          <span className="conversational-title-sub" style={{ letterSpacing: '0.08em', fontSize: 'clamp(1.1rem, 2.5vw, 1.45rem)', textTransform: 'uppercase', color: 'var(--primary)', marginTop: '0.35rem', display: 'inline-block' }}>
             Discover. Match. Succeed.
           </span>
         </h1>
