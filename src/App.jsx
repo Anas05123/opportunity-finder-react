@@ -597,70 +597,133 @@ function CareerlyPlatform() {
         
         {/* Top Header Bar (Modern Spacious Brainwave / Luma Navbar) */}
         {!isAuthenticated ? (
-          <header className="brainwave-navbar">
-            <div className="sidebar-brand" onClick={() => setActiveTab('landing')} style={{ cursor: 'pointer' }}>
-              <div className="sidebar-logo" style={{ boxShadow: '0 0 15px rgba(124, 58, 237, 0.4)' }}>
-                <img src="/careerly-logo.png" alt="Careerly Logo" />
+          <>
+            <header className="brainwave-navbar">
+              <div className="sidebar-brand" onClick={() => setActiveTab('landing')} style={{ cursor: 'pointer' }}>
+                <div className="sidebar-logo" style={{ boxShadow: '0 0 15px rgba(124, 58, 237, 0.4)' }}>
+                  <img src="/careerly-logo.png" alt="Careerly Logo" />
+                </div>
+                <div className="sidebar-brand-name" style={{ fontSize: '1.15rem', fontWeight: '800', letterSpacing: '-0.02em', color: '#ffffff' }}>
+                  Careerly
+                  <span style={{ fontSize: '0.68rem', color: '#c084fc', marginLeft: '0.4rem', fontWeight: '700', padding: '0.15rem 0.45rem', borderRadius: '4px', background: 'rgba(124, 58, 237, 0.25)', border: '1px solid rgba(124, 58, 237, 0.4)' }}>
+                    AI 2.0
+                  </span>
+                </div>
               </div>
-              <div className="sidebar-brand-name" style={{ fontSize: '1.15rem', fontWeight: '800', letterSpacing: '-0.02em', color: '#ffffff' }}>
-                Careerly
-                <span style={{ fontSize: '0.68rem', color: '#c084fc', marginLeft: '0.4rem', fontWeight: '700', padding: '0.15rem 0.45rem', borderRadius: '4px', background: 'rgba(124, 58, 237, 0.25)', border: '1px solid rgba(124, 58, 237, 0.4)' }}>
-                  AI 2.0
-                </span>
+
+              {/* Modern Centered Navigation Links (Desktop) */}
+              <nav className="brainwave-nav-center">
+                <button 
+                  className="brainwave-nav-link" 
+                  onClick={() => {
+                    const el = document.getElementById('features-section');
+                    if (el) el.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                >
+                  Features
+                </button>
+                <button className="brainwave-nav-link" onClick={() => { setAuthModalMode('signup'); setAuthModalOpen(true); }}>
+                  AI CV Studio
+                </button>
+                <button className="brainwave-nav-link" onClick={() => { setAuthModalMode('signup'); setAuthModalOpen(true); }}>
+                  STAR Coach
+                </button>
+                <button className="brainwave-nav-link" onClick={() => { setAuthModalMode('signup'); setAuthModalOpen(true); }}>
+                  7-Factor Engine
+                </button>
+              </nav>
+
+              {/* Right Side Actions & Mobile Menu Toggle */}
+              <div className="brainwave-nav-actions">
+                <button 
+                  className="icon-button" 
+                  onClick={toggleTheme} 
+                  aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+                  title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+                  style={{ width: '40px', height: '40px' }}
+                >
+                  {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+                </button>
+
+                <button
+                  onClick={() => { setAuthModalMode('login'); setAuthModalOpen(true); }}
+                  className="brainwave-btn-outline brainwave-desktop-only"
+                  style={{ height: '42px', padding: '0 1.4rem', fontSize: '0.86rem' }}
+                >
+                  Sign In
+                </button>
+
+                <button
+                  onClick={() => { setAuthModalMode('signup'); setAuthModalOpen(true); }}
+                  className="brainwave-btn-glow brainwave-nav-cta"
+                  style={{ height: '42px', padding: '0 1.4rem', fontSize: '0.86rem' }}
+                >
+                  <span>Get Started</span>
+                  <ArrowRight size={15} className="btn-arrow-icon" />
+                </button>
+
+                <button
+                  className="brainwave-hamburger-btn"
+                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                  aria-label="Toggle Navigation"
+                >
+                  {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+                </button>
               </div>
-            </div>
+            </header>
 
-            {/* Modern Centered Navigation Links (Discover Roles hidden for non-signed-in) */}
-            <nav className="brainwave-nav-center">
-              <button 
-                className="brainwave-nav-link" 
-                onClick={() => {
-                  const el = document.getElementById('features-section');
-                  if (el) el.scrollIntoView({ behavior: 'smooth' });
-                }}
-              >
-                Features
-              </button>
-              <button className="brainwave-nav-link" onClick={() => { setAuthModalMode('signup'); setAuthModalOpen(true); }}>
-                AI CV Studio
-              </button>
-              <button className="brainwave-nav-link" onClick={() => { setAuthModalMode('signup'); setAuthModalOpen(true); }}>
-                STAR Coach
-              </button>
-              <button className="brainwave-nav-link" onClick={() => { setAuthModalMode('signup'); setAuthModalOpen(true); }}>
-                7-Factor Engine
-              </button>
-            </nav>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-              <button 
-                className="icon-button" 
-                onClick={toggleTheme} 
-                aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-                title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-                style={{ width: '42px', height: '42px' }}
-              >
-                {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-              </button>
-
-              <button
-                onClick={() => { setAuthModalMode('login'); setAuthModalOpen(true); }}
-                className="brainwave-btn-outline"
-                style={{ height: '46px', padding: '0 1.75rem', fontSize: '0.9rem' }}
-              >
-                Sign In
-              </button>
-
-              <button
-                onClick={() => { setAuthModalMode('signup'); setAuthModalOpen(true); }}
-                className="brainwave-btn-glow"
-                style={{ height: '46px', padding: '0 1.85rem', fontSize: '0.9rem' }}
-              >
-                <span>Get Started Free</span>
-                <ArrowRight size={16} className="btn-arrow-icon" />
-              </button>
-            </div>
-          </header>
+            {/* Mobile Navigation Dropdown for Unauthenticated Landing Page */}
+            {mobileMenuOpen && (
+              <div className="brainwave-mobile-menu">
+                <div className="brainwave-mobile-nav-list">
+                  <button 
+                    className="brainwave-mobile-nav-item"
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      const el = document.getElementById('features-section');
+                      if (el) el.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                  >
+                    Features
+                  </button>
+                  <button 
+                    className="brainwave-mobile-nav-item" 
+                    onClick={() => { setMobileMenuOpen(false); setAuthModalMode('signup'); setAuthModalOpen(true); }}
+                  >
+                    AI CV Studio
+                  </button>
+                  <button 
+                    className="brainwave-mobile-nav-item" 
+                    onClick={() => { setMobileMenuOpen(false); setAuthModalMode('signup'); setAuthModalOpen(true); }}
+                  >
+                    STAR Coach
+                  </button>
+                  <button 
+                    className="brainwave-mobile-nav-item" 
+                    onClick={() => { setMobileMenuOpen(false); setAuthModalMode('signup'); setAuthModalOpen(true); }}
+                  >
+                    7-Factor Engine
+                  </button>
+                </div>
+                <div className="brainwave-mobile-menu-actions">
+                  <button
+                    onClick={() => { setMobileMenuOpen(false); setAuthModalMode('login'); setAuthModalOpen(true); }}
+                    className="brainwave-btn-outline"
+                    style={{ width: '100%', height: '44px', justifyContent: 'center' }}
+                  >
+                    Sign In
+                  </button>
+                  <button
+                    onClick={() => { setMobileMenuOpen(false); setAuthModalMode('signup'); setAuthModalOpen(true); }}
+                    className="brainwave-btn-glow"
+                    style={{ width: '100%', height: '44px', justifyContent: 'center' }}
+                  >
+                    Get Started Free
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
         ) : (
           <header className="saas-header">
             <div className="saas-header-left">

@@ -3256,6 +3256,131 @@ html, body {
   width: 100%;
 }
 
+.brainwave-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 1.15rem;
+}
+
+.brainwave-hamburger-btn {
+  display: none;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  padding: 0.5rem;
+  border-radius: 10px;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.brainwave-hamburger-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(168, 85, 247, 0.5);
+}
+
+.brainwave-mobile-menu {
+  position: fixed;
+  top: 72px;
+  left: 0;
+  right: 0;
+  background: rgba(8, 10, 18, 0.98);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 1.5rem 1.25rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  z-index: 899;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
+  animation: slideDownMobile 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideDownMobile {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.brainwave-mobile-nav-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.brainwave-mobile-nav-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  color: #cbd5e1;
+  font-size: 1.05rem;
+  font-weight: 600;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.brainwave-mobile-nav-item:hover,
+.brainwave-mobile-nav-item:active {
+  color: #ffffff;
+  background: rgba(124, 58, 237, 0.18);
+}
+
+.brainwave-mobile-menu-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+@media (max-width: 1024px) {
+  .brainwave-navbar {
+    padding: 1rem 2rem;
+    min-height: 76px;
+  }
+  .brainwave-nav-center {
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 860px) {
+  .brainwave-nav-center {
+    display: none !important;
+  }
+  .brainwave-hamburger-btn {
+    display: flex !important;
+  }
+  .brainwave-desktop-only {
+    display: none !important;
+  }
+  .brainwave-navbar {
+    padding: 0.85rem 1.25rem;
+    min-height: 68px;
+  }
+  .brainwave-mobile-menu {
+    top: 68px;
+  }
+}
+
+@media (max-width: 480px) {
+  .brainwave-navbar {
+    padding: 0.75rem 0.85rem;
+    min-height: 60px;
+  }
+  .brainwave-nav-actions {
+    gap: 0.5rem;
+  }
+  .brainwave-mobile-menu {
+    top: 60px;
+  }
+}
+
 /* Crosshair Markers */
 .crosshair-corner {
   position: absolute;
@@ -3563,6 +3688,202 @@ html, body {
   justify-content: center;
   flex-shrink: 0;
   margin-top: 2px;
+}
+
+/* ==========================================================================
+   GLOBAL MOBILE & SMALL SCREEN RESPONSIVENESS (PHASE 5 RESPONSIVE PASS)
+   ========================================================================== */
+
+@media (max-width: 1024px) {
+  .brainwave-logo-strip {
+    gap: 1.75rem;
+    padding: 2rem 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Landing Hero & Typography */
+  .brainwave-bg-canvas section {
+    padding: 3.5rem 1rem 1.5rem !important;
+  }
+
+  .brainwave-light-beam {
+    width: 100% !important;
+    height: 450px !important;
+    top: 100px !important;
+  }
+
+  /* Interactive Showcase Container Mobile Optimization */
+  .brainwave-showcase-container {
+    padding: 0.85rem 0.65rem !important;
+    border-radius: 16px !important;
+    margin-top: 1.5rem !important;
+  }
+
+  .brainwave-showcase-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.75rem !important;
+    margin-bottom: 1rem !important;
+  }
+
+  /* Mode Switcher Horizontal Scroll on Mobile */
+  .brainwave-showcase-header > div:nth-child(2) {
+    width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    justify-content: flex-start !important;
+    padding: 0.35rem !important;
+  }
+
+  .showcase-mode-tab {
+    flex-shrink: 0 !important;
+    font-size: 0.72rem !important;
+    padding: 0.35rem 0.65rem !important;
+  }
+
+  /* Floating Chips & Controls Stack on Mobile */
+  .brainwave-floating-chip {
+    position: static !important;
+    width: 100% !important;
+    margin-bottom: 1rem !important;
+    box-sizing: border-box !important;
+  }
+
+  .brainwave-floating-controls {
+    position: relative !important;
+    bottom: auto !important;
+    left: auto !important;
+    margin-top: 1.5rem !important;
+    width: 100% !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Interactive Search Bar on Small Screens */
+  .brainwave-interactive-search {
+    flex-direction: column !important;
+    border-radius: 14px !important;
+    padding: 0.75rem !important;
+    gap: 0.65rem !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .brainwave-interactive-search input {
+    width: 100% !important;
+    text-align: center !important;
+  }
+
+  .brainwave-interactive-search button {
+    width: 100% !important;
+    justify-content: center !important;
+    height: 38px !important;
+  }
+
+  /* Feature Matrix Bento on Mobile */
+  .brainwave-feature-card {
+    padding: 1.35rem !important;
+    border-radius: 16px !important;
+  }
+
+  .brainwave-logo-strip {
+    gap: 1.25rem !important;
+    padding: 1.5rem 0.5rem !important;
+  }
+
+  .brainwave-logo-item {
+    font-size: 0.82rem !important;
+  }
+
+  /* Opportunity Cards on Mobile */
+  .saas-opportunity-card {
+    padding: 1.15rem 1rem !important;
+  }
+
+  .saas-card-actions {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.5rem !important;
+  }
+
+  .saas-card-actions button,
+  .saas-card-actions a {
+    width: 100% !important;
+    justify-content: center !important;
+    min-height: 42px !important;
+  }
+
+  /* Drawer as Bottom Sheet on Mobile */
+  .opportunity-drawer,
+  .app-kit-drawer {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 85vh !important;
+    max-height: 90vh !important;
+    border-radius: 20px 20px 0 0 !important;
+    top: auto !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    transform: translateY(100%) !important;
+  }
+
+  .opportunity-drawer.is-open,
+  .app-kit-drawer.is-open {
+    transform: translateY(0) !important;
+  }
+
+  /* Split Panes (CV Studio, Mock Coach, Copilot) */
+  .cv-studio-layout,
+  .interview-coach-grid,
+  .copilot-split-view {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+
+  /* Modals Full Width Padding on Mobile */
+  .modal-overlay .modal-container,
+  .auth-modal-card {
+    width: 95vw !important;
+    max-width: 95vw !important;
+    margin: 1rem auto !important;
+    padding: 1.25rem 1rem !important;
+    border-radius: 16px !important;
+  }
+
+  /* Metric Cards Grid */
+  .saas-stats-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.85rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Ultra-compact Mobile Adjustments */
+  .brainwave-btn-glow,
+  .brainwave-btn-outline {
+    font-size: 0.84rem !important;
+    padding: 0.65rem 1.25rem !important;
+  }
+
+  .demo-preset-pill {
+    font-size: 0.7rem !important;
+    padding: 0.2rem 0.5rem !important;
+  }
+
+  .saas-header {
+    padding: 0 0.75rem !important;
+    height: 60px !important;
+  }
+
+  .saas-content-canvas {
+    padding: 0.85rem 0.65rem !important;
+  }
+
+  .sidebar-brand-name {
+    font-size: 1.05rem !important;
+  }
 }
 
 
