@@ -10,8 +10,8 @@
       "access_method": "html",
       "status": "active",
       "created_at": "2026-08-07T15:48:24.466Z",
-      "last_scraped_at": "2026-08-18T09:10:59.735Z",
-      "last_success_at": "2026-08-18T09:10:59.735Z"
+      "last_scraped_at": "2026-08-20T13:43:18.511Z",
+      "last_success_at": "2026-08-20T13:43:18.511Z"
     },
     {
       "id": "src-euraxess",
@@ -23,8 +23,8 @@
       "access_method": "rss",
       "status": "active",
       "created_at": "2026-08-07T15:48:24.469Z",
-      "last_scraped_at": "2026-08-18T09:10:59.742Z",
-      "last_success_at": "2026-08-18T09:10:59.742Z"
+      "last_scraped_at": "2026-08-20T13:43:18.514Z",
+      "last_success_at": "2026-08-20T13:43:18.514Z"
     },
     {
       "id": "src-un-careers",
@@ -36,8 +36,8 @@
       "access_method": "html",
       "status": "active",
       "created_at": "2026-08-07T15:48:24.469Z",
-      "last_scraped_at": "2026-08-18T09:10:59.749Z",
-      "last_success_at": "2026-08-18T09:10:59.749Z"
+      "last_scraped_at": "2026-08-20T13:43:18.516Z",
+      "last_success_at": "2026-08-20T13:43:18.516Z"
     },
     {
       "id": "src-op-desk",
@@ -49,8 +49,8 @@
       "access_method": "rss",
       "status": "active",
       "created_at": "2026-08-07T15:48:24.470Z",
-      "last_scraped_at": "2026-08-18T09:11:01.303Z",
-      "last_success_at": "2026-08-18T09:11:01.303Z"
+      "last_scraped_at": "2026-08-20T13:43:20.127Z",
+      "last_success_at": "2026-08-20T13:43:20.127Z"
     },
     {
       "id": "src-op-circle",
@@ -62,8 +62,8 @@
       "access_method": "rss",
       "status": "active",
       "created_at": "2026-08-07T15:48:24.471Z",
-      "last_scraped_at": "2026-08-18T09:11:02.857Z",
-      "last_success_at": "2026-08-18T09:11:02.857Z"
+      "last_scraped_at": "2026-08-20T13:43:21.184Z",
+      "last_success_at": "2026-08-20T13:43:21.184Z"
     },
     {
       "status": "active",
@@ -74,8 +74,8 @@
       "id": "src-gov-global",
       "name": "Global Government Scholarship Portals",
       "domain": "gov.scholarships",
-      "last_scraped_at": "2026-08-18T09:10:59.706Z",
-      "last_success_at": "2026-08-18T09:10:59.706Z",
+      "last_scraped_at": "2026-08-20T13:43:18.503Z",
+      "last_success_at": "2026-08-20T13:43:18.503Z",
       "created_at": "2026-08-07T17:26:49.965Z"
     },
     {
@@ -87,8 +87,8 @@
       "id": "src-intl-orgs",
       "name": "International Organizations & UN Agencies",
       "domain": "un.org",
-      "last_scraped_at": "2026-08-18T09:10:59.715Z",
-      "last_success_at": "2026-08-18T09:10:59.715Z",
+      "last_scraped_at": "2026-08-20T13:43:18.506Z",
+      "last_success_at": "2026-08-20T13:43:18.506Z",
       "created_at": "2026-08-07T17:26:49.970Z"
     },
     {
@@ -100,8 +100,8 @@
       "id": "src-uni-excellence",
       "name": "World-Class Universities Global Scholarships",
       "domain": "universities.edu",
-      "last_scraped_at": "2026-08-18T09:10:59.728Z",
-      "last_success_at": "2026-08-18T09:10:59.728Z",
+      "last_scraped_at": "2026-08-20T13:43:18.508Z",
+      "last_success_at": "2026-08-20T13:43:18.508Z",
       "created_at": "2026-08-07T17:26:49.975Z"
     },
     {
@@ -113,8 +113,8 @@
       "id": "src-linkedin-global",
       "name": "LinkedIn Global Internships & Fellowships",
       "domain": "linkedin.com",
-      "last_scraped_at": "2026-08-18T09:10:59.684Z",
-      "last_success_at": "2026-08-18T09:10:59.684Z",
+      "last_scraped_at": "2026-08-20T13:43:18.499Z",
+      "last_success_at": "2026-08-20T13:43:18.499Z",
       "created_at": "2026-08-17T15:26:48.040Z"
     }
   ],
@@ -325,7 +325,7 @@
       "is_popular": 1,
       "slug": "daad-epos-development-related-postgraduate-scholarships",
       "created_at": "2026-08-07T15:48:24.484Z",
-      "updated_at": "2026-08-18T09:10:59.731Z"
+      "updated_at": "2026-08-18T10:47:02.023Z"
     },
     {
       "id": "daad-helmut-schmidt-2027",
@@ -356,7 +356,7 @@
       "is_popular": 1,
       "slug": "daad-helmut-schmidt-programme-for-public-policy-governance",
       "created_at": "2026-08-07T15:48:24.485Z",
-      "updated_at": "2026-08-18T09:10:59.733Z"
+      "updated_at": "2026-08-18T10:47:02.025Z"
     },
     {
       "id": "euraxess-msca-phd-2027",
@@ -387,7 +387,7 @@
       "is_popular": 1,
       "slug": "marie-skodowska-curie-doctoral-fellowship-msca-phd",
       "created_at": "2026-08-07T15:50:48.284Z",
-      "updated_at": "2026-08-18T09:10:59.738Z"
+      "updated_at": "2026-08-18T10:47:02.030Z"
     },
     {
       "id": "euraxess-erc-postdoc-2027",
@@ -418,7 +418,7 @@
       "is_popular": 1,
       "slug": "european-research-council-erc-postdoctoral-fellowships",
       "created_at": "2026-08-07T15:50:48.285Z",
-      "updated_at": "2026-08-18T09:10:59.740Z"
+      "updated_at": "2026-08-18T10:47:02.032Z"
     },
     {
       "id": "un-ypp-global-2027",
@@ -449,7 +449,7 @@
       "is_popular": 1,
       "slug": "united-nations-young-professionals-programme-un-ypp",
       "created_at": "2026-08-07T15:50:48.287Z",
-      "updated_at": "2026-08-18T09:10:59.745Z"
+      "updated_at": "2026-08-18T10:47:02.036Z"
     },
     {
       "id": "un-internship-programme-2027",
@@ -480,7 +480,7 @@
       "is_popular": 1,
       "slug": "united-nations-headquarters-internship-programme",
       "created_at": "2026-08-07T15:50:48.288Z",
-      "updated_at": "2026-08-18T09:10:59.747Z"
+      "updated_at": "2026-08-18T10:47:02.039Z"
     },
     {
       "id": "opdesk-1759983515",
@@ -1286,7 +1286,7 @@
       "verification_status": "official_verified",
       "slug": "chevening-uk-government-masters-scholarships-2027",
       "created_at": "2026-08-07T17:26:49.957Z",
-      "updated_at": "2026-08-18T09:10:59.687Z"
+      "updated_at": "2026-08-18T10:47:01.983Z"
     },
     {
       "id": "erasmus-mundus-2027",
@@ -1317,7 +1317,7 @@
       "verification_status": "official_verified",
       "slug": "erasmus-mundus-joint-master-degrees-emjm",
       "created_at": "2026-08-07T17:26:49.958Z",
-      "updated_at": "2026-08-18T09:10:59.689Z"
+      "updated_at": "2026-08-18T10:47:01.985Z"
     },
     {
       "id": "fulbright-foreign-student-2027",
@@ -1348,7 +1348,7 @@
       "verification_status": "official_verified",
       "slug": "fulbright-foreign-student-program-usa",
       "created_at": "2026-08-07T17:26:49.959Z",
-      "updated_at": "2026-08-18T09:10:59.691Z"
+      "updated_at": "2026-08-18T10:47:01.987Z"
     },
     {
       "id": "mext-japan-gov-2027",
@@ -1379,7 +1379,7 @@
       "verification_status": "official_verified",
       "slug": "mext-japan-ministry-of-education-government-scholarships",
       "created_at": "2026-08-07T17:26:49.960Z",
-      "updated_at": "2026-08-18T09:10:59.693Z",
+      "updated_at": "2026-08-18T10:47:01.989Z",
       "last_verified_at": "2026-08-07T17:28:17.385Z"
     },
     {
@@ -1411,7 +1411,7 @@
       "verification_status": "official_verified",
       "slug": "campus-france-eiffel-excellence-scholarship-programme",
       "created_at": "2026-08-07T17:26:49.961Z",
-      "updated_at": "2026-08-18T09:10:59.696Z"
+      "updated_at": "2026-08-18T10:47:01.991Z"
     },
     {
       "id": "turkiye-burslari-2027",
@@ -1442,7 +1442,7 @@
       "verification_status": "official_verified",
       "slug": "trkiye-burslar-full-government-scholarship-program",
       "created_at": "2026-08-07T17:26:49.962Z",
-      "updated_at": "2026-08-18T09:10:59.699Z"
+      "updated_at": "2026-08-18T10:47:01.993Z"
     },
     {
       "id": "korea-gks-2027",
@@ -1473,7 +1473,7 @@
       "verification_status": "official_verified",
       "slug": "global-korea-scholarship-gks-kgsp-2027",
       "created_at": "2026-08-07T17:26:49.963Z",
-      "updated_at": "2026-08-18T09:10:59.702Z"
+      "updated_at": "2026-08-18T10:47:01.995Z"
     },
     {
       "id": "singapore-singa-2027",
@@ -1504,7 +1504,7 @@
       "verification_status": "official_verified",
       "slug": "singapore-international-graduate-award-singa-phd",
       "created_at": "2026-08-07T17:26:49.964Z",
-      "updated_at": "2026-08-18T09:10:59.704Z"
+      "updated_at": "2026-08-18T10:47:01.998Z"
     },
     {
       "id": "wb-ypp-2027",
@@ -1535,7 +1535,7 @@
       "verification_status": "official_verified",
       "slug": "world-bank-group-young-professionals-program-wbg-ypp",
       "created_at": "2026-08-07T17:26:49.966Z",
-      "updated_at": "2026-08-18T09:10:59.709Z"
+      "updated_at": "2026-08-18T10:47:02.003Z"
     },
     {
       "id": "unesco-traineeship-2027",
@@ -1566,7 +1566,7 @@
       "verification_status": "official_verified",
       "slug": "unesco-paris-headquarters-traineeships-fellowships",
       "created_at": "2026-08-07T17:26:49.968Z",
-      "updated_at": "2026-08-18T09:10:59.711Z"
+      "updated_at": "2026-08-18T10:47:02.004Z"
     },
     {
       "id": "undp-fellowships-2027",
@@ -1597,7 +1597,7 @@
       "verification_status": "official_verified",
       "slug": "undp-global-innovation-policy-fellowships",
       "created_at": "2026-08-07T17:26:49.969Z",
-      "updated_at": "2026-08-18T09:10:59.713Z"
+      "updated_at": "2026-08-18T10:47:02.007Z"
     },
     {
       "id": "oxford-clarendon-2027",
@@ -1628,7 +1628,7 @@
       "verification_status": "official_verified",
       "slug": "oxford-university-clarendon-fund-scholarships",
       "created_at": "2026-08-07T17:26:49.971Z",
-      "updated_at": "2026-08-18T09:10:59.718Z"
+      "updated_at": "2026-08-18T10:47:02.012Z"
     },
     {
       "id": "cambridge-gates-2027",
@@ -1659,7 +1659,7 @@
       "verification_status": "official_verified",
       "slug": "gates-cambridge-scholarships-bill-melinda-gates-foundation",
       "created_at": "2026-08-07T17:26:49.972Z",
-      "updated_at": "2026-08-18T09:10:59.720Z"
+      "updated_at": "2026-08-18T10:47:02.014Z"
     },
     {
       "id": "stanford-knight-hennessy-2027",
@@ -1690,7 +1690,7 @@
       "verification_status": "official_verified",
       "slug": "stanford-knight-hennessy-scholars-program-2027",
       "created_at": "2026-08-07T17:26:49.973Z",
-      "updated_at": "2026-08-18T09:10:59.723Z"
+      "updated_at": "2026-08-18T10:47:02.016Z"
     },
     {
       "id": "eth-zurich-esop-2027",
@@ -1721,7 +1721,7 @@
       "verification_status": "official_verified",
       "slug": "eth-zurich-excellence-scholarship-opportunity-programme-esop",
       "created_at": "2026-08-07T17:26:49.974Z",
-      "updated_at": "2026-08-18T09:10:59.725Z"
+      "updated_at": "2026-08-18T10:47:02.018Z"
     },
     {
       "id": "opcircle-2042496806",
@@ -1784,7 +1784,7 @@
       "verification_status": "official_verified",
       "slug": "ogilvy-global-brand-strategy-advertising-fellowship-2027",
       "created_at": "2026-08-17T15:26:48.028Z",
-      "updated_at": "2026-08-18T09:10:59.660Z"
+      "updated_at": "2026-08-18T10:47:01.955Z"
     },
     {
       "id": "linkedin-google-brand-2027",
@@ -1816,7 +1816,7 @@
       "verification_status": "official_verified",
       "slug": "google-global-creative-brand-marketing-internship",
       "created_at": "2026-08-17T15:26:48.032Z",
-      "updated_at": "2026-08-18T09:10:59.664Z"
+      "updated_at": "2026-08-18T10:47:01.958Z"
     },
     {
       "id": "linkedin-loreal-brandstorm-2027",
@@ -1848,7 +1848,7 @@
       "verification_status": "official_verified",
       "slug": "loral-global-brand-management-creative-strategy-trainee",
       "created_at": "2026-08-17T15:26:48.034Z",
-      "updated_at": "2026-08-18T09:10:59.666Z"
+      "updated_at": "2026-08-18T10:47:01.961Z"
     },
     {
       "id": "linkedin-publicis-media-2027",
@@ -1880,7 +1880,7 @@
       "verification_status": "official_verified",
       "slug": "publicis-groupe-nextgen-media-advertising-residency",
       "created_at": "2026-08-17T15:26:48.036Z",
-      "updated_at": "2026-08-18T09:10:59.668Z"
+      "updated_at": "2026-08-18T10:47:01.963Z"
     },
     {
       "id": "linkedin-spotify-content-2027",
@@ -1912,7 +1912,7 @@
       "verification_status": "official_verified",
       "slug": "spotify-global-brand-strategy-creator-marketing-intern",
       "created_at": "2026-08-17T15:26:48.038Z",
-      "updated_at": "2026-08-18T09:10:59.670Z"
+      "updated_at": "2026-08-18T10:47:01.965Z"
     },
     {
       "id": "opdesk-522217590",
@@ -1943,7 +1943,7 @@
       "is_popular": 1,
       "slug": "creative-catalyst-fellowship-2027-up-to-30000",
       "created_at": "2026-08-17T15:26:49.488Z",
-      "updated_at": "2026-08-18T09:11:01.289Z"
+      "updated_at": "2026-08-18T10:47:06.999Z"
     },
     {
       "id": "opdesk-1857794468",
@@ -1974,7 +1974,7 @@
       "is_popular": 1,
       "slug": "ideation-hub-africa-iha-african-masterclass-series-60",
       "created_at": "2026-08-17T15:26:49.491Z",
-      "updated_at": "2026-08-18T09:11:01.290Z"
+      "updated_at": "2026-08-18T10:47:07.001Z"
     },
     {
       "id": "opdesk-434026117",
@@ -2005,7 +2005,7 @@
       "is_popular": 1,
       "slug": "matthew-cohan-criminal-justice-public-service-scholarship-2026",
       "created_at": "2026-08-17T15:26:49.492Z",
-      "updated_at": "2026-08-18T09:11:01.292Z"
+      "updated_at": "2026-08-18T10:47:07.004Z"
     },
     {
       "id": "opdesk-1446540900",
@@ -2036,7 +2036,7 @@
       "is_popular": 1,
       "slug": "jesus-college-cambridge-science-research-fellowship-2026-paid",
       "created_at": "2026-08-17T15:26:49.493Z",
-      "updated_at": "2026-08-18T09:11:01.295Z"
+      "updated_at": "2026-08-18T10:35:33.149Z"
     },
     {
       "id": "opdesk-878260164",
@@ -2253,7 +2253,7 @@
       "is_popular": 1,
       "slug": "imperial-college-mba-scholarships-in-the-uk-2027",
       "created_at": "2026-08-17T15:26:50.835Z",
-      "updated_at": "2026-08-18T09:11:02.841Z"
+      "updated_at": "2026-08-18T10:47:08.044Z"
     },
     {
       "id": "opcircle-1057362139",
@@ -2284,7 +2284,7 @@
       "is_popular": 1,
       "slug": "searca-photo-contest-2026",
       "created_at": "2026-08-17T15:26:50.837Z",
-      "updated_at": "2026-08-18T09:11:02.844Z"
+      "updated_at": "2026-08-18T10:47:08.046Z"
     },
     {
       "id": "opcircle-868457155",
@@ -2315,7 +2315,7 @@
       "is_popular": 1,
       "slug": "mcgraw-fellowship-for-business-journalism-2026-in-usa-funding-of-15000",
       "created_at": "2026-08-17T15:26:50.839Z",
-      "updated_at": "2026-08-18T09:11:02.847Z"
+      "updated_at": "2026-08-18T10:47:08.049Z"
     },
     {
       "id": "opcircle-1810307529",
@@ -2346,7 +2346,7 @@
       "is_popular": 1,
       "slug": "kaist-university-scholarship-2027-in-south-korea-fully-funded",
       "created_at": "2026-08-17T15:26:50.841Z",
-      "updated_at": "2026-08-18T09:11:02.849Z"
+      "updated_at": "2026-08-18T10:47:08.051Z"
     },
     {
       "id": "opcircle-79323666",
@@ -2377,7 +2377,7 @@
       "is_popular": 1,
       "slug": "cern-doctoral-student-program-2027-in-switzerland-fully-funded",
       "created_at": "2026-08-17T15:26:50.843Z",
-      "updated_at": "2026-08-18T09:11:02.851Z"
+      "updated_at": "2026-08-18T10:47:08.053Z"
     },
     {
       "id": "opcircle-1242149658",
@@ -2408,7 +2408,7 @@
       "is_popular": 1,
       "slug": "jan-michalski-switzerland-residency-program-2027",
       "created_at": "2026-08-17T15:26:50.845Z",
-      "updated_at": "2026-08-18T09:11:02.852Z"
+      "updated_at": "2026-08-18T10:47:08.055Z"
     },
     {
       "id": "opcircle-347879014",
@@ -2439,7 +2439,7 @@
       "is_popular": 1,
       "slug": "bond-university-leadership-scholarships-2026-in-australia",
       "created_at": "2026-08-17T15:26:50.847Z",
-      "updated_at": "2026-08-18T09:11:02.853Z"
+      "updated_at": "2026-08-18T10:47:08.057Z"
     },
     {
       "id": "opcircle-1435272568",
@@ -2470,7 +2470,7 @@
       "is_popular": 1,
       "slug": "university-of-michigan-online-courses",
       "created_at": "2026-08-17T15:26:50.849Z",
-      "updated_at": "2026-08-18T09:11:02.856Z"
+      "updated_at": "2026-08-18T10:47:08.059Z"
     },
     {
       "id": "opcircle-1728626736",
@@ -2563,7 +2563,7 @@
       "is_popular": 1,
       "slug": "eth-pioneer-fellowship-2026-in-switzerland-pioneer-fellowship-program",
       "created_at": "2026-08-17T17:12:40.369Z",
-      "updated_at": "2026-08-18T09:11:02.837Z"
+      "updated_at": "2026-08-18T10:47:08.041Z"
     },
     {
       "id": "linkedin-goldman-sachs-analyst-2027",
@@ -2595,7 +2595,7 @@
       "verification_status": "official_verified",
       "slug": "goldman-sachs-global-investment-banking-markets-summer-analyst",
       "created_at": "2026-08-17T19:04:10.184Z",
-      "updated_at": "2026-08-18T09:10:59.672Z"
+      "updated_at": "2026-08-18T10:47:01.967Z"
     },
     {
       "id": "linkedin-jpmorgan-wealth-2027",
@@ -2627,7 +2627,7 @@
       "verification_status": "official_verified",
       "slug": "jp-morgan-global-finance-asset-management-summer-analyst",
       "created_at": "2026-08-17T19:04:10.186Z",
-      "updated_at": "2026-08-18T09:10:59.674Z"
+      "updated_at": "2026-08-18T10:47:01.970Z"
     },
     {
       "id": "linkedin-morgan-stanley-equity-2027",
@@ -2659,7 +2659,7 @@
       "verification_status": "official_verified",
       "slug": "morgan-stanley-global-capital-markets-equity-research-trainee",
       "created_at": "2026-08-17T19:04:10.188Z",
-      "updated_at": "2026-08-18T09:10:59.677Z"
+      "updated_at": "2026-08-18T10:47:01.972Z"
     },
     {
       "id": "linkedin-worldbank-finance-2027",
@@ -2691,7 +2691,7 @@
       "verification_status": "official_verified",
       "slug": "world-bank-group-international-finance-economic-development-fellowship",
       "created_at": "2026-08-17T19:04:10.191Z",
-      "updated_at": "2026-08-18T09:10:59.679Z"
+      "updated_at": "2026-08-18T10:47:01.974Z"
     },
     {
       "id": "linkedin-blackrock-fintech-2027",
@@ -2723,7 +2723,7 @@
       "verification_status": "official_verified",
       "slug": "blackrock-global-asset-management-quantitative-fintech-intern",
       "created_at": "2026-08-17T19:04:10.193Z",
-      "updated_at": "2026-08-18T09:10:59.681Z"
+      "updated_at": "2026-08-18T10:47:01.976Z"
     },
     {
       "id": "gemini-grab-malaysia-marketing-2027",
@@ -2777,7 +2777,7 @@
       "is_popular": 1,
       "slug": "european-heritage-awards-2027-win-up-to-10000",
       "created_at": "2026-08-18T07:41:11.910Z",
-      "updated_at": "2026-08-18T09:11:02.835Z"
+      "updated_at": "2026-08-18T10:47:08.037Z"
     },
     {
       "id": "opdesk-751907453",
@@ -2808,7 +2808,7 @@
       "is_popular": 1,
       "slug": "un-fao-young-professionals-programme-ypp-2026",
       "created_at": "2026-08-18T08:50:22.635Z",
-      "updated_at": "2026-08-18T09:11:01.282Z"
+      "updated_at": "2026-08-18T10:47:06.992Z"
     },
     {
       "id": "opdesk-890804690",
@@ -2839,7 +2839,7 @@
       "is_popular": 1,
       "slug": "standard-chartered-digital-bootcamp-2026",
       "created_at": "2026-08-18T08:50:22.638Z",
-      "updated_at": "2026-08-18T09:11:01.284Z"
+      "updated_at": "2026-08-18T10:47:06.995Z"
     },
     {
       "id": "opdesk-772348422",
@@ -2870,7 +2870,131 @@
       "is_popular": 1,
       "slug": "award-leadership-program-for-emerging-african-women-in-science-2026",
       "created_at": "2026-08-18T08:50:22.639Z",
-      "updated_at": "2026-08-18T09:11:01.286Z"
+      "updated_at": "2026-08-18T10:47:06.997Z"
+    },
+    {
+      "id": "opdesk-1966810570",
+      "title": "Catalyst Now Learning Initiatives Fellowship 2026 (stipend available)",
+      "organization": "Opportunity Desk Global Network",
+      "location_country": "Global / Multi-Destination",
+      "location_city": "Host University",
+      "is_remote": 0,
+      "type": "fellowship",
+      "funding_level": "paid_salary",
+      "stipend_text": "Stipend / Allowance Covered",
+      "tuition_covered": 0,
+      "travel_covered": 0,
+      "housing_covered": 0,
+      "degree_level": "undergrad",
+      "field_of_study": "social",
+      "deadline_utc": "2026-11-16",
+      "deadline_raw": "See Official Portal",
+      "official_apply_url": "https://opportunitydesk.org/2026/08/18/catalyst-now-learning-initiatives-fellowship-2026/",
+      "official_program_url": "https://opportunitydesk.org/2026/08/18/catalyst-now-learning-initiatives-fellowship-2026/",
+      "source_url": "https://opportunitydesk.org/feed/",
+      "description": "Deadline: August 31, 2026 Applications are open for the Catalyst Now Learning Initiatives Fellowship 2026. The Learning Initiatives Fellow supports the planning, coordination, delivery, and follow-up of Catalyst Now’s systems learning initiatives, particularly the Learning Series and Fundraising Mas...",
+      "benefits_summary": "Full financial sponsorship, monthly allowance, and international exposure.",
+      "eligibility_summary": "Open to international candidates. Refer to official portal for exact details.",
+      "trust_score": 85,
+      "quality_score": 85,
+      "verification_status": "trusted_source",
+      "is_popular": 1,
+      "slug": "catalyst-now-learning-initiatives-fellowship-2026-stipend-available",
+      "created_at": "2026-08-18T10:19:15.649Z",
+      "updated_at": "2026-08-18T10:47:06.985Z"
+    },
+    {
+      "id": "opdesk-1726944610",
+      "title": "European Union Youth Sounding Board (YSB) – Kenya 2026",
+      "organization": "Opportunity Desk Global Network",
+      "location_country": "Global / Multi-Destination",
+      "location_city": "Host University",
+      "is_remote": 0,
+      "type": "scholarship",
+      "funding_level": "funded",
+      "stipend_text": "Stipend / Allowance Covered",
+      "tuition_covered": 0,
+      "travel_covered": 0,
+      "housing_covered": 0,
+      "degree_level": "undergrad",
+      "field_of_study": "social",
+      "deadline_utc": "2026-11-16",
+      "deadline_raw": "See Official Portal",
+      "official_apply_url": "https://opportunitydesk.org/2026/08/18/european-union-youth-sounding-board-kenya-2026/",
+      "official_program_url": "https://opportunitydesk.org/2026/08/18/european-union-youth-sounding-board-kenya-2026/",
+      "source_url": "https://opportunitydesk.org/feed/",
+      "description": "Deadline: August 31, 2026 Are you passionate about shaping policies and strengthening the voice of young people in Kenya? Do you have experience working with youth groups, civil society organizations, networks, or community initiatives? This is your opportunity to make a meaningful contribution to t...",
+      "benefits_summary": "Full financial sponsorship, monthly allowance, and international exposure.",
+      "eligibility_summary": "Open to international candidates. Refer to official portal for exact details.",
+      "trust_score": 85,
+      "quality_score": 85,
+      "verification_status": "trusted_source",
+      "is_popular": 1,
+      "slug": "european-union-youth-sounding-board-ysb-kenya-2026",
+      "created_at": "2026-08-18T10:19:15.652Z",
+      "updated_at": "2026-08-18T10:47:06.988Z"
+    },
+    {
+      "id": "opdesk-526984705",
+      "title": "CRCA Emerging Conflict Analysts Fellowship 2026",
+      "organization": "Opportunity Desk Global Network",
+      "location_country": "Global / Multi-Destination",
+      "location_city": "Host University",
+      "is_remote": 0,
+      "type": "fellowship",
+      "funding_level": "funded",
+      "stipend_text": "Stipend / Allowance Covered",
+      "tuition_covered": 0,
+      "travel_covered": 0,
+      "housing_covered": 0,
+      "degree_level": "undergrad",
+      "field_of_study": "social",
+      "deadline_utc": "2026-11-16",
+      "deadline_raw": "See Official Portal",
+      "official_apply_url": "https://opportunitydesk.org/2026/08/18/crca-emerging-conflict-analysts-fellowship-2026/",
+      "official_program_url": "https://opportunitydesk.org/2026/08/18/crca-emerging-conflict-analysts-fellowship-2026/",
+      "source_url": "https://opportunitydesk.org/feed/",
+      "description": "Deadline: August 31, 2026 Applications are open for the CRCA Emerging Conflict Analysts Fellowship 2026. The Conflict Research Consulting &#38; Advocacy (CRCA) Emerging Conflict Analysts Fellowship is a 12-week professional development programme designed to equip emerging analysts with the knowledge...",
+      "benefits_summary": "Full financial sponsorship, monthly allowance, and international exposure.",
+      "eligibility_summary": "Open to international candidates. Refer to official portal for exact details.",
+      "trust_score": 85,
+      "quality_score": 85,
+      "verification_status": "trusted_source",
+      "is_popular": 1,
+      "slug": "crca-emerging-conflict-analysts-fellowship-2026",
+      "created_at": "2026-08-18T10:19:15.655Z",
+      "updated_at": "2026-08-18T10:47:06.990Z"
+    },
+    {
+      "id": "opdesk-1105087958",
+      "title": "Green Earth Action Foundation (GEAF) Ambassador Programme 2027",
+      "organization": "Opportunity Desk Global Network",
+      "location_country": "Global / Multi-Destination",
+      "location_city": "Host University",
+      "is_remote": 0,
+      "type": "scholarship",
+      "funding_level": "funded",
+      "stipend_text": "Stipend / Allowance Covered",
+      "tuition_covered": 0,
+      "travel_covered": 0,
+      "housing_covered": 0,
+      "degree_level": "undergrad",
+      "field_of_study": "business",
+      "deadline_utc": "2026-11-16",
+      "deadline_raw": "See Official Portal",
+      "official_apply_url": "https://opportunitydesk.org/2026/08/18/geaf-ambassador-programme-2027/",
+      "official_program_url": "https://opportunitydesk.org/2026/08/18/geaf-ambassador-programme-2027/",
+      "source_url": "https://opportunitydesk.org/feed/",
+      "description": "Deadline: On Rolling Basis Applications are open for the GEAF Ambassador Programme 2027. The GEAF Ambassador Programme by the Green Earth Action Foundation is a 6-month global initiative for individuals committed to taking action on environmental and climate challenges within their communities. Thro...",
+      "benefits_summary": "Full financial sponsorship, monthly allowance, and international exposure.",
+      "eligibility_summary": "Open to international candidates. Refer to official portal for exact details.",
+      "trust_score": 85,
+      "quality_score": 85,
+      "verification_status": "trusted_source",
+      "is_popular": 1,
+      "slug": "green-earth-action-foundation-geaf-ambassador-programme-2027",
+      "created_at": "2026-08-18T10:47:06.982Z",
+      "updated_at": "2026-08-18T10:47:06.982Z"
     }
   ],
   "raw_documents": [],

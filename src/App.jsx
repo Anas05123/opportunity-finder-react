@@ -22,6 +22,7 @@ import UserProfileModal from './components/UserProfileModal.jsx';
 import CvStudio from './components/CvStudio.jsx';
 import InterviewCoach from './components/InterviewCoach.jsx';
 import AiCareerCopilot from './components/AiCareerCopilot.jsx';
+import EvidenceInspectorModal from './components/EvidenceInspectorModal.jsx';
 
 const API_BASE_URL = 'http://localhost:5000/api/v1';
 
@@ -33,6 +34,9 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('explore'); // explore, cv_studio, interview, tracker, calendar, admin
   const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'list'
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [inspectingEvidenceOp, setInspectingEvidenceOp] = useState(null);
+  const [searchFunnelMetrics, setSearchFunnelMetrics] = useState(null);
+  const [searchRelaxationOptions, setSearchRelaxationOptions] = useState([]);
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -206,34 +210,61 @@ export default function App() {
     await executeFinalSearch(pendingQuery, searchProfileContext);
   };
 
-  // 4. Execute Multi-Source Search & Verification Pipeline
+  // 4. Execute Multi-Source Search & Verification Pipeline (V3 Endpoint)
   const executeFinalSearch = async (query, searchProfile) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/search/execute`, {
+      const res = await fetch(`http://localhost:5000/api/v3/search/execute`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           query,
           searchProfile,
-          userProfile
+          user_profile: userProfile
         })
       });
 
       if (res.ok) {
         const data = await res.json();
-        const found = data.opportunities || [];
+        const found = data.results || data.opportunities || [];
         setOpportunities(found);
+        setSearchFunnelMetrics(data.funnel_metrics || null);
+        setSearchRelaxationOptions(data.relaxation_options || []);
         setCurrentPage(1);
-        setSearchSummaryBadge(`✨ Verified & Ranked ${found.length} matches for "${query}"`);
-        triggerToast(`🎉 Found and verified ${found.length} matching opportunities!`);
+
+        if (found.length > 0) {
+          setSearchSummaryBadge(`✨ Verified & Ranked ${found.length} matches for "${query}"`);
+          triggerToast(`🎉 Found and verified ${found.length} authentic opportunities!`);
+        } else {
+          setSearchSummaryBadge(`⚠️ 0 verified opportunities passed constraints for "${query}"`);
+          triggerToast(`0 opportunities matched strict constraints. See relaxation options below.`);
+        }
       }
     } catch (err) {
+      console.warn('V3 Search execution note:', err.message);
       fetchOpportunities(query);
     } finally {
       setTimeout(() => {
         setIsSearchingPipeline(false);
-      }, 2400);
+      }, 1500);
     }
+  };
+
+  // 5. Handle User-Requested Constraint Relaxation
+  const handleRelaxConstraint = (option) => {
+    if (!option) return;
+    let newQuery = pendingQuery || 'internship';
+    if (option.type === 'location') {
+      newQuery = newQuery.replace(/only|strictly/gi, '').trim() + ' Malaysia Klang Valley';
+    } else if (option.type === 'compensation') {
+      newQuery = newQuery.replace(/paid/gi, '').trim();
+    } else if (option.type === 'work_mode') {
+      newQuery = newQuery + ' Remote';
+    } else if (option.type === 'opportunity_type') {
+      newQuery = newQuery.replace(/internship/gi, '').trim() + ' fellowship or graduate program';
+    }
+    setPendingQuery(newQuery);
+    setIsSearchingPipeline(true);
+    executeFinalSearch(newQuery, null);
   };
 
   // Application CRM State Management
@@ -296,7 +327,6 @@ export default function App() {
 
   return (
     <div className="min-h-screen app-container">
-      
       {/* 1. TOP NAVIGATION BAR */}
       <nav className={`prodexa-navbar ${isScrolled ? 'scrolled' : ''}`}>
         <div className="navbar-inner">
@@ -389,12 +419,12 @@ export default function App() {
               <div className="nav-avatar-circle">
                 {userProfile.name ? userProfile.name[0].toUpperCase() : 'A'}
               </div>
-              <span style={{ fontWeight: '700' }}>{userProfile.name?.split(' ')[0] || 'Anas'}</span>
+              <span className="nav-user-text" style={{ fontWeight: '700' }}>{userProfile.name?.split(' ')[0] || 'Anas'}</span>
               <span className="nav-degree-tag">BA</span>
             </button>
 
             <button className="mobile-menu-trigger" onClick={() => setMobileMenuOpen(true)} aria-label="Open navigation menu" aria-expanded={mobileMenuOpen}>
-              <Menu size={20} />
+              <Menu size={18} />
             </button>
           </div>
 
@@ -404,14 +434,38 @@ export default function App() {
       {/* MOBILE NAVIGATION DRAWER */}
       {mobileMenuOpen && (
         <>
-          <div className="mobile-nav-overlay" onClick={() => setMobileMenuOpen(false)} />
+          <div className="mobile-nav-overlay" onClick={() => setMobileMenuOpen(false)} role="presentation" />
           <div className="mobile-nav-panel" role="dialog" aria-modal="true" aria-label="Navigation menu">
+            
             <div className="mobile-nav-header">
-              <span style={{ fontWeight: '900', fontSize: '1rem', color: 'var(--text-primary)' }}>Navigation</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <div className="nav-logo-box" style={{ width: '28px', height: '28px', borderRadius: '7px' }}>
+                  <Compass size={16} color="#ffffff" />
+                </div>
+                <span style={{ fontWeight: '900', fontSize: '0.95rem', color: 'var(--text-primary)' }}>OPPORTUNITY</span>
+              </div>
               <button className="icon-button" onClick={() => setMobileMenuOpen(false)} aria-label="Close navigation">
                 <X size={16} />
               </button>
             </div>
+
+            {/* Candidate Profile Card in Mobile Drawer */}
+            <div 
+              className="mobile-profile-card"
+              onClick={() => { setShowProfileModal(true); setMobileMenuOpen(false); }}
+              role="button"
+              tabIndex={0}
+              aria-label="Edit Profile"
+            >
+              <div className="nav-avatar-circle" style={{ width: '36px', height: '36px', fontSize: '0.9rem' }}>
+                {userProfile.name ? userProfile.name[0].toUpperCase() : 'A'}
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontWeight: '800', fontSize: '0.9rem', color: 'var(--text-primary)' }}>{userProfile.name}</div>
+                <div style={{ fontSize: '0.74rem', color: 'var(--text-secondary)' }}>{userProfile.degree_title} • GPA {userProfile.gpa}</div>
+              </div>
+            </div>
+
             <div className="mobile-nav-items">
               {[
                 { id: 'explore', icon: <Compass size={18} />, label: 'Discover & Match' },
@@ -431,18 +485,14 @@ export default function App() {
                 </button>
               ))}
             </div>
-            <div style={{ marginTop: 'auto', paddingTop: '1rem', borderTop: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+
+            <div style={{ marginTop: 'auto', paddingTop: '1rem', borderTop: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', fontWeight: '600' }}>Theme Mode</span>
               <button className="icon-button" onClick={toggleTheme} aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}>
-                {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
-              </button>
-              <button 
-                className="user-profile-badge" 
-                onClick={() => { setShowProfileModal(true); setMobileMenuOpen(false); }}
-              >
-                <User size={15} color="var(--accent-blue)" />
-                <span>{userProfile.name?.split(' ')[0] || 'Anas'} (BA)</span>
+                {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
               </button>
             </div>
+
           </div>
         </>
       )}
@@ -544,9 +594,13 @@ export default function App() {
               ) : viewMode === 'grid' ? (
                 <OpportunityGridView 
                   opportunities={paginatedOpportunities}
+                  funnelMetrics={searchFunnelMetrics}
+                  relaxationOptions={searchRelaxationOptions}
                   onSelectOp={(op) => setDrawerOp(op)}
                   onPrepareApplication={(op) => setPrepareAppOp(op)}
                   onToggleSave={toggleSaveApp}
+                  onInspectEvidence={(op) => setInspectingEvidenceOp(op)}
+                  onRelaxConstraint={handleRelaxConstraint}
                   savedIds={savedApps.map(a => a.id)}
                 />
               ) : (
@@ -735,6 +789,15 @@ export default function App() {
         />
       )}
 
+      {/* Evidence & Provenance Inspector Modal */}
+      {inspectingEvidenceOp && (
+        <EvidenceInspectorModal 
+          opportunity={inspectingEvidenceOp}
+          evidenceList={inspectingEvidenceOp.evidence_records}
+          onClose={() => setInspectingEvidenceOp(null)}
+        />
+      )}
+
       {/* Email Outreach Modal */}
       {emailOutreachOp && (
         <EmailOutreachModal 
@@ -781,6 +844,37 @@ export default function App() {
           <span>{toastMessage}</span>
         </div>
       )}
+
+      {/* UI-LAYOUTS SIGNATURE FLOATING NAVIGATION DOCK (MOBILE & TABLET) */}
+      <nav className="uilayouts-floating-dock" aria-label="Mobile Floating Navigation Dock">
+        <div className="floating-dock-inner">
+          {[
+            { id: 'explore', icon: <Compass size={18} />, label: 'Discover' },
+            { id: 'cv_studio', icon: <FileText size={18} />, label: 'CV Studio' },
+            { id: 'interview', icon: <Mic size={18} />, label: 'Coach' },
+            { id: 'tracker', icon: <CheckSquare size={18} />, label: 'CRM', count: savedApps.length },
+            { id: 'calendar', icon: <Calendar size={18} />, label: 'Deadlines' },
+            { id: 'admin', icon: <ShieldCheck size={18} />, label: 'Scrapers' }
+          ].map(item => (
+            <button
+              key={item.id}
+              className={`floating-dock-btn ${activeTab === item.id ? 'active' : ''}`}
+              onClick={() => {
+                setActiveTab(item.id);
+                if (feedTopRef.current) feedTopRef.current.scrollIntoView({ behavior: 'smooth' });
+              }}
+              aria-label={item.label}
+            >
+              <div className="dock-icon-wrapper">
+                {item.icon}
+                {item.count > 0 && <span className="dock-badge-dot" />}
+              </div>
+              <span className="dock-label-text">{item.label}</span>
+              {activeTab === item.id && <span className="dock-active-pill" />}
+            </button>
+          ))}
+        </div>
+      </nav>
 
     </div>
   );

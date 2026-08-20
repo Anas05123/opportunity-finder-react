@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: opportunity-finder
+    env: node
+    plan: free
+    buildCommand: npm run render-build
+    startCommand: npm run start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: SUPABASE_URL
+        value: https://ebpziaafxepevcwwbsdk.supabase.co
+      - key: SUPABASE_ANON_KEY
+        value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVicHppYWFmeGVwZXZjd3dic2RrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxMjE4NDgsImV4cCI6MjEwMjY5Nzg0OH0.34ExhtgSl-XlcCJuQgoZUCPYB9ghcQYY4LsjWFS8vGU
+      - key: SERPER_API_KEY
+        value: f9440cfc30d4481ba43be0a47104752933818d45
+      - key: SMTP_HOST
+        value: smtp.gmail.com
+      - key: SMTP_PORT
+        value: 465
+      - key: SMTP_USER
+        value: ayarianas79@gmail.com
+      - key: SMTP_PASS
+        value: nmaanvradoafeuqt

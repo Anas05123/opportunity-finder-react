@@ -1,28 +1,34 @@
 import nodemailer from 'nodemailer';
 
-// Configure SMTP with Gmail App Password
+const SMTP_USER = process.env.SMTP_USER || 'ayarianas79@gmail.com';
+const SMTP_PASS = process.env.SMTP_PASS || 'nmaanvradoafeuqt';
+const SMTP_HOST = process.env.SMTP_HOST || 'smtp.gmail.com';
+const SMTP_PORT = Number(process.env.SMTP_PORT) || 465;
+const SMTP_SECURE = process.env.SMTP_SECURE !== 'false';
+
+// Configure SMTP transporter
 export const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  host: 'smtp.gmail.com',
-  port: 465,
-  secure: true,
+  service: SMTP_HOST.includes('gmail') ? 'gmail' : undefined,
+  host: SMTP_HOST,
+  port: SMTP_PORT,
+  secure: SMTP_SECURE,
   auth: {
-    user: 'ayarianas79@gmail.com',
-    pass: 'nmaanvradoafeuqt'
+    user: SMTP_USER,
+    pass: SMTP_PASS
   }
 });
 
 export async function sendOutreachEmail({ to, subject, body, fromName = 'Anas' }) {
   try {
     const mailOptions = {
-      from: `"${fromName}" <ayarianas79@gmail.com>`,
+      from: `"${fromName}" <${SMTP_USER}>`,
       to: to,
-      replyTo: 'ayarianas79@gmail.com',
+      replyTo: SMTP_USER,
       subject: subject,
       text: body
     };
 
-    console.log(`[SMTP] Sending real email from ayarianas79@gmail.com to: ${to}...`);
+    console.log(`[SMTP] Sending real email from ${SMTP_USER} to: ${to}...`);
     const info = await transporter.sendMail(mailOptions);
     console.log(`[SMTP SUCCESS] Message delivered successfully! Message ID: ${info.messageId}`);
     return { success: true, messageId: info.messageId };
@@ -31,3 +37,5 @@ export async function sendOutreachEmail({ to, subject, body, fromName = 'Anas' }
     throw err;
   }
 }
+
+export default { transporter, sendOutreachEmail };

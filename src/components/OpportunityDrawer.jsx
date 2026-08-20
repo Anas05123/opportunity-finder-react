@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   X, Building2, MapPin, Coins, Clock, CheckCircle2, 
   ExternalLink, Bookmark, Zap, Mail, ShieldCheck, 
   Check, FileText, Globe, Sparkles
 } from 'lucide-react';
 import { resolveSafeJobUrl, resolveLinkedInSearchUrl, resolveGoogleJobsUrl } from '../utils/urlResolver.js';
+import FormattedMarkdown from '../utils/FormattedMarkdown.jsx';
 
 const API_BASE_URL = 'http://localhost:5000/api/v1';
 
@@ -105,6 +106,12 @@ export default function OpportunityDrawer({
           >
             Eligibility & Criteria
           </button>
+          <button 
+            className={`app-kit-tab-btn ${activeTab === 'evidence' ? 'active' : ''}`}
+            onClick={() => setActiveTab('evidence')}
+          >
+            Evidence & Audit
+          </button>
         </div>
 
         {/* Body Content */}
@@ -115,14 +122,11 @@ export default function OpportunityDrawer({
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               {/* Stipend Banner */}
               <div style={{ background: 'var(--accent-emerald-subtle)', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: 'var(--radius-xl)', padding: '1.15rem 1.35rem' }}>
-                <div style={{ fontSize: '0.74rem', color: 'var(--accent-emerald)', fontWeight: '800', textTransform: 'uppercase', marginBottom: '0.25rem' }}>
-                  Verified Compensation & Allowance
-                </div>
-                <div style={{ fontSize: '1.25rem', fontWeight: '900', color: 'var(--accent-emerald)' }}>
-                  {opportunity.stipend_text || 'Competitive Monthly Allowance + Benefits'}
+                <div style={{ fontSize: '1.25rem', fontWeight: '900', color: (opportunity.stipend_text || opportunity.stipend) ? 'var(--accent-emerald)' : 'var(--text-secondary)' }}>
+                  {opportunity.stipend_text || opportunity.stipend || 'Compensation not disclosed in listing'}
                 </div>
                 <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginTop: '0.35rem' }}>
-                  Application Deadline: <strong style={{ color: 'var(--text-primary)' }}>{opportunity.deadline_raw || opportunity.deadline_utc}</strong>
+                  Application Deadline: <strong style={{ color: 'var(--text-primary)' }}>{opportunity.deadline_raw || opportunity.deadline_utc || 'Open until filled'}</strong>
                 </div>
               </div>
 
@@ -131,9 +135,7 @@ export default function OpportunityDrawer({
                 <h4 className="type-h3" style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
                   Role Scope & Mission
                 </h4>
-                <p className="type-body" style={{ color: 'var(--text-primary)', lineHeight: '1.65' }}>
-                  {opportunity.description}
-                </p>
+                <FormattedMarkdown text={opportunity.description || opportunity.description_text || 'No additional description provided in the original listing.'} />
               </div>
 
               {/* Specs Grid */}
@@ -158,9 +160,7 @@ export default function OpportunityDrawer({
                   <h4 className="type-h3" style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.45rem' }}>
                     Key Highlights & Mentorship
                   </h4>
-                  <p className="type-body" style={{ color: 'var(--text-primary)', lineHeight: '1.6' }}>
-                    {opportunity.benefits_summary}
-                  </p>
+                  <FormattedMarkdown text={opportunity.benefits_summary} />
                 </div>
               )}
             </div>
@@ -173,15 +173,15 @@ export default function OpportunityDrawer({
                 <div style={{ fontSize: '0.82rem', fontWeight: '800', color: 'var(--accent-emerald)', marginBottom: '0.35rem' }}>
                   Funding & Allowance Breakdown
                 </div>
-                <div style={{ fontSize: '1.2rem', fontWeight: '900', color: 'var(--text-primary)', marginBottom: '1rem' }}>
-                  {opportunity.stipend_text || 'Competitive Allowance & Salary'}
+                <div style={{ fontSize: '1.2rem', fontWeight: '900', color: opportunity.stipend_text ? 'var(--text-primary)' : 'var(--text-secondary)', marginBottom: '1rem' }}>
+                  {opportunity.stipend_text || 'Compensation not disclosed in listing'}
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.88rem' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: '1px solid var(--border-subtle)' }}>
                     <span style={{ color: 'var(--text-muted)' }}>Salary / Stipend</span>
-                    <strong style={{ color: 'var(--accent-emerald)' }}>
-                      {opportunity.stipend_text || 'Competitive Monthly Allowance'}
+                    <strong style={{ color: opportunity.stipend_text ? 'var(--accent-emerald)' : 'var(--text-muted)' }}>
+                      {opportunity.stipend_text || 'Not disclosed'}
                     </strong>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: '1px solid var(--border-subtle)' }}>
@@ -215,6 +215,56 @@ export default function OpportunityDrawer({
             </div>
           )}
 
+          {/* TAB 4: EVIDENCE & AUDIT */}
+          {activeTab === 'evidence' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div style={{ background: 'var(--bg-surface-elevated)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-xl)', padding: '1.25rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                  <span style={{ fontSize: '0.78rem', fontWeight: '800', color: 'var(--accent-emerald)' }}>
+                    <ShieldCheck size={14} style={{ display: 'inline', marginRight: '0.25rem' }} /> Level {opportunity.source_authority_level || 1} Provenance
+                  </span>
+                  <span style={{ fontSize: '0.76rem', color: 'var(--text-muted)' }}>
+                    Verified: {new Date(opportunity.last_verified_at || Date.now()).toLocaleTimeString()}
+                  </span>
+                </div>
+                <div style={{ fontSize: '0.88rem', fontWeight: '700', color: 'var(--text-primary)' }}>
+                  Source: {opportunity.source_name || 'Official ATS Board'}
+                </div>
+                <div style={{ marginTop: '0.5rem' }}>
+                  <a
+                    href={opportunity.application_url || opportunity.source_url}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    className="btn btn-outline"
+                    style={{ height: '32px', fontSize: '0.78rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
+                  >
+                    Open Direct Application Form <ExternalLink size={12} />
+                  </a>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                {(opportunity.evidence_records && opportunity.evidence_records.length > 0) ? (
+                  opportunity.evidence_records.map((ev, idx) => (
+                    <div key={idx} style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-md)', padding: '0.85rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.76rem', fontWeight: '800', color: 'var(--primary)', textTransform: 'uppercase', marginBottom: '0.25rem' }}>
+                        <span>{ev.field_name}</span>
+                        <span style={{ color: 'var(--text-muted)' }}>{ev.extraction_method}</span>
+                      </div>
+                      <div style={{ fontSize: '0.82rem', fontFamily: 'monospace', color: 'var(--text-primary)' }}>
+                        {ev.evidence_text}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div style={{ padding: '1rem', background: 'var(--bg-surface)', borderRadius: 'var(--radius-md)', textAlign: 'center', fontSize: '0.84rem', color: 'var(--text-secondary)' }}>
+                    No field-level evidence records extracted from source.
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
         </div>
 
         {/* Footer Actions */}
@@ -235,12 +285,15 @@ export default function OpportunityDrawer({
             </button>
           </div>
 
-          <button 
+          <a 
+            href={opportunity.application_url || opportunity.source_url}
+            target="_blank"
+            rel="noreferrer noopener"
             className="btn btn-emerald"
-            onClick={() => onAutoApply(opportunity)}
+            style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
           >
-            <Zap size={14} /> Prepare Application Kit
-          </button>
+            <Zap size={14} /> {opportunity.application_url_type === 'EXACT_JOB_APPLICATION' ? 'Apply on Official Portal' : (opportunity.application_url_type === 'OFFICIAL_CAREER_PAGE' ? 'Visit Careers Portal' : 'View Official Source')} <ExternalLink size={13} />
+          </a>
         </div>
 
       </div>

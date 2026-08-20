@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Mic, Sparkles, CheckCircle2, RefreshCw, Award, 
-  Clock, ArrowRight, Building2, ChevronRight, Play, Check
+  Clock, ArrowRight, Building2, ChevronRight, Play, Check, Zap, Copy
 } from 'lucide-react';
+import FormattedMarkdown from '../utils/FormattedMarkdown.jsx';
 
 const API_BASE_URL = 'http://localhost:5000/api/v1';
 
@@ -268,6 +269,18 @@ export default function InterviewCoach({ userProfile, triggerToast }) {
                         <span>{imp}</span>
                       </div>
                     ))}
+                  </div>
+                </div>
+              )}
+
+              {/* STAR Model Answer */}
+              {feedback.star_model_answer && (
+                <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-xl)', padding: '1.25rem' }}>
+                  <h4 className="type-h3" style={{ fontSize: '0.9rem', color: 'var(--primary)', marginBottom: '0.65rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <Zap size={15} color="var(--primary)" /> Executive STAR Model Answer
+                  </h4>
+                  <div style={{ background: 'var(--bg-surface-elevated)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-md)', padding: '1rem' }}>
+                    <FormattedMarkdown text={feedback.star_model_answer} />
                   </div>
                 </div>
               )}

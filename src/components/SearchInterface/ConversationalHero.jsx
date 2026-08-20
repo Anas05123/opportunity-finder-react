@@ -1,20 +1,45 @@
-import React, { useState } from 'react';
-import { Sparkles, ArrowRight, Compass, Search, RefreshCw, Briefcase, GraduationCap, Award, Globe, Zap } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Sparkles, ArrowRight, Search, RefreshCw, Globe, Zap, X, CornerDownLeft } from 'lucide-react';
 
 const PROMPT_SUGGESTIONS = [
-  "I want a digital marketing internship in Malaysia starting in September.",
-  "Find entry-level advertising jobs in Kuala Lumpur paying at least RM2500.",
-  "Find me remote finance internships that accept international students.",
-  "Undergraduate scholarships in Malaysia with English waiver."
+  "I want a digital marketing specialist job anywhere",
+  "Find entry-level advertising jobs in Kuala Lumpur paying at least RM2500",
+  "Find me remote software engineering internships",
+  "Undergraduate scholarships with English waiver"
 ];
 
 export default function ConversationalHero({ onStartConversationalSearch, isSearching }) {
   const [queryInput, setQueryInput] = useState('');
+  const [placeholderIndex, setPlaceholderIndex] = useState(0);
+  const [isFocused, setIsFocused] = useState(false);
+  const inputRef = useRef(null);
+
+  // Smooth rotating placeholder suggestions
+  useEffect(() => {
+    if (queryInput || isFocused) return;
+    const interval = setInterval(() => {
+      setPlaceholderIndex((prev) => (prev + 1) % PROMPT_SUGGESTIONS.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [queryInput, isFocused]);
+
+  // Global Keyboard Shortcut: Press '/' or 'Ctrl+K' / 'Cmd+K' to focus search
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.key === '/' || ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k')) && document.activeElement !== inputRef.current) {
+        e.preventDefault();
+        inputRef.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!queryInput.trim()) return;
-    onStartConversationalSearch(queryInput.trim());
+    const targetQuery = queryInput.trim() || PROMPT_SUGGESTIONS[placeholderIndex];
+    if (!targetQuery) return;
+    onStartConversationalSearch(targetQuery);
   };
 
   const handleSelectSuggestion = (suggestion) => {
@@ -22,11 +47,16 @@ export default function ConversationalHero({ onStartConversationalSearch, isSear
     onStartConversationalSearch(suggestion);
   };
 
+  const handleClear = () => {
+    setQueryInput('');
+    inputRef.current?.focus();
+  };
+
   return (
     <section className="conversational-hero-section">
       <div className="hero-conversational-container">
         
-        {/* Subtle AI Pill */}
+        {/* AI Pill Badge */}
         <div className="hero-pill-badge">
           <Sparkles size={14} className="hero-sparkle-icon" />
           <span>AI-Powered Opportunity Discovery & Career Assistant</span>
@@ -34,31 +64,58 @@ export default function ConversationalHero({ onStartConversationalSearch, isSear
 
         {/* Vision Title */}
         <h1 className="conversational-title">
-          Find your next opportunity.<br />
-          <span className="conversational-title-sub">Tell us what you're looking for. We'll figure out the rest.</span>
+          <span>Find your next opportunity.</span><br />
+          <span className="conversational-title-sub">
+            Tell us what you're looking for. We'll figure out the rest.
+          </span>
         </h1>
 
         <p className="conversational-desc">
           Describe your dream role, location, or educational goals in plain language. The AI evaluates your intent, clarifies details, verifies live sources, and builds your application kit.
         </p>
 
-        {/* Large Natural Language Search Box */}
-        <form onSubmit={handleSubmit} className="conversational-input-box">
+        {/* Clean, High-Precision Search Box */}
+        <form onSubmit={handleSubmit} className={`conversational-input-box ${isFocused ? 'is-focused' : ''}`}>
           <div className="input-icon-wrapper">
             <Search size={20} className="input-search-icon" />
           </div>
+          
           <input 
+            ref={inputRef}
             type="text" 
             className="natural-language-input"
-            placeholder="e.g. I want a digital marketing internship in Malaysia starting in September..."
+            placeholder={`e.g. ${PROMPT_SUGGESTIONS[placeholderIndex]}...`}
             value={queryInput}
             onChange={(e) => setQueryInput(e.target.value)}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
             disabled={isSearching}
           />
+
+          {/* Quick Clear Button */}
+          {queryInput && (
+            <button
+              type="button"
+              onClick={handleClear}
+              className="search-clear-btn"
+              aria-label="Clear query"
+              title="Clear input"
+            >
+              <X size={14} />
+            </button>
+          )}
+
+          {/* Shortcut Hint Key */}
+          {!isFocused && !queryInput && (
+            <span className="search-shortcut-hint" onClick={() => inputRef.current?.focus()}>
+              <kbd>/</kbd>
+            </span>
+          )}
+
           <button 
             type="submit" 
             className="btn btn-search-action"
-            disabled={isSearching || !queryInput.trim()}
+            disabled={isSearching || (!queryInput.trim() && !PROMPT_SUGGESTIONS[placeholderIndex])}
           >
             {isSearching ? (
               <>
@@ -72,14 +129,14 @@ export default function ConversationalHero({ onStartConversationalSearch, isSear
           </button>
         </form>
 
-        {/* Natural Language Prompt Suggestions */}
+        {/* Clean Suggestion Chips */}
         <div className="prompt-suggestions-rail">
           <span className="suggestions-label">Try asking:</span>
           {PROMPT_SUGGESTIONS.map((sug, idx) => (
             <button 
               key={idx} 
               type="button" 
-              className="suggestion-chip"
+              className="suggestion-chip animated-chip-hover"
               onClick={() => handleSelectSuggestion(sug)}
             >
               "{sug}"
@@ -90,15 +147,21 @@ export default function ConversationalHero({ onStartConversationalSearch, isSear
         {/* Value Highlights */}
         <div className="value-highlights-grid">
           <div className="value-highlight-item">
-            <Sparkles size={16} color="var(--accent-blue)" />
+            <div className="icon-halo-wrapper halo-blue">
+              <Sparkles size={16} color="var(--accent-blue)" />
+            </div>
             <span>AI Intent Clarification & Precision Matching</span>
           </div>
           <div className="value-highlight-item">
-            <Zap size={16} color="var(--accent-emerald)" />
+            <div className="icon-halo-wrapper halo-emerald">
+              <Zap size={16} color="var(--accent-emerald)" />
+            </div>
             <span>Deterministic 8-Factor Mathematical Scoring</span>
           </div>
           <div className="value-highlight-item">
-            <Globe size={16} color="var(--accent-purple, #a855f7)" />
+            <div className="icon-halo-wrapper halo-purple">
+              <Globe size={16} color="var(--accent-purple, #a855f7)" />
+            </div>
             <span>Jobs · Internships · Scholarships · Fellowships</span>
           </div>
         </div>

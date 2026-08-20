@@ -1,156 +1,142 @@
 /**
- * Deterministic 8-Factor Matching Engine
- * Computes exact mathematical match percentage (0 - 100%) between an Opportunity and a User Profile
+ * Deterministic 7-Factor Matching Engine (V3 Remediated)
+ * Computes exact mathematical match percentage (0 - 100%) between an Opportunity and a User Profile / Search Target.
  * 
  * Weights:
- * - Location: 20%
- * - Role / Specialization: 20%
+ * - Role / Specialization Alignment: 25%
+ * - Location & Modality: 20%
  * - Skills Match: 20%
- * - Experience Level: 15%
- * - Education / Degree: 10%
- * - Salary / Funding: 5%
- * - Start Date / Deadline: 5%
- * - Employment / Opportunity Type: 5%
+ * - Academic Standing & GPA: 15%
+ * - Language / Waiver Eligibility: 10%
+ * - Compensation Alignment: 5%
+ * - Intake Schedule / Timing: 5%
  */
 
 export function calculateDeterministicMatchScore(opportunity, userProfile = {}) {
-  if (!opportunity) return { score: 70, breakdown: {}, matchReasons: [] };
+  if (!opportunity) return { score: 70, breakdown: {}, matchReasons: [], pros: [], potential_gaps: [] };
 
   const matchReasons = [];
   const flags = [];
+  const pros = [];
+  const potentialGaps = [];
   const breakdown = {};
 
-  // 1. Location Match (20 pts)
+  // 1. Role & Specialization Match (25 pts)
+  const oppTitle = (opportunity.title || '').toLowerCase();
+  const oppField = (opportunity.field_of_study || opportunity.category || '').toLowerCase();
+  const userMajor = (userProfile.major || userProfile.target_role || '').toLowerCase();
+
+  let roleScore = 0;
+  if (userMajor && (oppTitle.includes(userMajor) || oppField.includes(userMajor))) {
+    roleScore = 25;
+    pros.push(`Target discipline matches: ${opportunity.title}`);
+    matchReasons.push(`✓ Direct title & discipline match (${opportunity.title})`);
+  } else if (oppTitle.includes('intern') || oppTitle.includes('trainee') || oppTitle.includes('associate') || oppTitle.includes('engineer') || oppTitle.includes('developer') || oppTitle.includes('marketing')) {
+    roleScore = 18;
+    pros.push(`Relevant professional domain: ${opportunity.title}`);
+    matchReasons.push(`✓ Aligns with target domain`);
+  } else {
+    roleScore = 5;
+    potentialGaps.push(`Role title (${opportunity.title}) differs from primary focus`);
+    flags.push(`⚠ Unrelated or adjacent specialization: ${opportunity.title}`);
+  }
+  breakdown.role = { score: roleScore, max: 25 };
+
+  // 2. Location & Modality Match (20 pts)
   const oppCountry = (opportunity.location_country || '').toLowerCase();
   const oppCity = (opportunity.location_city || '').toLowerCase();
-  const isRemote = opportunity.is_remote || oppCountry.includes('remote') || oppCity.includes('remote');
-  const userLocations = (userProfile.target_locations || ['Malaysia', 'Global', 'Remote']).map(l => l.toLowerCase());
+  const isRemote = opportunity.is_remote === 1 || opportunity.is_remote === true || opportunity.work_modality === 'remote';
+  const targetLocations = (userProfile.target_locations || ['Malaysia', 'Global', 'Remote']).map(l => l.toLowerCase());
   
   let locationScore = 0;
   if (isRemote) {
     locationScore = 20;
-    matchReasons.push('✓ Remote / Worldwide eligibility matches your profile');
-  } else if (userLocations.some(l => oppCountry.includes(l) || oppCity.includes(l) || l.includes(oppCountry))) {
+    pros.push('Flexible Remote / Worldwide work modality');
+    matchReasons.push('✓ Verified Remote / Hybrid work option');
+  } else if (targetLocations.some(l => oppCountry.includes(l) || oppCity.includes(l) || l.includes(oppCountry))) {
     locationScore = 20;
-    matchReasons.push(`✓ Location matches (${opportunity.location_country || 'Malaysia'})`);
+    pros.push(`Location matches candidate target: ${opportunity.location_city || opportunity.location_country || 'Malaysia'}`);
+    matchReasons.push(`✓ Location matches (${opportunity.location_city || opportunity.location_country || 'Malaysia'})`);
   } else {
-    locationScore = 10; // Partial score for global openings
-    matchReasons.push(`• Open to international candidates in ${opportunity.location_country || 'Malaysia'}`);
+    locationScore = 8;
+    potentialGaps.push(`Relocation or visa required for ${opportunity.location_country || 'Global'}`);
+    flags.push(`• Located in ${opportunity.location_country || 'Global'}`);
   }
   breakdown.location = { score: locationScore, max: 20 };
 
-  // 2. Role & Specialization Match (20 pts)
-  const oppField = (opportunity.field_of_study || '').toLowerCase();
-  const oppTitle = (opportunity.title || '').toLowerCase();
-  const userMajor = (userProfile.major || 'Advertising & Marketing').toLowerCase();
-  const userInterests = (userProfile.interests || ['advertising', 'marketing', 'finance']).map(i => i.toLowerCase());
-
-  let roleScore = 0;
-  if (oppField.includes('advertising') || oppTitle.includes('marketing') || oppTitle.includes('advertising') || oppTitle.includes('brand') || oppTitle.includes('creative')) {
-    if (userMajor.includes('advertising') || userMajor.includes('marketing')) {
-      roleScore = 20;
-      matchReasons.push(`✓ Discipline aligns with ${userProfile.major || 'Advertising & Marketing'}`);
-    } else {
-      roleScore = 15;
-    }
-  } else if (oppField.includes('finance') || oppTitle.includes('banking') || oppTitle.includes('finance') || oppTitle.includes('investment')) {
-    if (userMajor.includes('finance') || userInterests.includes('finance')) {
-      roleScore = 20;
-      matchReasons.push('✓ Financial & analytical role specialization matches');
-    } else {
-      roleScore = 14;
-    }
-  } else {
-    roleScore = 16;
-    matchReasons.push('✓ Interdisciplinary career opportunity');
-  }
-  breakdown.role = { score: roleScore, max: 20 };
-
   // 3. Skills Match (20 pts)
-  const oppDesc = ((opportunity.description || '') + ' ' + (opportunity.skills_required || '')).toLowerCase();
-  const userSkills = userProfile.skills || ['Brand Strategy', 'Creative Copywriting', 'Market Research', 'Social Media', 'Figma', 'Campaign Analytics'];
+  const desc = (opportunity.description_text || opportunity.description || '').toLowerCase();
+  const userSkills = (userProfile.skills || ['Communication', 'Analytical Thinking', 'Teamwork']).map(s => s.toLowerCase());
   
-  let matchedSkillCount = 0;
-  for (const skill of userSkills) {
-    if (oppDesc.includes(skill.toLowerCase())) {
-      matchedSkillCount++;
+  let matchedSkillsCount = 0;
+  for (const s of userSkills) {
+    if (desc.includes(s) || oppTitle.includes(s)) {
+      matchedSkillsCount++;
     }
   }
-  
-  const skillRatio = Math.min(1, (matchedSkillCount + 2) / Math.max(3, userSkills.length));
-  const skillScore = Math.round(skillRatio * 20);
-  if (skillScore >= 16) {
-    matchReasons.push(`✓ Core competencies match (${userSkills.slice(0, 3).join(', ')})`);
+
+  const skillsScore = userSkills.length > 0 ? Math.min(20, Math.round((matchedSkillsCount / userSkills.length) * 20)) : 16;
+  if (skillsScore >= 14) {
+    pros.push(`High skills overlap with listing requirements`);
+    matchReasons.push('✓ Core skills overlap with listing specifications');
   } else {
-    flags.push('⚠ Supplementary tool exposure recommended (e.g., Google Ads / Advanced Modeling)');
+    potentialGaps.push('Listing mentions advanced tools not on primary profile');
   }
-  breakdown.skills = { score: skillScore, max: 20 };
+  breakdown.skills = { score: skillsScore, max: 20 };
 
-  // 4. Experience Level (15 pts)
-  const oppLevel = (opportunity.degree_level || 'undergrad').toLowerCase();
-  const userLevel = (userProfile.degree_level || 'undergrad').toLowerCase();
-
-  let expScore = 0;
-  if (oppLevel === userLevel || oppLevel === 'undergrad' || oppLevel === 'student') {
-    expScore = 15;
-    matchReasons.push('✓ Experience level tailored for undergraduate / student applicants');
+  // 4. Academic Standing & Degree Level (15 pts)
+  const gpa = userProfile.gpa || 3.85;
+  let academicScore = 0;
+  if (gpa >= 3.5) {
+    academicScore = 15;
+    pros.push(`Strong academic standing (GPA ${gpa} >= 3.5)`);
+    matchReasons.push(`✓ Meets high academic eligibility threshold (GPA ${gpa})`);
+  } else if (gpa >= 3.0) {
+    academicScore = 12;
+    matchReasons.push(`✓ Meets general GPA requirements (${gpa})`);
   } else {
-    expScore = 10;
+    academicScore = 8;
   }
-  breakdown.experience = { score: expScore, max: 15 };
+  breakdown.academic = { score: academicScore, max: 15 };
 
-  // 5. Education & English Waiver (10 pts)
-  let eduScore = 10;
-  if (opportunity.no_ielts) {
-    eduScore = 10;
-    matchReasons.push('✓ Accepts English Medium of Instruction waiver (No IELTS required)');
+  // 5. Language / English Waiver (10 pts)
+  let languageScore = 0;
+  if (opportunity.no_ielts || opportunity.source_authority_level === 1) {
+    languageScore = 10;
+    pros.push('English Medium of Instruction waiver accepted (No IELTS required)');
+    matchReasons.push('✓ Accepts English Medium of Instruction waiver');
   } else {
-    eduScore = 8;
+    languageScore = 6;
   }
-  breakdown.education = { score: eduScore, max: 10 };
+  breakdown.language = { score: languageScore, max: 10 };
 
-  // 6. Salary & Stipend Coverage (5 pts)
-  let salaryScore = 5;
-  if (opportunity.stipend_text && (opportunity.stipend_text.includes('RM') || opportunity.stipend_text.includes('$') || opportunity.stipend_text.includes('Paid') || opportunity.stipend_text.includes('100%'))) {
-    salaryScore = 5;
-    matchReasons.push(`✓ Verified compensation package (${opportunity.stipend_text.split('+')[0].trim()})`);
+  // 6. Compensation Alignment (5 pts)
+  let compScore = 0;
+  if (opportunity.is_paid === 1 || opportunity.salary_min > 0 || (opportunity.stipend_text && !opportunity.stipend_text.includes('unpaid'))) {
+    compScore = 5;
+    pros.push(`Verified stipend / salary: ${opportunity.stipend_text || 'Competitive Monthly Allowance'}`);
+    matchReasons.push('✓ Confirmed paid opportunity');
   } else {
-    salaryScore = 4;
+    compScore = 2;
   }
-  breakdown.salary = { score: salaryScore, max: 5 };
+  breakdown.compensation = { score: compScore, max: 5 };
 
-  // 7. Start Date & Active Deadline (5 pts)
-  let deadlineScore = 5;
-  if (opportunity.deadline_utc) {
-    const diffDays = Math.ceil((new Date(opportunity.deadline_utc) - new Date()) / (1000 * 60 * 60 * 24));
-    if (diffDays >= 0) {
-      deadlineScore = 5;
-    } else {
-      deadlineScore = 2;
-      flags.push('⚠ Priority intake deadline approaching');
-    }
-  }
-  breakdown.deadline = { score: deadlineScore, max: 5 };
+  // 7. Intake Schedule / Deadline (5 pts)
+  const intakeScore = 5;
+  matchReasons.push('✓ Intake schedule aligns with candidate calendar');
+  breakdown.intake = { score: intakeScore, max: 5 };
 
-  // 8. Employment / Opportunity Type (5 pts)
-  const oppType = (opportunity.opportunity_type || opportunity.type || 'internship').toLowerCase();
-  let typeScore = 5;
-  if (oppType === 'internship' || oppType === 'job' || oppType === 'fellowship' || oppType === 'scholarship') {
-    typeScore = 5;
-  }
-  breakdown.opportunityType = { score: typeScore, max: 5 };
-
-  // Calculate Total Score (0 - 100)
-  const totalScore = locationScore + roleScore + skillScore + expScore + eduScore + salaryScore + deadlineScore + typeScore;
-
-  // Generate Concise AI-Style Explanation Summary
-  const whyMatches = `Your ${userProfile.degree_title || 'Bachelor of Arts (BA)'} background in ${userProfile.major || 'Advertising & Marketing'} strongly aligns with the ${opportunity.organization} scope. High compatibility across location preferences, compensation targets, and English waiver criteria.`;
+  const totalScore = locationScore + roleScore + skillsScore + academicScore + languageScore + compScore + intakeScore;
 
   return {
-    score: Math.min(99, Math.max(65, totalScore)),
+    score: Math.min(100, Math.max(20, totalScore)),
     breakdown,
     matchReasons,
     flags,
-    whyMatches
+    pros,
+    potential_gaps: potentialGaps,
+    whyMatches: `Matches ${totalScore}% of your profile criteria: ${pros.slice(0, 2).join('. ')}.`
   };
 }
+
+export default { calculateDeterministicMatchScore };

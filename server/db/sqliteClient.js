@@ -21,16 +21,20 @@ export function initSqliteDatabase() {
       company TEXT NOT NULL,
       organization TEXT NOT NULL,
       opportunity_type TEXT DEFAULT 'internship',
+      category TEXT DEFAULT 'General',
       degree_level TEXT DEFAULT 'undergrad',
       field_of_study TEXT DEFAULT 'advertising',
       location_country TEXT DEFAULT 'Malaysia',
       location_city TEXT DEFAULT 'Kuala Lumpur',
+      location_raw TEXT,
       is_remote INTEGER DEFAULT 0,
       work_mode TEXT DEFAULT 'onsite',
       funding_level TEXT DEFAULT 'paid_salary',
+      is_paid INTEGER DEFAULT 1,
       salary_min REAL,
       salary_max REAL,
       salary_currency TEXT DEFAULT 'MYR',
+      salary_period TEXT DEFAULT 'monthly',
       stipend_text TEXT,
       tuition_covered INTEGER DEFAULT 0,
       housing_covered INTEGER DEFAULT 0,
@@ -40,22 +44,30 @@ export function initSqliteDatabase() {
       skills_preferred TEXT, -- JSON Array
       education_requirements TEXT,
       experience_requirements TEXT,
+      experience_years_required INTEGER DEFAULT 0,
       visa_requirements TEXT,
       start_date TEXT,
       duration TEXT,
       deadline_utc TEXT,
       deadline_raw TEXT,
       description TEXT,
+      responsibilities TEXT, -- JSON Array
+      requirements TEXT, -- JSON Array
       benefits_summary TEXT,
       eligibility_summary TEXT,
+      job_page_url TEXT,
       official_apply_url TEXT,
       official_program_url TEXT,
+      application_url_type TEXT DEFAULT 'EXACT_JOB_APPLICATION',
       contact_email TEXT,
       source_name TEXT DEFAULT 'Company Careers',
       source_url TEXT,
       source_tier INTEGER DEFAULT 1,
+      source_authority_level INTEGER DEFAULT 1,
       trust_score INTEGER DEFAULT 98,
-      verification_status TEXT DEFAULT 'official_verified',
+      confidence_score REAL DEFAULT 95.0,
+      verification_level INTEGER DEFAULT 5,
+      verification_status TEXT DEFAULT 'VERIFIED_ACTIVE',
       last_verified_at TEXT,
       created_at TEXT DEFAULT CURRENT_TIMESTAMP,
       updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
@@ -65,8 +77,73 @@ export function initSqliteDatabase() {
     CREATE INDEX IF NOT EXISTS idx_opps_type ON opportunities(opportunity_type);
     CREATE INDEX IF NOT EXISTS idx_opps_field ON opportunities(field_of_study);
     CREATE INDEX IF NOT EXISTS idx_opps_country ON opportunities(location_country);
+    CREATE INDEX IF NOT EXISTS idx_opps_city ON opportunities(location_city);
     CREATE INDEX IF NOT EXISTS idx_opps_status ON opportunities(status);
+    CREATE INDEX IF NOT EXISTS idx_opps_verif ON opportunities(verification_status);
+
+    -- 2. Field-Level Provenance & Evidence Table
+    CREATE TABLE IF NOT EXISTS opportunity_evidence (
+      id TEXT PRIMARY KEY,
+      opportunity_id TEXT NOT NULL,
+      field_name TEXT NOT NULL,
+      source_url TEXT NOT NULL,
+      source_type TEXT NOT NULL,
+      evidence_text TEXT NOT NULL,
+      extracted_value TEXT NOT NULL, -- JSON
+      retrieved_at TEXT NOT NULL,
+      extraction_method TEXT NOT NULL,
+      confidence REAL NOT NULL,
+      is_verified INTEGER DEFAULT 1,
+      FOREIGN KEY (opportunity_id) REFERENCES opportunities(id) ON DELETE CASCADE
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_evidence_opp_field ON opportunity_evidence(opportunity_id, field_name);
+
+    -- 3. Temporal Snapshot & State Changelog Table
+    CREATE TABLE IF NOT EXISTS opportunity_snapshots (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      opportunity_id TEXT NOT NULL,
+      snapshot_timestamp TEXT DEFAULT CURRENT_TIMESTAMP,
+      verification_status TEXT NOT NULL,
+      verification_level INTEGER NOT NULL,
+      salary_min REAL,
+      salary_max REAL,
+      stipend_text TEXT,
+      deadline_at TEXT,
+      application_url TEXT NOT NULL,
+      application_url_type TEXT NOT NULL,
+      http_status_code INTEGER NOT NULL,
+      response_time_ms INTEGER NOT NULL,
+      changes_detected_json TEXT DEFAULT '{}',
+      FOREIGN KEY (opportunity_id) REFERENCES opportunities(id) ON DELETE CASCADE
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_snapshots_opp_time ON opportunity_snapshots(opportunity_id, snapshot_timestamp);
   `);
+
+  // Auto-migrate any missing columns in existing opportunities table
+  const columnsToAdd = [
+    ['category', 'TEXT DEFAULT "General"'],
+    ['location_raw', 'TEXT'],
+    ['is_paid', 'INTEGER DEFAULT 1'],
+    ['salary_period', 'TEXT DEFAULT "monthly"'],
+    ['experience_years_required', 'INTEGER DEFAULT 0'],
+    ['responsibilities', 'TEXT'],
+    ['requirements', 'TEXT'],
+    ['job_page_url', 'TEXT'],
+    ['application_url_type', 'TEXT DEFAULT "EXACT_JOB_APPLICATION"'],
+    ['source_authority_level', 'INTEGER DEFAULT 1'],
+    ['confidence_score', 'REAL DEFAULT 95.0'],
+    ['verification_level', 'INTEGER DEFAULT 5']
+  ];
+
+  for (const [col, def] of columnsToAdd) {
+    try {
+      db.exec(`ALTER TABLE opportunities ADD COLUMN ${col} ${def}`);
+    } catch (e) {
+      // Column already exists
+    }
+  }
 
   // 2. Sources Registry Table (48+ Sources)
   db.exec(`

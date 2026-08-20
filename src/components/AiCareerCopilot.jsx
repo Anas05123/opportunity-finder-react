@@ -3,6 +3,7 @@ import {
   Bot, Send, Sparkles, X, Minimize2, Maximize2, User, RefreshCw, 
   MessageSquare, Briefcase, Award, Copy, Check, Trash2, Zap
 } from 'lucide-react';
+import FormattedMarkdown from '../utils/FormattedMarkdown.jsx';
 
 const API_BASE_URL = 'http://localhost:5000/api/v1';
 
@@ -225,7 +226,7 @@ export default function AiCareerCopilot({ userProfile, triggerToast }) {
                       position: 'relative'
                     }}
                   >
-                    {m.text}
+                    <FormattedMarkdown text={m.text} />
 
                     {!isUser && (
                       <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.5rem', paddingTop: '0.35rem', borderTop: '1px solid var(--border)' }}>
