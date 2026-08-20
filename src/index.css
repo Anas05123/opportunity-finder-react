@@ -476,26 +476,35 @@ html, body {
 }
 
 .nav-logo-box {
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   border-radius: 9px;
-  background: linear-gradient(135deg, #6366f1 0%, #38bdf8 100%);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-default);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 14px rgba(99, 102, 241, 0.35);
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.2);
   transition: all 0.25s var(--ease-spring);
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+.nav-logo-box img {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.4));
 }
 
 .brand-title {
-  font-size: 0.95rem;
+  font-size: 1.02rem;
   font-weight: 900;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
   color: var(--text-primary);
   display: flex;
   align-items: center;
-  gap: 0.45rem;
+  gap: 0.5rem;
   white-space: nowrap;
 }
 

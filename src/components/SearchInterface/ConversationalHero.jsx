@@ -59,19 +59,19 @@ export default function ConversationalHero({ onStartConversationalSearch, isSear
         {/* AI Pill Badge */}
         <div className="hero-pill-badge">
           <Sparkles size={14} className="hero-sparkle-icon" />
-          <span>AI-Powered Opportunity Discovery & Career Assistant</span>
+          <span>Careerly AI 2.0 • Real-Time Opportunity Discovery</span>
         </div>
 
         {/* Vision Title */}
         <h1 className="conversational-title">
-          <span>Find your next opportunity.</span><br />
-          <span className="conversational-title-sub">
-            Tell us what you're looking for. We'll figure out the rest.
+          <span>Find your next opportunity with Careerly.</span><br />
+          <span className="conversational-title-sub" style={{ letterSpacing: '0.08em', fontSize: 'clamp(1.1rem, 2.5vw, 1.45rem)', textTransform: 'uppercase', color: 'var(--primary)' }}>
+            Discover. Match. Succeed.
           </span>
         </h1>
 
         <p className="conversational-desc">
-          Describe your dream role, location, or educational goals in plain language. The AI evaluates your intent, clarifies details, verifies live sources, and builds your application kit.
+          Describe your dream role, target location, or educational goals in plain language. Careerly analyzes your qualifications, searches live ATS feeds & Google Jobs, and matches verified opportunities with zero fabrication.
         </p>
 
         {/* Clean, High-Precision Search Box */}

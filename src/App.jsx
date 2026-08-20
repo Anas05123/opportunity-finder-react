@@ -331,13 +331,13 @@ export default function App() {
       <nav className={`prodexa-navbar ${isScrolled ? 'scrolled' : ''}`}>
         <div className="navbar-inner">
           
-          <div className="nav-brand" onClick={() => setActiveTab('explore')} role="button" tabIndex={0} aria-label="Go to Discover Homepage">
+          <div className="nav-brand" onClick={() => setActiveTab('explore')} role="button" tabIndex={0} aria-label="Go to Careerly Homepage">
             <div className="nav-logo-box">
-              <Compass size={19} color="#ffffff" />
+              <img src="/careerly-logo.png" alt="Careerly Logo" />
             </div>
             <div>
               <span className="brand-title">
-                OPPORTUNITY
+                Careerly
                 <span className="brand-badge-ai">
                   <span className="nav-live-dot" /> AI 2.0
                 </span>
@@ -438,11 +438,11 @@ export default function App() {
           <div className="mobile-nav-panel" role="dialog" aria-modal="true" aria-label="Navigation menu">
             
             <div className="mobile-nav-header">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <div className="nav-logo-box" style={{ width: '28px', height: '28px', borderRadius: '7px' }}>
-                  <Compass size={16} color="#ffffff" />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem' }}>
+                <div className="nav-logo-box" style={{ width: '30px', height: '30px', borderRadius: '8px' }}>
+                  <img src="/careerly-logo.png" alt="Careerly Logo" style={{ width: '22px', height: '22px' }} />
                 </div>
-                <span style={{ fontWeight: '900', fontSize: '0.95rem', color: 'var(--text-primary)' }}>OPPORTUNITY</span>
+                <span style={{ fontWeight: '900', fontSize: '1.02rem', color: 'var(--text-primary)' }}>Careerly</span>
               </div>
               <button className="icon-button" onClick={() => setMobileMenuOpen(false)} aria-label="Close navigation">
                 <X size={16} />
