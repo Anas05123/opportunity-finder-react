@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { resolveSafeJobUrl, resolveLinkedInSearchUrl, resolveGoogleJobsUrl } from '../utils/urlResolver.js';
 import FormattedMarkdown from '../utils/FormattedMarkdown.jsx';
+import { cleanStipendText, cleanHtmlText } from '../utils/formatUtils.js';
 
 const API_BASE_URL = 'http://localhost:5000/api/v1';
 
@@ -20,6 +21,10 @@ export default function OpportunityDrawer({
   triggerToast
 }) {
   if (!opportunity) return null;
+
+  const displayStipend = cleanStipendText(opportunity.stipend_text || opportunity.stipend);
+  const cleanTitle = cleanHtmlText(opportunity.title);
+  const cleanCompany = cleanHtmlText(opportunity.organization || opportunity.company);
 
   const [activeTab, setActiveTab] = useState('overview');
   const [isOfficial, setIsOfficial] = useState(opportunity.verification_status === 'official_verified');
@@ -122,8 +127,8 @@ export default function OpportunityDrawer({
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               {/* Stipend Banner */}
               <div style={{ background: 'var(--accent-emerald-subtle)', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: 'var(--radius-xl)', padding: '1.15rem 1.35rem' }}>
-                <div style={{ fontSize: '1.25rem', fontWeight: '900', color: (opportunity.stipend_text || opportunity.stipend) ? 'var(--accent-emerald)' : 'var(--text-secondary)' }}>
-                  {opportunity.stipend_text || opportunity.stipend || 'Compensation not disclosed in listing'}
+                <div style={{ fontSize: '1.25rem', fontWeight: '900', color: (displayStipend !== 'Compensation not disclosed') ? 'var(--accent-emerald)' : 'var(--text-secondary)' }}>
+                  {displayStipend}
                 </div>
                 <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginTop: '0.35rem' }}>
                   Application Deadline: <strong style={{ color: 'var(--text-primary)' }}>{opportunity.deadline_raw || opportunity.deadline_utc || 'Open until filled'}</strong>

@@ -9,28 +9,34 @@ import {
 const API_BASE_URL = 'http://localhost:5000/api/v1';
 
 export default function CvStudio({ userProfile, triggerToast }) {
-  const [cvText, setCvText] = useState(`ANAS
-Undergraduate Scholar — Advertising & Brand Strategy
-Email: ayarianas79@gmail.com | Phone: +60172513031
-GPA: 3.85 / 4.00 (English Medium of Instruction Waiver)
+  const [cvText, setCvText] = useState(() => {
+    if (userProfile?.resume_text) return userProfile.resume_text;
+    const name = userProfile?.full_name || userProfile?.name || 'Scholar Candidate';
+    const degree = userProfile?.degree_title || 'Bachelor Degree';
+    const major = userProfile?.field_of_study || userProfile?.major || 'Computer Science';
+    const email = userProfile?.email || 'scholar@example.com';
+    const gpa = userProfile?.gpa || '3.50';
+    const skillsList = Array.isArray(userProfile?.skills) && userProfile.skills.length > 0
+      ? userProfile.skills
+      : ['Analytical Problem Solving', 'Full-Stack Architecture', 'Project Execution', 'Cross-Functional Strategy'];
+
+    return `${name.toUpperCase()}
+${degree} in ${major}
+Email: ${email} | Cumulative GPA: ${gpa} (English Medium of Instruction)
 
 SUMMARY:
-Creative and data-literate Advertising & Marketing student with a 3.85 GPA. Experienced in brand positioning audits, digital campaign design, and multimedia copywriting. Seeking brand strategy traineeships and international fellowship opportunities.
+Results-driven ${major} scholar with a ${gpa} GPA. Experienced in high-impact project delivery, research synthesis, and analytical execution. Seeking competitive global roles and fellowship opportunities.
 
 CORE SKILLS:
-- Brand Strategy & Positioning
-- Creative Copywriting & Brief Authoring
-- Competitor Analysis & Market Research
-- Figma & High-Fidelity Prototyping
-- Social Media Campaign Optimization
+${skillsList.map(s => `- ${s}`).join('\n')}
 
 EXPERIENCE & PROJECTS:
-- Created social media campaigns for university brand festival with high reach
-- Assisted in market research and competitor brand audit across 8 consumer brands
-- Authored creative campaign briefs and prototyped visual assets in Figma
-- Collaborated with student teams to execute cross-channel promotional roadmaps`);
+- Led end-to-end project initiatives delivering measurable engagement and efficiency improvements
+- Conducted deep research audits and deployed robust strategies across cross-functional workstreams
+- Authored technical documentation and presented structured findings to key stakeholders`;
+  });
 
-  const [targetRole, setTargetRole] = useState('Brand Strategist / Advertising Trainee');
+  const [targetRole, setTargetRole] = useState(userProfile?.field_of_study ? `${userProfile.field_of_study} Specialist` : 'Software Engineer / Technology Trainee');
   const [employerType, setEmployerType] = useState('Top Multinational Agency & Enterprise');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isParsingPdf, setIsParsingPdf] = useState(false);

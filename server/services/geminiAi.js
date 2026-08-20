@@ -4,22 +4,71 @@ import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 const { PDFParse } = require('pdf-parse');
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY || '';
+/**
+ * Dynamic Gemini API key resolver (reads latest runtime env)
+ */
+function getApiKey() {
+  return process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY || '';
+}
+
+/**
+ * Valid production Google Gemini model fallback chain
+ */
+const GEMINI_MODELS = [
+  'gemini-3.6-flash',
+  'gemini-3.5-flash',
+  'gemini-flash-latest',
+  'gemini-3.7-flash',
+  'gemini-flash-lite-latest'
+];
+
+/**
+ * Check Gemini API Health & Connectivity Status
+ */
+export async function getGeminiApiStatus() {
+  const key = getApiKey();
+  if (!key) {
+    return {
+      configured: false,
+      valid: false,
+      message: 'GEMINI_API_KEY is not configured in .env. System is operating on deterministic template mode.',
+      models: []
+    };
+  }
+
+  try {
+    const res = await axios.get(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`, { timeout: 8000 });
+    const available = (res.data?.models || []).map(m => m.name.replace('models/', ''));
+    return {
+      configured: true,
+      valid: true,
+      modelsCount: available.length,
+      availableModels: available.filter(m => m.includes('gemini')),
+      message: 'Google Gemini API is connected and operational.'
+    };
+  } catch (err) {
+    return {
+      configured: true,
+      valid: false,
+      error: err.response?.data?.error?.message || err.message,
+      message: 'Gemini API key is invalid or quota exceeded.'
+    };
+  }
+}
 
 /**
  * Call Google Gemini API (Text)
  */
 export async function callGeminiApi(prompt, systemInstruction = '') {
-  const modelsToTry = [
-    'gemini-3.5-flash',
-    'gemini-flash-latest',
-    'gemini-3.6-flash',
-    'gemini-3.1-pro-preview'
-  ];
+  const key = getApiKey();
+  if (!key) {
+    console.warn('[Gemini API] GEMINI_API_KEY not configured. Falling back to deterministic output.');
+    return null;
+  }
 
-  for (const model of modelsToTry) {
+  for (const model of GEMINI_MODELS) {
     try {
-      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
       
       const payload = {
         contents: [
@@ -53,18 +102,17 @@ export async function callGeminiApi(prompt, systemInstruction = '') {
  * Call Google Gemini Multimodal API with PDF inline data
  */
 export async function callGeminiWithPdf(pdfBase64, prompt, systemInstruction = '') {
-  const modelsToTry = [
-    'gemini-3.6-flash',
-    'gemini-3.5-flash',
-    'gemini-flash-latest',
-    'gemini-3.1-pro-preview'
-  ];
+  const key = getApiKey();
+  if (!key) {
+    console.warn('[Gemini PDF API] GEMINI_API_KEY not configured. Falling back to local PDF parser.');
+    return null;
+  }
 
   const cleanBase64 = pdfBase64.includes(',') ? pdfBase64.split(',')[1] : pdfBase64;
 
-  for (const model of modelsToTry) {
+  for (const model of GEMINI_MODELS) {
     try {
-      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
       
       const payload = {
         contents: [
@@ -369,21 +417,23 @@ Result: The new campaign drove 85,000+ organic impressions and boosted customer 
  * 4. AI Career Strategist & Copilot Chat
  */
 export async function handleCareerCopilot({ query, userProfile, chatHistory }) {
-  const name = userProfile?.name || 'Anas';
+  const name = userProfile?.name || 'Candidate';
   const degreeTitle = userProfile?.degree_title || 'Bachelor of Arts (BA)';
   const major = userProfile?.major || 'Advertising & Marketing / Finance';
 
-  const systemPrompt = `You are the Google Gemini Career AI Copilot dedicated to helping ${name} (Specialization: ${degreeTitle} in ${major}, Phone: +60172513031, Email: ayarianas79@gmail.com).
-Your mission is to help Anas and their peers find verified working jobs & internships in Malaysia and worldwide (Grab, Maybank, CIMB, Ogilvy, Goldman Sachs, Google, Spotify) with verified recruiter emails.
-Write sharp, structured, empowering, and immediately usable advice or copy.`;
+  const systemPrompt = `You are Careerly Copilot, the intelligent Career Strategist and Opportunity Advisor for Careerly (Careerly.net).
+You are assisting ${name} (Specialization: ${degreeTitle} in ${major}).
+Your mission is to help candidates discover verified jobs, internships, and scholarships worldwide (including remote global roles and top multinationals) with exact requirements, verified application routes, and tailored strategic preparation.
+Never refer to yourself as Gemini or a generic model; you are "Careerly Copilot".
+Write sharp, structured, empowering, and immediately usable advice, bullet points, or application materials.`;
 
   const geminiResult = await callGeminiApi(query, systemPrompt);
   if (geminiResult) return geminiResult;
 
-  return `### 💡 Gemini AI Career Recommendation for ${name}:
+  return `### 💡 Careerly Copilot Recommendation for ${name}:
 
 Based on your profile (**${degreeTitle} in ${major}**):
-1. **Verified Malaysia Opportunities**: Grab Malaysia (\`campus.recruiting@grab.com\`), Maybank (\`graduates@maybank.com.my\`), Ogilvy Malaysia (\`recruitment.kl@ogilvy.com\`).
-2. **Verified Global Portals**: Goldman Sachs (\`university-recruiting@gs.com\`), Google Creative Lab (\`creativelab-inquiries@google.com\`), Spotify Studios (\`student-programs@spotify.com\`).
-3. **1-Click Auto Apply**: When you click **⚡ Apply** on any card, our system automatically routes your application dossier to these verified recruiter emails!`;
+1. **Verified Global Opportunities**: Explore roles with top global firms, tech leaders, and international agencies tailored to your academic background.
+2. **Deterministic Match Scoring**: Every opportunity in Careerly is scored against your degree, location preferences, and skills with mathematical precision.
+3. **1-Click Application Kits**: Click **⚡ Prep Kit** on any opportunity card to generate custom ATS-tailored cover letters, executive summaries, and interview talking points!`;
 }

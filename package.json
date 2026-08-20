@@ -9,28 +9,34 @@
     "start": "node server/index.js",
     "render-build": "npm install --include=dev && npm run build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "security:gate": "node scripts/security-gate.js",
+    "test:security": "node test/security.test.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.3",
-    "@vitejs/plugin-react": "^4.3.3",
     "axios": "^1.19.0",
+    "bcryptjs": "^3.0.3",
     "better-sqlite3": "^13.0.3",
     "cheerio": "^1.2.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "express-rate-limit": "^8.6.2",
+    "helmet": "^8.3.0",
+    "jsonwebtoken": "^9.0.3",
     "lucide-react": "^1.30.0",
     "nodemailer": "^9.0.5",
     "pdf-parse": "^2.4.5",
     "react": "^19.2.8",
-    "react-dom": "^19.2.8",
-    "vite": "^5.4.11"
+    "react-dom": "^19.2.8"
   },
   "devDependencies": {
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^4.3.4",
     "oxlint": "^1.75.0",
-    "sharp": "^0.35.3"
+    "sharp": "^0.35.3",
+    "vite": "^6.4.3"
   }
 }

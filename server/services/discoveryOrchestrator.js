@@ -87,10 +87,10 @@ export async function discoverOpportunities({
     if (process.env.SERPER_API_KEY) {
       sourcesAttempted++;
       try {
-        const serperJobs = await searchGoogleJobsViaSerper(
-          effectiveQuery,
-          effectiveConstraints.predicates?.location?.target_city || effectiveConstraints.predicates?.location?.target_country || 'Malaysia'
-        );
+        const targetLoc = (effectiveConstraints.predicates?.location?.target_city !== 'Anywhere' ? effectiveConstraints.predicates?.location?.target_city : null) 
+          || (effectiveConstraints.predicates?.location?.target_country !== 'Anywhere' ? effectiveConstraints.predicates?.location?.target_country : null) 
+          || '';
+        const serperJobs = await searchGoogleJobsViaSerper(effectiveQuery, targetLoc);
         sourcesSucceeded++;
         return serperJobs || [];
       } catch (err) {

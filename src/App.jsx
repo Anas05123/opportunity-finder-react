@@ -4,12 +4,20 @@ import {
   LayoutGrid, List, Sun, Moon, RefreshCw, Sparkles, Filter, 
   Megaphone, Zap, Mail, CheckCircle, Scale, Building2, MapPin, Clock, Coins, 
   ArrowRight, ExternalLink, Menu, X, Globe, Award, Briefcase, GraduationCap, 
-  ChevronLeft, ChevronRight, FileText, Mic, Bot
+  ChevronLeft, ChevronRight, FileText, Mic, Bot, LogOut, Settings, Bookmark, CheckCircle2
 } from 'lucide-react';
+
+import { AuthProvider, useAuth } from './context/AuthContext.jsx';
+import AuthModal from './components/Auth/AuthModal.jsx';
+import OnboardingFlow from './components/Onboarding/OnboardingFlow.jsx';
+import PublicLandingView from './components/Landing/PublicLandingView.jsx';
+import PersonalizedDashboard from './components/Dashboard/PersonalizedDashboard.jsx';
+import SettingsView from './components/Settings/SettingsView.jsx';
 
 import ConversationalHero from './components/SearchInterface/ConversationalHero.jsx';
 import AIQuestionModal from './components/SearchInterface/AIQuestionModal.jsx';
 import SearchProgressExperience from './components/SearchInterface/SearchProgressExperience.jsx';
+import OpportunityCard from './components/OpportunityCard/OpportunityCard.jsx';
 import OpportunityGridView from './components/OpportunityGridView.jsx';
 import OpportunityListView from './components/OpportunityListView.jsx';
 import OpportunityDrawer from './components/OpportunityDrawer.jsx';
@@ -18,22 +26,45 @@ import AdminDashboard from './components/AdminDashboard.jsx';
 import AutoApplyModal from './components/AutoApplyModal.jsx';
 import EmailOutreachModal from './components/EmailOutreachModal.jsx';
 import ComparisonModal from './components/ComparisonModal.jsx';
-import UserProfileModal from './components/UserProfileModal.jsx';
 import CvStudio from './components/CvStudio.jsx';
 import InterviewCoach from './components/InterviewCoach.jsx';
 import AiCareerCopilot from './components/AiCareerCopilot.jsx';
 import EvidenceInspectorModal from './components/EvidenceInspectorModal.jsx';
+import Footer from './components/Footer.jsx';
 
 const API_BASE_URL = 'http://localhost:5000/api/v1';
 
-export default function App() {
+function CareerlyPlatform() {
+  const { 
+    user, 
+    careerProfile, 
+    searchProfile, 
+    isAuthenticated, 
+    isAdmin, 
+    isLoading: isAuthLoading, 
+    needsOnboarding, 
+    logout 
+  } = useAuth();
+
   const [opportunities, setOpportunities] = useState([]);
-  const [sources, setSources] = useState([]);
-  const [stats, setStats] = useState({ total_opportunities: 0, active_sources: 48, verified_opportunities: 0 });
+  const [savedOppsList, setSavedOppsList] = useState([]);
+  const [applicationsList, setApplicationsList] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('explore'); // explore, cv_studio, interview, tracker, calendar, admin
+  const [selectedPreset, setSelectedPreset] = useState('all');
+  
+  // Navigation State
+  const [activeTab, setActiveTab] = useState(() => {
+    return localStorage.getItem('careerly_token') ? 'explore' : 'landing';
+  });
   const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'list'
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+
+  // Auth Modal State
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authModalMode, setAuthModalMode] = useState('login');
+
+  // Evidence & Search State
   const [inspectingEvidenceOp, setInspectingEvidenceOp] = useState(null);
   const [searchFunnelMetrics, setSearchFunnelMetrics] = useState(null);
   const [searchRelaxationOptions, setSearchRelaxationOptions] = useState([]);
@@ -68,45 +99,16 @@ export default function App() {
     setTheme(nextTheme);
   };
 
-  // User Profile State
-  const [userProfile, setUserProfile] = useState(() => {
-    const saved = localStorage.getItem('opp_user_profile');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        return {
-          ...parsed,
-          degree_title: parsed.degree_title || 'Bachelor of Arts (BA)'
-        };
-      } catch (e) {}
+  // Synchronize Tab on Auth State Change
+  useEffect(() => {
+    if (isAuthenticated) {
+      if (activeTab === 'landing') setActiveTab('dashboard');
+    } else {
+      if (['dashboard', 'saved', 'tracker', 'settings', 'admin'].includes(activeTab)) {
+        setActiveTab('landing');
+      }
     }
-    return {
-      name: 'Anas (Student)',
-      email: 'ayarianas79@gmail.com',
-      phone: '+60172513031',
-      degree_level: 'undergrad',
-      degree_title: 'Bachelor of Arts (BA)',
-      major: 'Advertising & Marketing',
-      gpa: 3.85,
-      no_ielts_preference: 1
-    };
-  });
-
-  // Saved Applications (CRM Board)
-  const [savedApps, setSavedApps] = useState(() => {
-    return JSON.parse(localStorage.getItem('opp_react_saved')) || [];
-  });
-
-  // Compare List
-  const [compareList, setCompareList] = useState([]);
-
-  // Filters State
-  const [searchTerm, setSearchTerm] = useState('');
-  const [typeFilter, setTypeFilter] = useState('all');
-  const [levelFilter, setLevelFilter] = useState('all');
-  const [fieldFilter, setFieldFilter] = useState('all');
-  const [selectedPreset, setSelectedPreset] = useState('all');
-  const [sortBy, setSortBy] = useState('match_desc');
+  }, [isAuthenticated, activeTab]);
 
   // Conversational AI Search State
   const [isSearchingPipeline, setIsSearchingPipeline] = useState(false);
@@ -118,10 +120,7 @@ export default function App() {
   // Modals & Slide-Over Drawers
   const [drawerOp, setDrawerOp] = useState(null);
   const [prepareAppOp, setPrepareAppOp] = useState(null);
-  const [autoApplyOp, setAutoApplyOp] = useState(null);
   const [emailOutreachOp, setEmailOutreachOp] = useState(null);
-  const [showProfileModal, setShowProfileModal] = useState(false);
-  const [showCompareModal, setShowCompareModal] = useState(false);
 
   // Toast Notification
   const [toastMessage, setToastMessage] = useState('');
@@ -130,60 +129,157 @@ export default function App() {
     setTimeout(() => setToastMessage(''), 2800);
   };
 
-  // Initial Fetch Opportunities from SQLite / API
+  // Fetch Opportunities from SQLite / API
   const fetchOpportunities = async (searchOverride = null) => {
     setIsLoading(true);
     try {
       const queryParams = new URLSearchParams();
-      const term = searchOverride !== null ? searchOverride : searchTerm;
+      const term = searchOverride !== null ? searchOverride : '';
       if (term) queryParams.append('search', term);
-      if (typeFilter !== 'all') queryParams.append('type', typeFilter);
-      if (fieldFilter !== 'all') queryParams.append('field', fieldFilter);
 
-      const res = await fetch(`${API_BASE_URL}/opportunities?${queryParams.toString()}`);
+      const token = localStorage.getItem('careerly_token');
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+      const res = await fetch(`${API_BASE_URL}/opportunities?${queryParams.toString()}`, { headers });
       if (res.ok) {
         const data = await res.json();
         setOpportunities(data.opportunities || []);
       }
     } catch (err) {
-      console.warn('Backend fetch error, checking local fallback:', err.message);
+      console.warn('Backend fetch error:', err.message);
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Fetch Saved & Applications when authenticated
+  const fetchUserData = async () => {
+    const token = localStorage.getItem('careerly_token');
+    if (!token) {
+      setSavedOppsList([]);
+      setApplicationsList([]);
+      return;
+    }
+
+    try {
+      const [savedRes, appsRes] = await Promise.all([
+        fetch(`${API_BASE_URL}/user/saved`, { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(`${API_BASE_URL}/applications`, { headers: { Authorization: `Bearer ${token}` } })
+      ]);
+
+      if (savedRes.ok) {
+        const sData = await savedRes.json();
+        setSavedOppsList(sData.saved_opportunities || []);
+      }
+      if (appsRes.ok) {
+        const aData = await appsRes.json();
+        setApplicationsList(aData.applications || []);
+      }
+    } catch (err) {
+      console.warn('User data sync error:', err.message);
+    }
+  };
+
   useEffect(() => {
     fetchOpportunities();
-  }, [typeFilter, fieldFilter]);
+    if (isAuthenticated) {
+      fetchUserData();
+    }
+  }, [isAuthenticated]);
 
-  // 1. Natural Language Conversational Search Flow (Section 2 & 3)
+  // Toggle Save Opportunity
+  const toggleSaveApp = async (opportunityId) => {
+    if (!isAuthenticated) {
+      setAuthModalMode('signup');
+      setAuthModalOpen(true);
+      triggerToast('Create a free account to save opportunities to your dashboard.');
+      return;
+    }
+
+    const token = localStorage.getItem('careerly_token');
+    const isCurrentlySaved = savedOppsList.some(s => s.id === opportunityId || s.opportunity_id === opportunityId);
+
+    try {
+      if (isCurrentlySaved) {
+        setSavedOppsList(prev => prev.filter(s => s.id !== opportunityId && s.opportunity_id !== opportunityId));
+        await fetch(`${API_BASE_URL}/user/saved/${opportunityId}`, {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        triggerToast('Removed from saved opportunities.');
+      } else {
+        const opp = opportunities.find(o => o.id === opportunityId);
+        if (opp) setSavedOppsList(prev => [opp, ...prev]);
+        await fetch(`${API_BASE_URL}/user/saved/${opportunityId}`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        triggerToast('✓ Opportunity saved to your personal dashboard!');
+      }
+      fetchUserData();
+    } catch (err) {
+      triggerToast('Error saving opportunity.');
+    }
+  };
+
+  const isOpportunitySaved = (oppId) => {
+    return savedOppsList.some(s => s.id === oppId || s.opportunity_id === oppId);
+  };
+
+  // Update CRM Application Stage
+  const handleUpdateAppStage = async (opportunityId, stage) => {
+    if (!isAuthenticated) {
+      setAuthModalMode('signup');
+      setAuthModalOpen(true);
+      return;
+    }
+
+    const token = localStorage.getItem('careerly_token');
+    try {
+      await fetch(`${API_BASE_URL}/applications`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ opportunity_id: opportunityId, stage })
+      });
+      fetchUserData();
+      triggerToast(`✓ Application stage updated: ${stage}`);
+    } catch (err) {
+      triggerToast('Failed to update stage.');
+    }
+  };
+
+  // Conversational Search Execution
   const handleStartConversationalSearch = async (rawQuery) => {
     setPendingQuery(rawQuery);
     setIsSearchingPipeline(true);
 
+    const token = localStorage.getItem('careerly_token');
+    const headers = { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) };
+
     try {
-      const res = await fetch(`${API_BASE_URL}/search/conversational`, {
+      const res = await fetch(`http://localhost:5000/api/v3/search/intent`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
-          query: rawQuery,
-          userProfile
+          raw_query: rawQuery,
+          user_profile: careerProfile || {}
         })
       });
 
       const data = await res.json();
-      if (data.status === 'success') {
-        setSearchProfileContext(data.searchProfile);
+      if (data.status === 'ready') {
+        setSearchProfileContext(data.compiled_constraints);
 
-        // If critical info is missing -> ask targeted question
-        if (!data.hasEnoughInfo && data.followUpQuestion) {
+        if (!data.has_enough_info && data.follow_up_question) {
           setIsSearchingPipeline(false);
-          setActiveQuestion(data.followUpQuestion);
+          setActiveQuestion(data.follow_up_question);
           return;
         }
 
-        // Otherwise execute full multi-source search pipeline immediately
-        await executeFinalSearch(rawQuery, data.searchProfile);
+        await executeFinalSearch(rawQuery, data.compiled_constraints);
       } else {
         await executeFinalSearch(rawQuery, null);
       }
@@ -192,130 +288,86 @@ export default function App() {
     }
   };
 
-  // 2. User Answered Clarifying Question
-  const handleAnswerQuestion = async (paramKey, answerVal) => {
-    setActiveQuestion(null);
+  const executeFinalSearch = async (queryText, compiledConstraints) => {
     setIsSearchingPipeline(true);
-    const updatedProfile = {
-      ...(searchProfileContext || {}),
-      [paramKey]: answerVal
-    };
-    await executeFinalSearch(pendingQuery, updatedProfile);
-  };
+    const token = localStorage.getItem('careerly_token');
+    const headers = { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) };
 
-  // 3. Skip Question and Search Anyway
-  const handleSkipQuestion = async () => {
-    setActiveQuestion(null);
-    setIsSearchingPipeline(true);
-    await executeFinalSearch(pendingQuery, searchProfileContext);
-  };
-
-  // 4. Execute Multi-Source Search & Verification Pipeline (V3 Endpoint)
-  const executeFinalSearch = async (query, searchProfile) => {
     try {
       const res = await fetch(`http://localhost:5000/api/v3/search/execute`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
-          query,
-          searchProfile,
-          user_profile: userProfile
+          query: queryText,
+          compiled_constraints: compiledConstraints,
+          user_profile: careerProfile || {}
         })
       });
 
-      if (res.ok) {
-        const data = await res.json();
-        const found = data.results || data.opportunities || [];
-        setOpportunities(found);
-        setSearchFunnelMetrics(data.funnel_metrics || null);
+      const data = await res.json();
+      if (data.results) {
+        setOpportunities(data.results);
+        setSearchFunnelMetrics(data.funnel_metrics);
         setSearchRelaxationOptions(data.relaxation_options || []);
+        setSearchSummaryBadge(`Search: "${queryText}" (${data.results.length} verified results)`);
         setCurrentPage(1);
-
-        if (found.length > 0) {
-          setSearchSummaryBadge(`✨ Verified & Ranked ${found.length} matches for "${query}"`);
-          triggerToast(`🎉 Found and verified ${found.length} authentic opportunities!`);
-        } else {
-          setSearchSummaryBadge(`⚠️ 0 verified opportunities passed constraints for "${query}"`);
-          triggerToast(`0 opportunities matched strict constraints. See relaxation options below.`);
-        }
+        triggerToast(`Discovered ${data.results.length} verified opportunities!`);
       }
     } catch (err) {
-      console.warn('V3 Search execution note:', err.message);
-      fetchOpportunities(query);
+      triggerToast('Search error occurred.');
     } finally {
-      setTimeout(() => {
-        setIsSearchingPipeline(false);
-      }, 1500);
+      setIsSearchingPipeline(false);
+      if (feedTopRef.current) feedTopRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
-  // 5. Handle User-Requested Constraint Relaxation
-  const handleRelaxConstraint = (option) => {
-    if (!option) return;
-    let newQuery = pendingQuery || 'internship';
-    if (option.type === 'location') {
-      newQuery = newQuery.replace(/only|strictly/gi, '').trim() + ' Malaysia Klang Valley';
-    } else if (option.type === 'compensation') {
-      newQuery = newQuery.replace(/paid/gi, '').trim();
-    } else if (option.type === 'work_mode') {
-      newQuery = newQuery + ' Remote';
-    } else if (option.type === 'opportunity_type') {
-      newQuery = newQuery.replace(/internship/gi, '').trim() + ' fellowship or graduate program';
-    }
-    setPendingQuery(newQuery);
+  const handleAnswerQuestion = async (paramKey, answerVal) => {
+    setActiveQuestion(null);
     setIsSearchingPipeline(true);
-    executeFinalSearch(newQuery, null);
-  };
-
-  // Application CRM State Management
-  const toggleSaveApp = (op) => {
-    setSavedApps(prev => {
-      const exists = prev.some(a => a.id === op.id);
-      let updated;
-      if (exists) {
-        updated = prev.filter(a => a.id !== op.id);
-        triggerToast('Removed from Saved');
-      } else {
-        updated = [{ ...op, savedAt: new Date().toISOString(), stage: 'saved' }, ...prev];
-        triggerToast('✓ Saved to Application CRM Board!');
+    const updatedConstraints = {
+      ...(searchProfileContext || {}),
+      user_profile: {
+        ...(careerProfile || {}),
+        [paramKey]: answerVal
       }
-      localStorage.setItem('opp_react_saved', JSON.stringify(updated));
-      return updated;
-    });
+    };
+    await executeFinalSearch(pendingQuery, updatedConstraints);
   };
 
-  const handleApplySuccess = (opportunityId, newStage = 'applied') => {
-    setSavedApps(prev => {
-      const existing = prev.find(a => a.id === opportunityId);
-      const targetOp = opportunities.find(o => o.id === opportunityId) || { id: opportunityId, title: 'Opportunity' };
-      const updated = existing
-        ? prev.map(a => a.id === opportunityId ? { ...a, stage: newStage, appliedAt: new Date().toISOString() } : a)
-        : [{ ...targetOp, stage: newStage, appliedAt: new Date().toISOString() }, ...prev];
-
-      localStorage.setItem('opp_react_saved', JSON.stringify(updated));
-      return updated;
-    });
+  const handleSkipQuestion = async () => {
+    setActiveQuestion(null);
+    await executeFinalSearch(pendingQuery, searchProfileContext);
   };
 
-  // Filter and Presets
+  const handleRelaxConstraint = async (option) => {
+    triggerToast(`Relaxing constraint: ${option.label}...`);
+    setIsSearchingPipeline(true);
+    const updated = { ...(searchProfileContext || {}) };
+    if (option.type === 'location' && updated.predicates?.location) {
+      updated.predicates.location.mode = 'METRO_RADIUS';
+    }
+    if (option.type === 'compensation' && updated.predicates?.compensation) {
+      updated.predicates.compensation.is_mandatory = false;
+      updated.predicates.compensation.allow_unknown = true;
+    }
+    await executeFinalSearch(pendingQuery || 'internship', updated);
+  };
+
+  // Filter & Pagination Logic
   const filteredOpportunities = opportunities.filter(op => {
-    if (selectedPreset === 'finance') {
-      const f = (op.field_of_study || '').toLowerCase();
-      const t = (op.title || '').toLowerCase();
-      return f.includes('finance') || t.includes('bank') || t.includes('finance') || t.includes('investment');
+    if (selectedPreset === 'advertising' && !op.field_of_study?.toLowerCase().includes('advert') && !op.field_of_study?.toLowerCase().includes('marketing') && !op.title?.toLowerCase().includes('brand')) {
+      return false;
     }
-    if (selectedPreset === 'advertising') {
-      const f = (op.field_of_study || '').toLowerCase();
-      const t = (op.title || '').toLowerCase();
-      return f.includes('advertising') || t.includes('marketing') || t.includes('creative') || t.includes('brand');
+    if (selectedPreset === 'finance' && !op.field_of_study?.toLowerCase().includes('finance') && !op.title?.toLowerCase().includes('analyst') && !op.title?.toLowerCase().includes('bank')) {
+      return false;
     }
-    if (selectedPreset === 'fully_funded') {
-      return op.funding_level === 'fully_funded' || (op.stipend_text && op.stipend_text.includes('100%'));
+    if (selectedPreset === 'fully_funded' && !op.funding_level?.includes('full') && op.is_paid !== 1) {
+      return false;
     }
     return true;
   });
 
-  const totalPages = Math.ceil(filteredOpportunities.length / itemsPerPage) || 1;
+  const totalPages = Math.ceil(filteredOpportunities.length / itemsPerPage);
   const paginatedOpportunities = filteredOpportunities.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const handlePageChange = (newPage) => {
@@ -325,182 +377,365 @@ export default function App() {
     }
   };
 
+  // Render First-Time User Onboarding Flow if needed
+  if (isAuthenticated && needsOnboarding) {
+    return (
+      <div className="app-layout">
+        <OnboardingFlow triggerToast={triggerToast} />
+      </div>
+    );
+  }
+
+  const userInitial = careerProfile?.full_name ? careerProfile.full_name[0].toUpperCase() : user?.email ? user.email[0].toUpperCase() : 'U';
+  const displayName = careerProfile?.full_name || user?.email?.split('@')[0] || 'Member';
+  const displayEmail = user?.email || 'member@careerly.app';
+  const degreeBadge = careerProfile?.degree_level === 'masters' ? 'MSc' : careerProfile?.degree_level === 'phd' ? 'PhD' : 'BSc';
+
+  const tabTitles = {
+    dashboard: 'Personalized Dashboard',
+    explore: 'Opportunity Discovery & Matching',
+    saved: 'Saved Opportunities',
+    tracker: 'Application CRM Board',
+    cv_studio: 'AI CV & ATS Studio',
+    interview: 'AI Mock Interview Coach',
+    settings: 'Account & Match Preferences',
+    admin: 'Admin Operations & Security',
+    landing: 'Home'
+  };
+
   return (
-    <div className="min-h-screen app-container">
-      {/* 1. TOP NAVIGATION BAR */}
-      <nav className={`prodexa-navbar ${isScrolled ? 'scrolled' : ''}`}>
-        <div className="navbar-inner">
-          
-          <div className="nav-brand" onClick={() => setActiveTab('explore')} role="button" tabIndex={0} aria-label="Go to Careerly Homepage">
-            <div className="nav-logo-box">
-              <img src="/careerly-logo.png" alt="Careerly Logo" />
-            </div>
-            <div>
-              <span className="brand-title">
-                Careerly
-                <span className="brand-badge-ai">
-                  <span className="nav-live-dot" /> AI 2.0
-                </span>
-              </span>
-            </div>
-          </div>
-
-          <div className="nav-pill-group" role="tablist" aria-label="Primary Application Navigation">
-            <button 
-              className={`nav-pill ${activeTab === 'explore' ? 'active' : ''}`}
-              onClick={() => setActiveTab('explore')}
-              role="tab"
-              aria-selected={activeTab === 'explore'}
-            >
-              <Compass size={15} /> Discover & Match
-            </button>
-
-            <button 
-              className={`nav-pill ${activeTab === 'cv_studio' ? 'active' : ''}`}
-              onClick={() => setActiveTab('cv_studio')}
-              role="tab"
-              aria-selected={activeTab === 'cv_studio'}
-            >
-              <FileText size={15} /> AI CV Studio
-            </button>
-
-            <button 
-              className={`nav-pill ${activeTab === 'interview' ? 'active' : ''}`}
-              onClick={() => setActiveTab('interview')}
-              role="tab"
-              aria-selected={activeTab === 'interview'}
-            >
-              <Mic size={15} /> Interview Coach
-            </button>
-
-            <button 
-              className={`nav-pill ${activeTab === 'tracker' ? 'active' : ''}`}
-              onClick={() => setActiveTab('tracker')}
-              role="tab"
-              aria-selected={activeTab === 'tracker'}
-            >
-              <CheckSquare size={15} /> CRM Board
-              {savedApps.length > 0 && (
-                <span className="nav-count-badge">{savedApps.length}</span>
-              )}
-            </button>
-
-            <button 
-              className={`nav-pill ${activeTab === 'calendar' ? 'active' : ''}`}
-              onClick={() => setActiveTab('calendar')}
-              role="tab"
-              aria-selected={activeTab === 'calendar'}
-            >
-              <Calendar size={15} /> Deadlines
-            </button>
-
-            <button 
-              className={`nav-pill ${activeTab === 'admin' ? 'active' : ''}`}
-              onClick={() => setActiveTab('admin')}
-              role="tab"
-              aria-selected={activeTab === 'admin'}
-            >
-              <ShieldCheck size={15} /> Scrapers
-              <span className="bento-tag" style={{ fontSize: '0.62rem', padding: '0.05rem 0.35rem' }}>48+</span>
-            </button>
-          </div>
-
-          <div className="nav-actions-right">
-            <button className="icon-button" onClick={toggleTheme} aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}>
-              {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-            </button>
-
-            <button 
-              className="user-profile-badge" 
-              onClick={() => setShowProfileModal(true)}
-              aria-label="Edit Academic Profile & Qualification"
-              title="Edit Academic Profile & Qualification"
-            >
-              <div className="nav-avatar-circle">
-                {userProfile.name ? userProfile.name[0].toUpperCase() : 'A'}
-              </div>
-              <span className="nav-user-text" style={{ fontWeight: '700' }}>{userProfile.name?.split(' ')[0] || 'Anas'}</span>
-              <span className="nav-degree-tag">BA</span>
-            </button>
-
-            <button className="mobile-menu-trigger" onClick={() => setMobileMenuOpen(true)} aria-label="Open navigation menu" aria-expanded={mobileMenuOpen}>
-              <Menu size={18} />
-            </button>
-          </div>
-
-        </div>
-      </nav>
-
-      {/* MOBILE NAVIGATION DRAWER */}
-      {mobileMenuOpen && (
+    <div className="saas-workspace">
+      
+      {/* 1. WORKSPACE SIDEBAR (AUTHENTICATED) */}
+      {isAuthenticated && (
         <>
-          <div className="mobile-nav-overlay" onClick={() => setMobileMenuOpen(false)} role="presentation" />
-          <div className="mobile-nav-panel" role="dialog" aria-modal="true" aria-label="Navigation menu">
-            
-            <div className="mobile-nav-header">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem' }}>
-                <div className="nav-logo-box" style={{ width: '30px', height: '30px', borderRadius: '8px' }}>
-                  <img src="/careerly-logo.png" alt="Careerly Logo" style={{ width: '22px', height: '22px' }} />
-                </div>
-                <span style={{ fontWeight: '900', fontSize: '1.02rem', color: 'var(--text-primary)' }}>Careerly</span>
-              </div>
-              <button className="icon-button" onClick={() => setMobileMenuOpen(false)} aria-label="Close navigation">
-                <X size={16} />
-              </button>
-            </div>
-
-            {/* Candidate Profile Card in Mobile Drawer */}
+          {/* Mobile Overlay */}
+          {mobileMenuOpen && (
             <div 
-              className="mobile-profile-card"
-              onClick={() => { setShowProfileModal(true); setMobileMenuOpen(false); }}
-              role="button"
-              tabIndex={0}
-              aria-label="Edit Profile"
-            >
-              <div className="nav-avatar-circle" style={{ width: '36px', height: '36px', fontSize: '0.9rem' }}>
-                {userProfile.name ? userProfile.name[0].toUpperCase() : 'A'}
-              </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontWeight: '800', fontSize: '0.9rem', color: 'var(--text-primary)' }}>{userProfile.name}</div>
-                <div style={{ fontSize: '0.74rem', color: 'var(--text-secondary)' }}>{userProfile.degree_title} • GPA {userProfile.gpa}</div>
-              </div>
-            </div>
+              style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 890, backdropFilter: 'blur(4px)' }}
+              onClick={() => setMobileMenuOpen(false)}
+            />
+          )}
 
-            <div className="mobile-nav-items">
-              {[
-                { id: 'explore', icon: <Compass size={18} />, label: 'Discover & Match' },
-                { id: 'cv_studio', icon: <FileText size={18} />, label: 'AI CV Studio' },
-                { id: 'interview', icon: <Mic size={18} />, label: 'Interview Coach' },
-                { id: 'tracker', icon: <CheckSquare size={18} />, label: `CRM Board (${savedApps.length})` },
-                { id: 'calendar', icon: <Calendar size={18} />, label: 'Deadlines' },
-                { id: 'admin', icon: <ShieldCheck size={18} />, label: 'Scrapers (48+)' }
-              ].map(item => (
-                <button
-                  key={item.id}
-                  className={`mobile-nav-item ${activeTab === item.id ? 'active' : ''}`}
-                  onClick={() => { setActiveTab(item.id); setMobileMenuOpen(false); }}
+          <aside className={`saas-sidebar ${mobileMenuOpen ? 'mobile-open' : ''}`}>
+            
+            {/* Sidebar Brand Header */}
+            <div className="sidebar-header">
+              <div 
+                className="sidebar-brand" 
+                onClick={() => { setActiveTab('dashboard'); setMobileMenuOpen(false); }}
+              >
+                <div className="sidebar-logo">
+                  <img src="/careerly-logo.png" alt="Careerly Logo" />
+                </div>
+                <div className="sidebar-brand-name">
+                  Careerly
+                  <span className="sidebar-plan-tag">MATCH 2.0</span>
+                </div>
+              </div>
+
+              {mobileMenuOpen && (
+                <button 
+                  className="icon-button" 
+                  onClick={() => setMobileMenuOpen(false)}
+                  style={{ width: '28px', height: '28px' }}
                 >
-                  {item.icon}
-                  {item.label}
+                  <X size={15} />
                 </button>
-              ))}
+              )}
             </div>
 
-            <div style={{ marginTop: 'auto', paddingTop: '1rem', borderTop: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', fontWeight: '600' }}>Theme Mode</span>
-              <button className="icon-button" onClick={toggleTheme} aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}>
-                {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-              </button>
+            {/* Sidebar Navigation Sections */}
+            <div className="sidebar-content">
+              
+              {/* CORE WORKSPACE */}
+              <div>
+                <div className="sidebar-section-title">Core Workspace</div>
+                <div className="sidebar-nav-list">
+                  <button 
+                    className={`sidebar-nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
+                    onClick={() => { setActiveTab('dashboard'); setMobileMenuOpen(false); }}
+                  >
+                    <div className="sidebar-nav-item-left">
+                      <Sparkles size={16} />
+                      <span>Dashboard</span>
+                    </div>
+                  </button>
+
+                  <button 
+                    className={`sidebar-nav-item ${activeTab === 'explore' ? 'active' : ''}`}
+                    onClick={() => { setActiveTab('explore'); setMobileMenuOpen(false); }}
+                  >
+                    <div className="sidebar-nav-item-left">
+                      <Compass size={16} />
+                      <span>Discover & Match</span>
+                    </div>
+                  </button>
+
+                  <button 
+                    className={`sidebar-nav-item ${activeTab === 'saved' ? 'active' : ''}`}
+                    onClick={() => { setActiveTab('saved'); setMobileMenuOpen(false); }}
+                  >
+                    <div className="sidebar-nav-item-left">
+                      <Bookmark size={16} />
+                      <span>Saved</span>
+                    </div>
+                    {savedOppsList.length > 0 && (
+                      <span className="sidebar-badge">{savedOppsList.length}</span>
+                    )}
+                  </button>
+
+                  <button 
+                    className={`sidebar-nav-item ${activeTab === 'tracker' ? 'active' : ''}`}
+                    onClick={() => { setActiveTab('tracker'); setMobileMenuOpen(false); }}
+                  >
+                    <div className="sidebar-nav-item-left">
+                      <CheckSquare size={16} />
+                      <span>CRM Board</span>
+                    </div>
+                    {applicationsList.length > 0 && (
+                      <span className="sidebar-badge">{applicationsList.length}</span>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* CAREER TOOLS */}
+              <div>
+                <div className="sidebar-section-title">Career Suite</div>
+                <div className="sidebar-nav-list">
+                  <button 
+                    className={`sidebar-nav-item ${activeTab === 'cv_studio' ? 'active' : ''}`}
+                    onClick={() => { setActiveTab('cv_studio'); setMobileMenuOpen(false); }}
+                  >
+                    <div className="sidebar-nav-item-left">
+                      <FileText size={16} />
+                      <span>AI CV Studio</span>
+                    </div>
+                  </button>
+
+                  <button 
+                    className={`sidebar-nav-item ${activeTab === 'interview' ? 'active' : ''}`}
+                    onClick={() => { setActiveTab('interview'); setMobileMenuOpen(false); }}
+                  >
+                    <div className="sidebar-nav-item-left">
+                      <Mic size={16} />
+                      <span>Interview Coach</span>
+                    </div>
+                  </button>
+                </div>
+              </div>
+
+              {/* SETTINGS & ADMINISTRATION */}
+              <div>
+                <div className="sidebar-section-title">Preferences & Ops</div>
+                <div className="sidebar-nav-list">
+                  <button 
+                    className={`sidebar-nav-item ${activeTab === 'settings' ? 'active' : ''}`}
+                    onClick={() => { setActiveTab('settings'); setMobileMenuOpen(false); }}
+                  >
+                    <div className="sidebar-nav-item-left">
+                      <Settings size={16} />
+                      <span>Account Settings</span>
+                    </div>
+                  </button>
+
+                  {isAdmin && (
+                    <button 
+                      className={`sidebar-nav-item ${activeTab === 'admin' ? 'active' : ''}`}
+                      onClick={() => { setActiveTab('admin'); setMobileMenuOpen(false); }}
+                    >
+                      <div className="sidebar-nav-item-left">
+                        <ShieldCheck size={16} color="var(--primary)" />
+                        <span>Admin Operations</span>
+                      </div>
+                    </button>
+                  )}
+                </div>
+              </div>
+
             </div>
 
-          </div>
+            {/* Sidebar User Footer */}
+            <div className="sidebar-footer">
+              <div className="sidebar-user-pill">
+                <div className="sidebar-user-avatar">
+                  {userInitial}
+                </div>
+                <div className="sidebar-user-meta">
+                  <span className="sidebar-user-name">{displayName}</span>
+                  <span className="sidebar-user-email">{displayEmail}</span>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                <button 
+                  className="icon-button" 
+                  onClick={toggleTheme} 
+                  title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                  style={{ width: '28px', height: '28px' }}
+                >
+                  {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
+                </button>
+                <button 
+                  className="icon-button" 
+                  onClick={() => { logout(); triggerToast('Signed out of Careerly.'); }} 
+                  title="Sign Out"
+                  style={{ width: '28px', height: '28px', color: '#ef4444' }}
+                >
+                  <LogOut size={14} />
+                </button>
+              </div>
+            </div>
+
+          </aside>
         </>
       )}
 
-      {/* 2. MAIN VIEW SWITCHER */}
-      <main>
+      {/* 2. MAIN WORKSPACE CANVAS */}
+      <div className="saas-main">
         
-        {/* TAB 1: CONVERSATIONAL AI DISCOVERY & OPPORTUNITIES */}
+        {/* Top Header Bar (Modern Spacious Brainwave / Luma Navbar) */}
+        {!isAuthenticated ? (
+          <header className="brainwave-navbar">
+            <div className="sidebar-brand" onClick={() => setActiveTab('landing')} style={{ cursor: 'pointer' }}>
+              <div className="sidebar-logo" style={{ boxShadow: '0 0 15px rgba(124, 58, 237, 0.4)' }}>
+                <img src="/careerly-logo.png" alt="Careerly Logo" />
+              </div>
+              <div className="sidebar-brand-name" style={{ fontSize: '1.15rem', fontWeight: '800', letterSpacing: '-0.02em', color: '#ffffff' }}>
+                Careerly
+                <span style={{ fontSize: '0.68rem', color: '#c084fc', marginLeft: '0.4rem', fontWeight: '700', padding: '0.15rem 0.45rem', borderRadius: '4px', background: 'rgba(124, 58, 237, 0.25)', border: '1px solid rgba(124, 58, 237, 0.4)' }}>
+                  AI 2.0
+                </span>
+              </div>
+            </div>
+
+            {/* Modern Centered Navigation Links (Discover Roles hidden for non-signed-in) */}
+            <nav className="brainwave-nav-center">
+              <button 
+                className="brainwave-nav-link" 
+                onClick={() => {
+                  const el = document.getElementById('features-section');
+                  if (el) el.scrollIntoView({ behavior: 'smooth' });
+                }}
+              >
+                Features
+              </button>
+              <button className="brainwave-nav-link" onClick={() => { setAuthModalMode('signup'); setAuthModalOpen(true); }}>
+                AI CV Studio
+              </button>
+              <button className="brainwave-nav-link" onClick={() => { setAuthModalMode('signup'); setAuthModalOpen(true); }}>
+                STAR Coach
+              </button>
+              <button className="brainwave-nav-link" onClick={() => { setAuthModalMode('signup'); setAuthModalOpen(true); }}>
+                7-Factor Engine
+              </button>
+            </nav>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+              <button 
+                className="icon-button" 
+                onClick={toggleTheme} 
+                aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+                title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+                style={{ width: '42px', height: '42px' }}
+              >
+                {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+              </button>
+
+              <button
+                onClick={() => { setAuthModalMode('login'); setAuthModalOpen(true); }}
+                className="brainwave-btn-outline"
+                style={{ height: '46px', padding: '0 1.75rem', fontSize: '0.9rem' }}
+              >
+                Sign In
+              </button>
+
+              <button
+                onClick={() => { setAuthModalMode('signup'); setAuthModalOpen(true); }}
+                className="brainwave-btn-glow"
+                style={{ height: '46px', padding: '0 1.85rem', fontSize: '0.9rem' }}
+              >
+                <span>Get Started Free</span>
+                <ArrowRight size={16} className="btn-arrow-icon" />
+              </button>
+            </div>
+          </header>
+        ) : (
+          <header className="saas-header">
+            <div className="saas-header-left">
+              <button 
+                className="icon-button" 
+                onClick={() => setMobileMenuOpen(true)}
+                style={{ display: 'inline-flex' }}
+                aria-label="Open Navigation Menu"
+              >
+                <Menu size={18} />
+              </button>
+
+              <div className="saas-breadcrumbs">
+                <span>Careerly</span>
+                <span>/</span>
+                <span className="active">{tabTitles[activeTab] || 'Workspace'}</span>
+              </div>
+            </div>
+
+            <div className="saas-header-right">
+              {activeTab === 'explore' && (
+                <button 
+                  className="saas-command-trigger"
+                  onClick={() => {
+                    if (feedTopRef.current) feedTopRef.current.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                >
+                  <Search size={14} />
+                  <span>Search opportunities...</span>
+                  <span className="saas-kbd">⌘K</span>
+                </button>
+              )}
+
+              <button 
+                className="icon-button" 
+                onClick={toggleTheme} 
+                aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+                title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+              >
+                {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+              </button>
+            </div>
+          </header>
+        )}
+
+        {/* Content Container */}
+        <div className={activeTab === 'landing' ? "landing-content-canvas" : "saas-content-canvas"}>
+          <main>
+
+        {/* TAB: PUBLIC LANDING (UNAUTHENTICATED) */}
+        {activeTab === 'landing' && (
+          <PublicLandingView 
+            onOpenAuth={(mode) => { setAuthModalMode(mode); setAuthModalOpen(true); }}
+            sampleOpportunities={opportunities}
+            onSelectOpportunity={(op) => setDrawerOp(op)}
+            onPrepareKit={(op) => setPrepareAppOp(op)}
+            onSaveOpportunity={(opId) => toggleSaveApp(opId)}
+            isSaved={isOpportunitySaved}
+            triggerToast={triggerToast}
+          />
+        )}
+
+        {/* TAB: PERSONALIZED DASHBOARD (AUTHENTICATED) */}
+        {activeTab === 'dashboard' && (
+          <PersonalizedDashboard 
+            onSelectOpportunity={(op) => setDrawerOp(op)}
+            onPrepareKit={(op) => setPrepareAppOp(op)}
+            onSaveOpportunity={(opId) => toggleSaveApp(opId)}
+            isSaved={isOpportunitySaved}
+            onNavigateTab={(tab) => { setActiveTab(tab); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+            triggerToast={triggerToast}
+          />
+        )}
+
+        {/* TAB: DISCOVER & MATCH (SHARED GLOBAL OPPORTUNITY CATALOG) */}
         {activeTab === 'explore' && (
           <div>
             <ConversationalHero 
@@ -512,8 +747,8 @@ export default function App() {
               
               {/* Active Search Summary Badge */}
               {searchSummaryBadge && (
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'var(--card)', border: '1px solid var(--accent-blue)', color: 'var(--foreground)', padding: '0.45rem 1.25rem', borderRadius: 'var(--radius-full)', fontSize: '0.84rem', fontWeight: '800', margin: '0 auto 1.75rem', boxShadow: 'var(--shadow-sm)' }}>
-                  <Sparkles size={15} color="var(--accent-blue)" /> {searchSummaryBadge}
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'var(--card)', border: '1px solid var(--primary)', color: 'var(--foreground)', padding: '0.45rem 1.25rem', borderRadius: 'var(--radius-full)', fontSize: '0.84rem', fontWeight: '800', margin: '0 auto 1.75rem', boxShadow: 'var(--shadow-sm)' }}>
+                  <Sparkles size={15} color="var(--primary)" /> {searchSummaryBadge}
                   <button 
                     onClick={() => { setSearchSummaryBadge(''); fetchOpportunities(''); }} 
                     style={{ background: 'transparent', border: 'none', color: 'var(--muted-foreground)', cursor: 'pointer', marginLeft: '0.45rem', fontSize: '0.9rem' }}
@@ -564,11 +799,11 @@ export default function App() {
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                  <div style={{ display: 'flex', gap: '0.35rem', background: 'var(--card)', border: '1px solid var(--border)', padding: '0.25rem', borderRadius: 'var(--radius-md)' }}>
+                  <div style={{ display: 'flex', gap: '0.35rem', background: 'var(--card)', border: '1px solid var(--border-default)', padding: '0.25rem', borderRadius: 'var(--radius-md)' }}>
                     <button 
                       className={`icon-button ${viewMode === 'grid' ? 'active' : ''}`}
                       onClick={() => setViewMode('grid')}
-                      style={{ width: '32px', height: '32px', background: viewMode === 'grid' ? 'var(--muted)' : 'transparent' }}
+                      style={{ width: '32px', height: '32px', background: viewMode === 'grid' ? 'var(--primary-subtle)' : 'transparent' }}
                       title="Grid View"
                     >
                       <LayoutGrid size={15} />
@@ -576,7 +811,7 @@ export default function App() {
                     <button 
                       className={`icon-button ${viewMode === 'list' ? 'active' : ''}`}
                       onClick={() => setViewMode('list')}
-                      style={{ width: '32px', height: '32px', background: viewMode === 'list' ? 'var(--muted)' : 'transparent' }}
+                      style={{ width: '32px', height: '32px', background: viewMode === 'list' ? 'var(--primary-subtle)' : 'transparent' }}
                       title="List View"
                     >
                       <List size={15} />
@@ -588,7 +823,7 @@ export default function App() {
               {/* Opportunities Grid / List */}
               {isLoading ? (
                 <div style={{ textAlign: 'center', padding: '4rem 1rem' }}>
-                  <RefreshCw size={28} className="spin" color="var(--accent-blue)" style={{ margin: '0 auto 1rem' }} />
+                  <RefreshCw size={28} className="spin" color="var(--primary)" style={{ margin: '0 auto 1rem' }} />
                   <p style={{ fontWeight: '700', color: 'var(--foreground)' }}>Loading verified opportunities...</p>
                 </div>
               ) : viewMode === 'grid' ? (
@@ -598,17 +833,17 @@ export default function App() {
                   relaxationOptions={searchRelaxationOptions}
                   onSelectOp={(op) => setDrawerOp(op)}
                   onPrepareApplication={(op) => setPrepareAppOp(op)}
-                  onToggleSave={toggleSaveApp}
+                  onToggleSave={(oppId) => toggleSaveApp(oppId)}
                   onInspectEvidence={(op) => setInspectingEvidenceOp(op)}
                   onRelaxConstraint={handleRelaxConstraint}
-                  savedIds={savedApps.map(a => a.id)}
+                  savedIds={savedOppsList.map(s => s.id || s.opportunity_id)}
                 />
               ) : (
                 <OpportunityListView 
                   opportunities={paginatedOpportunities}
                   onSelectOp={(op) => setDrawerOp(op)}
-                  onToggleSave={toggleSaveApp}
-                  savedIds={savedApps.map(a => a.id)}
+                  onToggleSave={(oppId) => toggleSaveApp(oppId)}
+                  savedIds={savedOppsList.map(s => s.id || s.opportunity_id)}
                   onAutoApply={(op) => setPrepareAppOp(op)}
                   onEmailOutreach={(op) => setEmailOutreachOp(op)}
                 />
@@ -618,7 +853,7 @@ export default function App() {
               {totalPages > 1 && (
                 <div className="pagination-bar" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.65rem', marginTop: '2.5rem', paddingBottom: '3rem' }}>
                   <button 
-                    className="btn btn-outline"
+                    className="action-btn-secondary"
                     onClick={() => handlePageChange(currentPage - 1)}
                     disabled={currentPage === 1}
                     style={{ padding: '0.45rem 0.95rem', fontSize: '0.85rem' }}
@@ -629,7 +864,7 @@ export default function App() {
                     Page {currentPage} of {totalPages}
                   </span>
                   <button 
-                    className="btn btn-outline"
+                    className="action-btn-secondary"
                     onClick={() => handlePageChange(currentPage + 1)}
                     disabled={currentPage === totalPages}
                     style={{ padding: '0.45rem 0.95rem', fontSize: '0.85rem' }}
@@ -643,35 +878,59 @@ export default function App() {
           </div>
         )}
 
-        {/* TAB 2: AI CV STUDIO & ATS ENHANCER */}
-        {activeTab === 'cv_studio' && (
-          <div className="tab-content-anim">
-            <CvStudio userProfile={userProfile} triggerToast={triggerToast} />
+        {/* TAB: SAVED OPPORTUNITIES (USER-OWNED) */}
+        {activeTab === 'saved' && (
+          <div className="content-container" style={{ maxWidth: '1280px', margin: '2rem auto', padding: '0 1.5rem' }}>
+            <div style={{ marginBottom: '2rem' }}>
+              <h1 className="type-h1" style={{ fontSize: '1.85rem' }}>Saved Opportunities ({savedOppsList.length})</h1>
+              <p className="type-body" style={{ marginTop: '0.2rem', color: 'var(--muted-foreground)' }}>
+                Your private bookmarks scored against your career profile.
+              </p>
+            </div>
+
+            {savedOppsList.length > 0 ? (
+              <div className="responsive-grid-3col">
+                {savedOppsList.map(opp => (
+                  <OpportunityCard
+                    key={opp.id || opp.opportunity_id}
+                    opportunity={opp}
+                    onSelectOp={(o) => setDrawerOp(o)}
+                    onPrepareApplication={(o) => setPrepareAppOp(o)}
+                    onToggleSave={(id) => toggleSaveApp(id)}
+                    isSaved={true}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div style={{ textAlign: 'center', padding: '4rem 1.5rem', background: 'var(--card)', borderRadius: 'var(--radius-2xl)', border: '1px solid var(--border-default)' }}>
+                <Bookmark size={36} color="var(--primary)" style={{ marginBottom: '0.85rem' }} />
+                <h3 className="type-h3">No saved opportunities yet</h3>
+                <p className="type-body" style={{ marginTop: '0.35rem', marginBottom: '1.5rem' }}>
+                  Explore the catalog and bookmark opportunities you'd like to track or prepare applications for.
+                </p>
+                <button onClick={() => setActiveTab('explore')} className="action-btn-primary">
+                  Browse Opportunities Catalog
+                </button>
+              </div>
+            )}
           </div>
         )}
 
-        {/* TAB 3: AI MOCK INTERVIEW COACH */}
-        {activeTab === 'interview' && (
-          <div className="tab-content-anim">
-            <InterviewCoach userProfile={userProfile} triggerToast={triggerToast} />
-          </div>
-        )}
-
-        {/* TAB 4: KANBAN CRM BOARD */}
+        {/* TAB: APPLICATION TRACKER CRM BOARD (USER-OWNED) */}
         {activeTab === 'tracker' && (
-          <div className="tab-content-anim content-container" style={{ marginTop: '2rem' }}>
+          <div className="tab-content-anim content-container" style={{ marginTop: '2rem', maxWidth: '1280px', padding: '0 1.5rem' }}>
             <div style={{ marginBottom: '1.75rem' }}>
-              <h2 style={{ fontSize: '1.5rem', fontWeight: '900', color: 'var(--foreground)', marginBottom: '0.3rem' }}>
+              <h2 style={{ fontSize: '1.65rem', fontWeight: '900', color: 'var(--foreground)', marginBottom: '0.3rem' }}>
                 Application Pipeline CRM
               </h2>
               <p style={{ color: 'var(--muted-foreground)', fontSize: '0.9rem' }}>
-                Track your active applications across Saved, Preparing, Submitted, and Interview stages.
+                Manage your active applications across Saved, Preparing, Applied, Interview, and Offer stages.
               </p>
             </div>
 
             <div className="kanban-board-scroll">
-              {['saved', 'preparing', 'submitted', 'interview', 'accepted'].map(st => {
-                const colApps = savedApps.filter(a => a.stage === st || (st === 'saved' && !a.stage));
+              {['saved', 'preparing', 'applied', 'interview', 'offer', 'rejected'].map(st => {
+                const colApps = applicationsList.filter(a => a.stage === st || (st === 'saved' && !a.stage));
                 return (
                   <div key={st} className="kanban-col">
                     <div className="kanban-col-header">
@@ -683,7 +942,29 @@ export default function App() {
                       {colApps.map(app => (
                         <div key={app.id} className="kanban-card">
                           <div style={{ fontWeight: '800', color: 'var(--foreground)', fontSize: '0.92rem', marginBottom: '0.25rem' }}>{app.title}</div>
-                          <div style={{ fontSize: '0.8rem', color: 'var(--muted-foreground)' }}>{app.organization}</div>
+                          <div style={{ fontSize: '0.8rem', color: 'var(--muted-foreground)' }}>{app.organization || app.company}</div>
+                          
+                          <div style={{ marginTop: '0.65rem', display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
+                            {st !== 'applied' && (
+                              <button 
+                                className="action-btn-secondary"
+                                style={{ fontSize: '0.72rem', height: '28px', padding: '0 0.5rem' }}
+                                onClick={() => handleUpdateAppStage(app.opportunity_id || app.id, 'applied')}
+                              >
+                                → Applied
+                              </button>
+                            )}
+                            {st !== 'interview' && (
+                              <button 
+                                className="action-btn-secondary"
+                                style={{ fontSize: '0.72rem', height: '28px', padding: '0 0.5rem' }}
+                                onClick={() => handleUpdateAppStage(app.opportunity_id || app.id, 'interview')}
+                              >
+                                → Interview
+                              </button>
+                            )}
+                          </div>
+
                           <div style={{ display: 'flex', gap: '0.45rem', marginTop: '0.75rem' }}>
                             <button 
                               className="btn btn-emerald"
@@ -710,7 +991,21 @@ export default function App() {
           </div>
         )}
 
-        {/* TAB 5: DEADLINES TIMELINE */}
+        {/* TAB: AI CV STUDIO & ATS ENHANCER */}
+        {activeTab === 'cv_studio' && (
+          <div className="tab-content-anim">
+            <CvStudio userProfile={careerProfile} triggerToast={triggerToast} />
+          </div>
+        )}
+
+        {/* TAB: AI MOCK INTERVIEW COACH */}
+        {activeTab === 'interview' && (
+          <div className="tab-content-anim">
+            <InterviewCoach userProfile={careerProfile} triggerToast={triggerToast} />
+          </div>
+        )}
+
+        {/* TAB: DEADLINES TIMELINE */}
         {activeTab === 'calendar' && (
           <div className="content-container" style={{ maxWidth: '860px', margin: '2rem auto' }}>
             <div style={{ marginBottom: '1.75rem' }}>
@@ -722,14 +1017,14 @@ export default function App() {
               </p>
             </div>
 
-            {opportunities.map(op => (
-              <div key={op.id} style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-xl)', padding: '1.35rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', boxShadow: 'var(--shadow-sm)' }}>
+            {opportunities.slice(0, 15).map(op => (
+              <div key={op.id} style={{ background: 'var(--card)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-xl)', padding: '1.35rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', boxShadow: 'var(--shadow-sm)' }}>
                 <div>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--accent-blue)', fontWeight: '800', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                    <Calendar size={14} /> Deadline: {op.deadline_utc}
+                  <div style={{ fontSize: '0.8rem', color: 'var(--primary)', fontWeight: '800', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <Calendar size={14} /> Deadline: {op.deadline_utc || 'Open Intake'}
                   </div>
                   <div style={{ fontWeight: '800', fontSize: '1.05rem', color: 'var(--foreground)' }}>{op.title}</div>
-                  <div style={{ fontSize: '0.82rem', color: 'var(--muted-foreground)', marginTop: '0.15rem' }}>{op.organization} • {op.location_country}</div>
+                  <div style={{ fontSize: '0.82rem', color: 'var(--muted-foreground)', marginTop: '0.15rem' }}>{op.organization || op.company} • {op.location_country}</div>
                 </div>
 
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -745,14 +1040,33 @@ export default function App() {
           </div>
         )}
 
-        {/* TAB 6: ADMIN OPERATIONS DASHBOARD */}
-        {activeTab === 'admin' && (
+        {/* TAB: SETTINGS VIEW */}
+        {activeTab === 'settings' && isAuthenticated && (
+          <SettingsView triggerToast={triggerToast} />
+        )}
+
+        {/* TAB: ADMIN OPERATIONS (ADMIN ONLY) */}
+        {activeTab === 'admin' && isAdmin && (
           <AdminDashboard triggerToast={triggerToast} />
         )}
 
       </main>
 
-      {/* Dynamic AI Question Modal (Section 3) */}
+      {/* Modern Careerly Footer */}
+      <Footer onNavigateTab={(tab) => { setActiveTab(tab); window.scrollTo({ top: 0, behavior: 'smooth' }); }} />
+
+      </div> {/* saas-content-canvas */}
+    </div> {/* saas-main */}
+
+      {/* Authentication Modal */}
+      <AuthModal 
+        isOpen={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        initialMode={authModalMode}
+        triggerToast={triggerToast}
+      />
+
+      {/* Dynamic AI Question Modal */}
       <AIQuestionModal 
         isOpen={Boolean(activeQuestion)}
         questionData={activeQuestion}
@@ -760,18 +1074,18 @@ export default function App() {
         onSkip={handleSkipQuestion}
       />
 
-      {/* Transparent Search Progress Experience (Section 21 & 22) */}
+      {/* Transparent Search Progress Experience */}
       <SearchProgressExperience 
         isActive={isSearchingPipeline}
       />
 
-      {/* Application Readiness Kit Drawer (Section 11) */}
+      {/* Application Readiness Kit Drawer */}
       {prepareAppOp && (
         <ApplicationKitDrawer 
           opportunity={prepareAppOp}
-          userProfile={userProfile}
+          userProfile={careerProfile || {}}
           onClose={() => setPrepareAppOp(null)}
-          onApplied={handleApplySuccess}
+          onApplied={(opId, st) => handleUpdateAppStage(opId, st)}
           triggerToast={triggerToast}
         />
       )}
@@ -781,15 +1095,15 @@ export default function App() {
         <OpportunityDrawer 
           opportunity={drawerOp}
           onClose={() => setDrawerOp(null)}
-          onToggleSave={toggleSaveApp}
-          isSaved={savedApps.some(a => a.id === drawerOp.id)}
+          onToggleSave={(id) => toggleSaveApp(id)}
+          isSaved={isOpportunitySaved(drawerOp.id)}
           onAutoApply={(op) => { setPrepareAppOp(op); setDrawerOp(null); }}
           onEmailOutreach={(op) => { setEmailOutreachOp(op); setDrawerOp(null); }}
           triggerToast={triggerToast}
         />
       )}
 
-      {/* Evidence & Provenance Inspector Modal */}
+      {/* Evidence Inspector Modal */}
       {inspectingEvidenceOp && (
         <EvidenceInspectorModal 
           opportunity={inspectingEvidenceOp}
@@ -802,24 +1116,14 @@ export default function App() {
       {emailOutreachOp && (
         <EmailOutreachModal 
           opportunity={emailOutreachOp}
-          userProfile={userProfile}
+          userProfile={careerProfile || {}}
           onClose={() => setEmailOutreachOp(null)}
           triggerToast={triggerToast}
         />
       )}
 
-      {/* User Profile Modal */}
-      {showProfileModal && (
-        <UserProfileModal 
-          profile={userProfile}
-          onClose={() => setShowProfileModal(false)}
-          onSaveProfile={(prof) => setUserProfile(prof)}
-          triggerToast={triggerToast}
-        />
-      )}
-
       {/* Floating 24/7 AI Career Copilot */}
-      <AiCareerCopilot userProfile={userProfile} triggerToast={triggerToast} />
+      <AiCareerCopilot userProfile={careerProfile || {}} triggerToast={triggerToast} />
 
       {/* Toast Notification */}
       {toastMessage && (
@@ -828,7 +1132,7 @@ export default function App() {
           bottom: '2rem',
           left: '2rem',
           background: 'var(--card)',
-          border: '1px solid var(--border)',
+          border: '1px solid var(--border-default)',
           color: 'var(--foreground)',
           padding: '0.75rem 1.35rem',
           borderRadius: 'var(--radius-md)',
@@ -845,37 +1149,14 @@ export default function App() {
         </div>
       )}
 
-      {/* UI-LAYOUTS SIGNATURE FLOATING NAVIGATION DOCK (MOBILE & TABLET) */}
-      <nav className="uilayouts-floating-dock" aria-label="Mobile Floating Navigation Dock">
-        <div className="floating-dock-inner">
-          {[
-            { id: 'explore', icon: <Compass size={18} />, label: 'Discover' },
-            { id: 'cv_studio', icon: <FileText size={18} />, label: 'CV Studio' },
-            { id: 'interview', icon: <Mic size={18} />, label: 'Coach' },
-            { id: 'tracker', icon: <CheckSquare size={18} />, label: 'CRM', count: savedApps.length },
-            { id: 'calendar', icon: <Calendar size={18} />, label: 'Deadlines' },
-            { id: 'admin', icon: <ShieldCheck size={18} />, label: 'Scrapers' }
-          ].map(item => (
-            <button
-              key={item.id}
-              className={`floating-dock-btn ${activeTab === item.id ? 'active' : ''}`}
-              onClick={() => {
-                setActiveTab(item.id);
-                if (feedTopRef.current) feedTopRef.current.scrollIntoView({ behavior: 'smooth' });
-              }}
-              aria-label={item.label}
-            >
-              <div className="dock-icon-wrapper">
-                {item.icon}
-                {item.count > 0 && <span className="dock-badge-dot" />}
-              </div>
-              <span className="dock-label-text">{item.label}</span>
-              {activeTab === item.id && <span className="dock-active-pill" />}
-            </button>
-          ))}
-        </div>
-      </nav>
-
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <CareerlyPlatform />
+    </AuthProvider>
   );
 }

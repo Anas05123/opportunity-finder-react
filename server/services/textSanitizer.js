@@ -77,13 +77,6 @@ export function sanitizeHtmlToText(rawHtml = '') {
 export function extractSalaryFromText(text = '') {
   if (!text) return null;
 
-  // Patterns like:
-  // "$190,800 — $267,100 USD"
-  // "base salary range for this position is: $190,800 - $267,100"
-  // "RM 1,500 - RM 2,500 / month"
-  // "$150,000 - $180,000 / year"
-  // "£50,000 - £65,000"
-  // "€45,000 - €60,000"
   const patterns = [
     /(\$\s*[\d,]+(?:\.\d+)?\s*(?:—|-|to)\s*\$\s*[\d,]+(?:\.\d+)?(?:\s*(?:USD|CAD|AUD))?(?:\s*(?:\/|\s+per\s+)(?:year|yr|month|mo|hr|hour))?)/i,
     /((?:RM|MYR)\s*[\d,]+(?:\.\d+)?\s*(?:—|-|to)\s*(?:RM|MYR)?\s*[\d,]+(?:\.\d+)?(?:\s*(?:\/|\s+per\s+)(?:month|mo|year|yr))?)/i,
@@ -106,4 +99,26 @@ export function extractSalaryFromText(text = '') {
   return null;
 }
 
-export default { decodeHtmlEntities, sanitizeHtmlToText, extractSalaryFromText };
+/**
+ * Universal Stipend Sanitizer that removes unescaped HTML entities and extracts valid salary
+ */
+export function sanitizeStipendField(rawStipend, rawDescription) {
+  if (rawStipend) {
+    let cleaned = decodeHtmlEntities(rawStipend);
+    cleaned = cleaned.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    cleaned = cleaned.replace(/class=[^\s]+/gi, '').replace(/pay-range/gi, '').trim();
+
+    if (cleaned && cleaned.length >= 2 && (/\d|\$|RM|€|£|USD|MYR|funded/i.test(cleaned) || cleaned.toLowerCase().includes('paid'))) {
+      return cleaned;
+    }
+  }
+
+  if (rawDescription) {
+    const extracted = extractSalaryFromText(decodeHtmlEntities(rawDescription));
+    if (extracted) return extracted;
+  }
+
+  return null;
+}
+
+export default { decodeHtmlEntities, sanitizeHtmlToText, extractSalaryFromText, sanitizeStipendField };

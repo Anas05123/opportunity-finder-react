@@ -1,3 +1,5 @@
+import { detectLocationAndCountryCode } from './locationNormalizer.js';
+
 /**
  * Deterministic Constraint Compiler (V4)
  * Compiles user intent into a typed, machine-executable AST.
@@ -7,14 +9,9 @@
 export function compileSearchConstraints(rawQuery = '', userProfile = {}) {
   const q = (rawQuery || '').toLowerCase().trim();
   
-  // 1. Detect Geographic Scope
+  // 1. Detect Geographic Scope using Universal Global Location Normalizer
+  const locInfo = detectLocationAndCountryCode(q);
   const mentionsKL = q.includes('kuala lumpur') || q.includes('kl');
-  const mentionsSelangor = q.includes('selangor') || q.includes('petaling jaya') || q.includes('pj') || q.includes('subang');
-  const mentionsMalaysia = q.includes('malaysia') || mentionsKL || mentionsSelangor || q.includes('penang') || q.includes('johor') || q.includes('cyberjaya') || q.includes('shah alam');
-  const mentionsUS = q.includes('united states') || q.includes('usa') || q.includes('us only') || q.includes('in us');
-  const mentionsGermany = q.includes('germany') || q.includes('berlin') || q.includes('munich');
-  const mentionsSingapore = q.includes('singapore');
-  const mentionsAntarctica = q.includes('antartica') || q.includes('antarctica');
   const isStrictCity = q.includes('only') || q.includes('strictly') || q.includes('within kl');
   const isExplicitAnywhere = q.includes('anywhere') || q.includes('global') || q.includes('worldwide') || q.includes('any location') || q.includes('all regions');
 
@@ -25,13 +22,16 @@ export function compileSearchConstraints(rawQuery = '', userProfile = {}) {
   let prohibitedCities = [];
   let allowsRemote = true;
 
-  if (isExplicitAnywhere) {
+  if (isExplicitAnywhere || !locInfo.isExplicit || locInfo.country === 'Worldwide') {
     locationMode = 'ANYWHERE';
-  } else if (mentionsMalaysia) {
+    targetCountry = 'Anywhere';
+    targetCity = 'Anywhere';
+    allowsRemote = true;
+  } else {
     locationMode = 'METRO_RADIUS';
-    targetCountry = 'Malaysia';
-    targetCity = mentionsKL ? 'Kuala Lumpur' : (mentionsSelangor ? 'Selangor' : 'Malaysia');
-    allowedCities = ['Kuala Lumpur', 'KL', 'Selangor', 'Petaling Jaya', 'Subang Jaya', 'Cyberjaya'];
+    targetCountry = locInfo.country;
+    targetCity = locInfo.city || locInfo.country;
+    allowedCities = locInfo.city ? [locInfo.city, locInfo.country] : [locInfo.country];
     allowsRemote = q.includes('remote') || q.includes('wfh');
 
     if (isStrictCity && mentionsKL) {
@@ -40,27 +40,6 @@ export function compileSearchConstraints(rawQuery = '', userProfile = {}) {
       allowedCities = ['Kuala Lumpur', 'KL'];
       prohibitedCities = ['Petaling Jaya', 'Cyberjaya', 'Shah Alam', 'Subang Jaya', 'Penang', 'Johor', 'Selangor', 'Klang Valley'];
     }
-  } else if (mentionsUS) {
-    locationMode = 'METRO_RADIUS';
-    targetCountry = 'United States';
-    targetCity = 'United States';
-    allowedCities = ['United States', 'USA', 'San Francisco', 'New York', 'Seattle', 'Austin', 'Remote'];
-  } else if (mentionsGermany) {
-    locationMode = 'METRO_RADIUS';
-    targetCountry = 'Germany';
-    targetCity = 'Germany';
-    allowedCities = ['Germany', 'Berlin', 'Munich', 'Bonn', 'Frankfurt'];
-  } else if (mentionsSingapore) {
-    locationMode = 'METRO_RADIUS';
-    targetCountry = 'Singapore';
-    targetCity = 'Singapore';
-    allowedCities = ['Singapore'];
-  } else if (mentionsAntarctica) {
-    locationMode = 'STRICT_CITY_ONLY';
-    targetCountry = 'Antarctica';
-    targetCity = 'Antarctica';
-    allowedCities = ['Antarctica'];
-    prohibitedCities = ['Malaysia', 'United States', 'Germany', 'Singapore', 'UK', 'Remote'];
   }
 
   // 2. Detect Opportunity Types

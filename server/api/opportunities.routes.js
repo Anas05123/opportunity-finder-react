@@ -1,8 +1,10 @@
 import express from 'express';
-import sqliteDb from '../db/sqliteClient.js';
+import db from '../db/sqliteClient.js';
 import { calculateDeterministicMatchScore } from '../services/matchingEngine.js';
 import { generateApplicationKit } from '../services/applicationAssistant.js';
 import { generateVerifiedJobUrl } from '../services/linkVerifier.js';
+import { sanitizeStipendField, decodeHtmlEntities } from '../services/textSanitizer.js';
+import { optionalAuth, authenticateToken, requireAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -10,10 +12,15 @@ const router = express.Router();
 function enrichOpportunity(opp, userProfile) {
   if (!opp) return opp;
   const verified = generateVerifiedJobUrl(opp);
-  const matchData = calculateDeterministicMatchScore(opp, userProfile);
+  const matchData = calculateDeterministicMatchScore(opp, userProfile || {});
+  const cleanStipend = sanitizeStipendField(opp.stipend_text || opp.stipend, opp.description || opp.description_text);
 
   return {
     ...opp,
+    title: decodeHtmlEntities(opp.title),
+    company: decodeHtmlEntities(opp.company || opp.company_name || opp.organization),
+    organization: decodeHtmlEntities(opp.organization || opp.company || opp.company_name),
+    stipend_text: cleanStipend,
     official_apply_url: verified.verified_live_url,
     linkedin_search_url: verified.linkedin_search_url,
     link_verification_status: verified.status,
@@ -27,21 +34,13 @@ function enrichOpportunity(opp, userProfile) {
 }
 
 // 1. GET /api/v1/opportunities
-router.get('/', (req, res) => {
+router.get('/', optionalAuth, (req, res) => {
   try {
-    const { search, type, field, minScore } = req.query;
-    
-    // Get user profile for personalized matching
-    const profileRow = sqliteDb.prepare('SELECT * FROM user_profiles WHERE id = ?').get('default-user') || {};
-    const userProfile = {
-      ...profileRow,
-      skills: profileRow.skills ? JSON.parse(profileRow.skills) : [],
-      interests: profileRow.interests ? JSON.parse(profileRow.interests) : []
-    };
+    const { search, type, field } = req.query;
+    const userProfile = req.careerProfile || { major: 'Computer Science', gpa: 3.5, degree_level: 'undergrad' };
 
     let query = "SELECT * FROM opportunities WHERE status = 'active'";
     const params = [];
-
 
     if (type && type !== 'all') {
       query += ' AND opportunity_type = ?';
@@ -61,7 +60,7 @@ router.get('/', (req, res) => {
 
     query += ' ORDER BY created_at DESC';
 
-    const rows = sqliteDb.prepare(query).all(...params);
+    const rows = db.prepare(query).all(...params);
     const enriched = rows.map(r => enrichOpportunity(r, userProfile));
 
     // Sort by deterministic match score descending
@@ -78,42 +77,59 @@ router.get('/', (req, res) => {
 });
 
 // 2. GET /api/v1/opportunities/:id
-router.get('/:id', (req, res) => {
+router.get('/:id', optionalAuth, (req, res) => {
   try {
-    const opp = sqliteDb.prepare('SELECT * FROM opportunities WHERE id = ?').get(req.params.id);
-    if (!opp) {
-      return res.status(404).json({ error: 'Opportunity not found' });
-    }
+    const opp = db.prepare('SELECT * FROM opportunities WHERE id = ?').get(req.params.id);
+    if (!opp) return res.status(404).json({ error: 'Opportunity not found' });
 
-    const profileRow = sqliteDb.prepare('SELECT * FROM user_profiles WHERE id = ?').get('default-user') || {};
-    const userProfile = {
-      ...profileRow,
-      skills: profileRow.skills ? JSON.parse(profileRow.skills) : [],
-      interests: profileRow.interests ? JSON.parse(profileRow.interests) : []
-    };
-
-    res.json({ status: 'success', opportunity: enrichOpportunity(opp, userProfile) });
+    const userProfile = req.careerProfile || {};
+    res.json({
+      status: 'success',
+      opportunity: enrichOpportunity(opp, userProfile)
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// 3. POST /api/v1/opportunities/:id/prepare-application (Section 11)
-router.post('/:id/prepare-application', async (req, res) => {
+// 3. POST /api/v1/opportunities/:id/prepare-application (Application Readiness Kit)
+router.post('/:id/prepare-application', optionalAuth, async (req, res) => {
   try {
-    const opp = sqliteDb.prepare('SELECT * FROM opportunities WHERE id = ?').get(req.params.id);
-    if (!opp) {
-      return res.status(404).json({ error: 'Opportunity not found' });
-    }
+    const opp = db.prepare('SELECT * FROM opportunities WHERE id = ?').get(req.params.id);
+    if (!opp) return res.status(404).json({ error: 'Opportunity not found' });
 
-    const userProfile = req.body.userProfile || sqliteDb.prepare('SELECT * FROM user_profiles WHERE id = ?').get('default-user');
-    const applicationKit = await generateApplicationKit({ opportunity: opp, userProfile });
+    const userProfile = req.body?.userProfile || req.careerProfile || { full_name: 'Applicant', degree_title: 'Bachelor of Science (BSc)', major: 'Computer Science', gpa: '3.5' };
+    const kit = await generateApplicationKit({ opportunity: opp, userProfile });
 
     res.json({
       status: 'success',
-      opportunity_id: opp.id,
-      application_kit: applicationKit
+      application_kit: kit
     });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 4. POST /api/v1/opportunities/:id/verify (Admin Only)
+router.post('/:id/verify', authenticateToken, requireAdmin, (req, res) => {
+  try {
+    db.prepare(`
+      UPDATE opportunities 
+      SET verification_status = 'VERIFIED_ACTIVE', verification_level = 5, trust_score = 98, updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `).run(req.params.id);
+
+    res.json({ status: 'success', message: 'Opportunity officially verified by administrator.' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 5. DELETE /api/v1/opportunities/:id (Admin Only)
+router.delete('/:id', authenticateToken, requireAdmin, (req, res) => {
+  try {
+    db.prepare("UPDATE opportunities SET status = 'archived', updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(req.params.id);
+    res.json({ status: 'success', message: 'Opportunity archived.' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

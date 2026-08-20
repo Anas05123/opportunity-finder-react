@@ -1,11 +1,12 @@
 import axios from 'axios';
-import { normalizeLocation } from '../locationNormalizer.js';
+import { normalizeLocation, detectLocationAndCountryCode } from '../locationNormalizer.js';
 import { classifyOpportunityType } from '../typeClassifier.js';
 import { sanitizeHtmlToText, extractSalaryFromText } from '../textSanitizer.js';
 
 /**
  * Serper Google Jobs Search Discovery Adapter
  * Queries Google Real-Time Search index for localized live opportunities with exact source URLs.
+ * Never defaults to Malaysia; accurately detects global locations (e.g. Netherlands -> gl: nl) or searches worldwide (gl: us).
  */
 export async function searchGoogleJobsViaSerper(query, location = '') {
   const apiKey = process.env.SERPER_API_KEY;
@@ -15,17 +16,27 @@ export async function searchGoogleJobsViaSerper(query, location = '') {
   }
 
   const endpoint = 'https://google.serper.dev/search';
-  const searchQuery = location ? `${query} in ${location} job` : `${query} job`;
 
-  // Detect country code for gl parameter
-  let gl = 'my';
-  const locLower = (location || query || '').toLowerCase();
-  if (locLower.includes('united states') || locLower.includes('usa') || locLower.includes('us')) gl = 'us';
-  else if (locLower.includes('united kingdom') || locLower.includes('uk') || locLower.includes('london')) gl = 'uk';
-  else if (locLower.includes('singapore')) gl = 'sg';
-  else if (locLower.includes('germany') || locLower.includes('berlin')) gl = 'de';
-  else if (locLower.includes('australia') || locLower.includes('sydney')) gl = 'au';
-  else if (locLower.includes('canada') || locLower.includes('toronto')) gl = 'ca';
+  // 1. Detect location and proper country code (gl)
+  const locInfo = detectLocationAndCountryCode(location || query || '');
+  const gl = locInfo.gl || 'us'; // Default worldwide (gl: us)
+
+  // 2. Clean and formulate search query without appending "in Anywhere"
+  let cleanQ = (query || '').trim();
+  cleanQ = cleanQ.replace(/\b(in\s+anywhere|in\s+worldwide|in\s+global)\b/gi, '').trim();
+
+  const locName = (location && location !== 'Anywhere' && location !== 'Worldwide') 
+    ? location 
+    : (locInfo.isExplicit && locInfo.country !== 'Worldwide' ? locInfo.country : '');
+
+  let searchQuery = cleanQ;
+  if (locName && !cleanQ.toLowerCase().includes(locName.toLowerCase())) {
+    searchQuery = `${cleanQ} in ${locName} job`;
+  } else if (!cleanQ.toLowerCase().includes('job') && !cleanQ.toLowerCase().includes('intern') && !cleanQ.toLowerCase().includes('scholarship') && !cleanQ.toLowerCase().includes('career')) {
+    searchQuery = `${cleanQ} job`;
+  }
+
+  console.log(`[Serper Adapter] Querying Google: "${searchQuery}" | gl: "${gl}" | country: "${locInfo.country || 'Worldwide'}"`);
 
   const payload = {
     q: searchQuery,
@@ -46,8 +57,8 @@ export async function searchGoogleJobsViaSerper(query, location = '') {
     if (!res.data || !Array.isArray(res.data.organic)) return [];
 
     return res.data.organic.map((item, idx) => {
-      const locationRaw = location || null;
-      const normalizedLoc = normalizeLocation(locationRaw || item.snippet);
+      const locationRaw = (locInfo.isExplicit && locInfo.country !== 'Worldwide') ? (locInfo.city ? `${locInfo.city}, ${locInfo.country}` : locInfo.country) : null;
+      const normalizedLoc = normalizeLocation(locationRaw || item.snippet || (locInfo.country !== 'Worldwide' ? locInfo.country : null));
       const cleanDesc = sanitizeHtmlToText(item.snippet || '');
       const oppType = classifyOpportunityType(item.title, cleanDesc);
       const salaryText = extractSalaryFromText(item.snippet || '');
@@ -65,8 +76,8 @@ export async function searchGoogleJobsViaSerper(query, location = '') {
         company_name: company,
         organization: company,
         opportunity_type: oppType,
-        location_country: normalizedLoc.country || (gl === 'my' ? 'Malaysia' : 'Worldwide'),
-        location_city: normalizedLoc.city || (locationRaw ? locationRaw.split(',')[0].trim() : null),
+        location_country: normalizedLoc.country || locInfo.country || 'Worldwide',
+        location_city: normalizedLoc.city || locInfo.city || null,
         location_raw: locationRaw,
         is_remote: (normalizedLoc.is_remote || (item.title || '').toLowerCase().includes('remote')) ? 1 : 0,
         work_modality: (normalizedLoc.is_remote || (item.title || '').toLowerCase().includes('remote')) ? 'remote' : 'onsite',

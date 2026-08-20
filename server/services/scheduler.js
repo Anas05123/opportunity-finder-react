@@ -58,14 +58,67 @@ export async function runScraperPipeline() {
   return { totalNew, totalUpdated, totalDuplicates };
 }
 
+/**
+ * Run periodic operational security health check
+ */
+export async function runOperationalSecurityHealthCheck() {
+  try {
+    const sqliteClientModule = await import('../db/sqliteClient.js');
+    const db = sqliteClientModule.default;
+    
+    const latestRun = db.prepare(`
+      SELECT id, score, status, completed_at, started_at
+      FROM security_audit_runs
+      WHERE status != 'IN_PROGRESS'
+      ORDER BY completed_at DESC, rowid DESC
+      LIMIT 1
+    `).get();
+
+    if (latestRun) {
+      const completedTime = new Date(latestRun.completed_at || latestRun.started_at).getTime();
+      const ageHours = (Date.now() - completedTime) / (1000 * 60 * 60);
+
+      const { triggerSecurityAlert } = await import('./security/securityAlerts.js');
+
+      if (latestRun.status === 'CRITICAL') {
+        await triggerSecurityAlert({
+          alert_type: 'CRITICAL_SECURITY_SCORE',
+          severity: 'CRITICAL',
+          title: 'Critical Security Posture Detected',
+          summary: `Authoritative security score is CRITICAL (${latestRun.score}/100).`,
+          source: 'OPERATIONAL_SCHEDULER',
+          details: { audit_id: latestRun.id, score: latestRun.score, status: latestRun.status }
+        });
+      } else if (ageHours > 24) {
+        await triggerSecurityAlert({
+          alert_type: 'SECURITY_VERIFICATION_OUTDATED',
+          severity: 'HIGH',
+          title: 'Security Verification Outdated',
+          summary: `Latest security verification is ${Math.round(ageHours)} hours old (exceeds 24h freshness window).`,
+          source: 'OPERATIONAL_SCHEDULER',
+          details: { audit_id: latestRun.id, age_hours: Math.round(ageHours) }
+        });
+      }
+    }
+  } catch (err) {
+    console.error('[SCHEDULER] Operational security check error:', err.message);
+  }
+}
+
 export function startBackgroundScheduler(intervalMinutes = 120) {
+  if (process.env.NODE_ENV === 'test' || process.env.DISABLE_AUTO_SCRAPE === 'true') {
+    console.log('[SCHEDULER] Automated background scheduler suspended for testing environment.');
+    return;
+  }
   console.log(`[SCHEDULER] Automated 24/7 background scheduler initialized. Ingestion loop every ${intervalMinutes} minutes.`);
   
   // Run once immediately
-  runScraperPipeline().catch(console.error);
+  runScraperPipeline().catch(err => console.error('[SCHEDULER] Pipeline initial run warning:', err.message));
+  runOperationalSecurityHealthCheck().catch(err => console.error('[SCHEDULER] Security health check initial warning:', err.message));
 
   // Schedule recurring loop
   setInterval(() => {
-    runScraperPipeline().catch(console.error);
+    runScraperPipeline().catch(err => console.error('[SCHEDULER] Pipeline scheduled run warning:', err.message));
+    runOperationalSecurityHealthCheck().catch(err => console.error('[SCHEDULER] Security health check scheduled warning:', err.message));
   }, intervalMinutes * 60 * 1000);
 }

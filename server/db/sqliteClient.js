@@ -164,35 +164,94 @@ export function initSqliteDatabase() {
     );
   `);
 
-  // 3. User Profiles Table
+  // 3. Multi-User Authentication & Identity Tables
   db.exec(`
-    CREATE TABLE IF NOT EXISTS user_profiles (
+    CREATE TABLE IF NOT EXISTS users (
       id TEXT PRIMARY KEY,
-      name TEXT NOT NULL,
-      email TEXT NOT NULL,
-      phone TEXT,
-      degree_level TEXT DEFAULT 'undergrad',
-      degree_title TEXT DEFAULT 'Bachelor of Arts (BA)',
-      major TEXT DEFAULT 'Advertising & Marketing',
-      university TEXT,
-      gpa REAL DEFAULT 3.85,
-      skills TEXT, -- JSON Array
-      interests TEXT, -- JSON Array
-      target_locations TEXT, -- JSON Array
-      no_ielts_preference INTEGER DEFAULT 1,
-      cv_text TEXT,
+      email TEXT UNIQUE NOT NULL,
+      password_hash TEXT NOT NULL,
+      role TEXT DEFAULT 'user',
+      is_email_verified INTEGER DEFAULT 1,
+      verification_token TEXT,
+      reset_password_token TEXT,
+      reset_password_expires_at TEXT,
       created_at TEXT DEFAULT CURRENT_TIMESTAMP,
       updated_at TEXT DEFAULT CURRENT_TIMESTAMP
     );
-  `);
 
-  // 4. Application Tracker CRM Table
-  db.exec(`
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email ON users(email);
+
+    -- 4. User Career Profiles
+    CREATE TABLE IF NOT EXISTS career_profiles (
+      id TEXT PRIMARY KEY,
+      user_id TEXT UNIQUE NOT NULL,
+      full_name TEXT NOT NULL,
+      headline TEXT,
+      phone TEXT,
+      degree_level TEXT DEFAULT 'undergrad',
+      degree_title TEXT DEFAULT 'Bachelor of Science (BSc)',
+      field_of_study TEXT DEFAULT 'Computer Science',
+      university TEXT,
+      graduation_date TEXT,
+      gpa REAL DEFAULT 3.5,
+      experience_years INTEGER DEFAULT 0,
+      skills TEXT DEFAULT '[]',
+      interests TEXT DEFAULT '[]',
+      languages TEXT DEFAULT '[]',
+      certifications TEXT DEFAULT '[]',
+      portfolio_url TEXT,
+      linkedin_url TEXT,
+      github_url TEXT,
+      resume_text TEXT,
+      no_ielts_preference INTEGER DEFAULT 1,
+      profile_completion INTEGER DEFAULT 40,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    );
+
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_career_profiles_user ON career_profiles(user_id);
+
+    -- 5. User Search Profiles & Preferences
+    CREATE TABLE IF NOT EXISTS search_profiles (
+      id TEXT PRIMARY KEY,
+      user_id TEXT UNIQUE NOT NULL,
+      target_roles TEXT DEFAULT '[]',
+      opportunity_types TEXT DEFAULT '["job","internship"]',
+      industries TEXT DEFAULT '[]',
+      required_locations TEXT DEFAULT '[]',
+      remote_only INTEGER DEFAULT 0,
+      min_salary REAL DEFAULT 0,
+      max_salary REAL,
+      salary_currency TEXT DEFAULT 'USD',
+      visa_sponsorship_required INTEGER DEFAULT 0,
+      preferred_skills TEXT DEFAULT '[]',
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    );
+
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_search_profiles_user ON search_profiles(user_id);
+
+    -- 6. Saved Opportunities (User Bookmarks)
+    CREATE TABLE IF NOT EXISTS saved_opportunities (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      opportunity_id TEXT NOT NULL,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY (opportunity_id) REFERENCES opportunities(id) ON DELETE CASCADE,
+      UNIQUE(user_id, opportunity_id)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_saved_user ON saved_opportunities(user_id);
+
+    -- 7. Application Tracker CRM Table (User-Owned)
     CREATE TABLE IF NOT EXISTS applications (
       id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
       opportunity_id TEXT NOT NULL,
-      user_id TEXT DEFAULT 'default-user',
-      stage TEXT DEFAULT 'saved', -- saved, preparing, applied, interview, offer, rejected
+      stage TEXT DEFAULT 'saved',
       applied_at TEXT,
       interview_date TEXT,
       notes TEXT,
@@ -200,44 +259,206 @@ export function initSqliteDatabase() {
       cover_letter TEXT,
       created_at TEXT DEFAULT CURRENT_TIMESTAMP,
       updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (opportunity_id) REFERENCES opportunities(id)
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY (opportunity_id) REFERENCES opportunities(id) ON DELETE CASCADE,
+      UNIQUE(user_id, opportunity_id)
     );
 
-    CREATE INDEX IF NOT EXISTS idx_apps_stage ON applications(stage);
-  `);
+    CREATE INDEX IF NOT EXISTS idx_apps_user_stage ON applications(user_id, stage);
 
-  // 5. Search Sessions Table (Conversational AI Context)
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS search_sessions (
+    -- 8. User Search History
+    CREATE TABLE IF NOT EXISTS user_searches (
       id TEXT PRIMARY KEY,
-      user_query TEXT NOT NULL,
-      extracted_intent TEXT, -- JSON Structured Search Profile
-      missing_fields TEXT, -- JSON Array
-      status TEXT DEFAULT 'completed',
-      created_at TEXT DEFAULT CURRENT_TIMESTAMP
+      user_id TEXT NOT NULL,
+      query TEXT NOT NULL,
+      filters TEXT DEFAULT '{}',
+      results_count INTEGER DEFAULT 0,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     );
+
+    CREATE INDEX IF NOT EXISTS idx_user_searches_user ON user_searches(user_id);
+
+    -- 9. User Notifications
+    CREATE TABLE IF NOT EXISTS notifications (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      title TEXT NOT NULL,
+      message TEXT NOT NULL,
+      type TEXT DEFAULT 'info',
+      is_read INTEGER DEFAULT 0,
+      link TEXT,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id);
+
+    -- Backward compatibility user_profiles table if needed
+    CREATE TABLE IF NOT EXISTS user_profiles (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      email TEXT NOT NULL,
+      phone TEXT,
+      degree_level TEXT DEFAULT 'undergrad',
+      degree_title TEXT DEFAULT 'Bachelor of Science (BSc)',
+      major TEXT DEFAULT 'Computer Science',
+      university TEXT,
+      gpa REAL DEFAULT 3.5,
+      skills TEXT,
+      interests TEXT,
+      target_locations TEXT,
+      no_ielts_preference INTEGER DEFAULT 1,
+      cv_text TEXT,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- 10. Security Audit Runs (Audit Execution Engine)
+    CREATE TABLE IF NOT EXISTS security_audit_runs (
+      id TEXT PRIMARY KEY,
+      suite_version TEXT NOT NULL DEFAULT '2.0.0',
+      app_version TEXT NOT NULL DEFAULT '2.0.0',
+      git_commit TEXT DEFAULT 'HEAD',
+      triggered_by TEXT DEFAULT 'system',
+      total_checks INTEGER NOT NULL DEFAULT 0,
+      passed_checks INTEGER NOT NULL DEFAULT 0,
+      failed_checks INTEGER NOT NULL DEFAULT 0,
+      warning_checks INTEGER NOT NULL DEFAULT 0,
+      score REAL,
+      status TEXT NOT NULL DEFAULT 'IN_PROGRESS' CHECK(status IN ('HEALTHY', 'WARNING', 'DEGRADED', 'CRITICAL', 'NOT_VERIFIED', 'SECURITY_VERIFICATION_OUTDATED', 'IN_PROGRESS', 'PASSED', 'FAILED')),
+      duration_ms INTEGER DEFAULT 0,
+      started_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      completed_at TEXT,
+      metadata_json TEXT DEFAULT '{}'
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_sec_audit_status ON security_audit_runs(status, started_at);
+
+    -- 11. Security Checks (Itemized Verification Records)
+    CREATE TABLE IF NOT EXISTS security_checks (
+      id TEXT PRIMARY KEY,
+      run_id TEXT NOT NULL,
+      check_key TEXT NOT NULL,
+      category TEXT NOT NULL,
+      name TEXT NOT NULL,
+      description TEXT,
+      severity TEXT NOT NULL CHECK (severity IN ('CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'INFORMATIONAL')),
+      status TEXT NOT NULL CHECK (status IN ('PASS', 'FAIL', 'WARNING', 'NOT_RUN')),
+      execution_time_ms INTEGER DEFAULT 0,
+      evidence_text TEXT,
+      error_message TEXT,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (run_id) REFERENCES security_audit_runs(id) ON DELETE CASCADE
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_sec_checks_run ON security_checks(run_id, status);
+    CREATE INDEX IF NOT EXISTS idx_sec_checks_cat ON security_checks(category, severity);
+    CREATE INDEX IF NOT EXISTS idx_sec_checks_key ON security_checks(check_key);
+
+    -- 12. Security Events (Runtime Audit & Defense Logging)
+    CREATE TABLE IF NOT EXISTS security_events (
+      id TEXT PRIMARY KEY,
+      event_type TEXT NOT NULL,
+      severity TEXT NOT NULL CHECK (severity IN ('CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'INFORMATIONAL')),
+      actor_user_id TEXT,
+      actor_ip TEXT,
+      actor_email_hash TEXT,
+      request_path TEXT,
+      request_method TEXT,
+      details_json TEXT DEFAULT '{}',
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (actor_user_id) REFERENCES users(id) ON DELETE SET NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_sec_events_type ON security_events(event_type, severity, created_at);
+    CREATE INDEX IF NOT EXISTS idx_sec_events_user ON security_events(actor_user_id, created_at);
+    CREATE INDEX IF NOT EXISTS idx_sec_events_time ON security_events(created_at);
+
+    -- 13. Security Alerts (Phase 5C-5 Alerting & Operational Monitoring)
+    CREATE TABLE IF NOT EXISTS security_alerts (
+      id TEXT PRIMARY KEY,
+      alert_type TEXT NOT NULL,
+      severity TEXT NOT NULL CHECK (severity IN ('CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'INFORMATIONAL')),
+      title TEXT NOT NULL,
+      summary TEXT NOT NULL,
+      source TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'TRIGGERED' CHECK (status IN ('TRIGGERED', 'DELIVERED', 'FAILED', 'SUPPRESSED', 'RESOLVED')),
+      fingerprint TEXT NOT NULL,
+      details_json TEXT DEFAULT '{}',
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_sec_alerts_type ON security_alerts(alert_type, severity, created_at);
+    CREATE INDEX IF NOT EXISTS idx_sec_alerts_fp ON security_alerts(fingerprint, created_at);
+    CREATE INDEX IF NOT EXISTS idx_sec_alerts_status ON security_alerts(status, created_at);
+    CREATE INDEX IF NOT EXISTS idx_sec_alerts_time ON security_alerts(created_at);
+
+    -- 14. Security Alert Deliveries (Channel Dispatch & Audit Log)
+    CREATE TABLE IF NOT EXISTS security_alert_deliveries (
+      id TEXT PRIMARY KEY,
+      alert_id TEXT NOT NULL,
+      channel TEXT NOT NULL CHECK (channel IN ('EMAIL', 'SLACK', 'WEBHOOK')),
+      status TEXT NOT NULL CHECK (status IN ('SUCCESS', 'FAILED', 'SKIPPED')),
+      error_message TEXT,
+      duration_ms INTEGER DEFAULT 0,
+      attempt_count INTEGER DEFAULT 1,
+      delivered_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (alert_id) REFERENCES security_alerts(id) ON DELETE CASCADE
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_sec_alert_deliv_alert ON security_alert_deliveries(alert_id, status);
+    CREATE INDEX IF NOT EXISTS idx_sec_alert_deliv_time ON security_alert_deliveries(delivered_at);
   `);
 
-  // Seed default user profile if empty
-  const userCount = db.prepare('SELECT COUNT(*) as count FROM user_profiles').get().count;
-  if (userCount === 0) {
-    db.prepare(`
-      INSERT INTO user_profiles (id, name, email, phone, degree_level, degree_title, major, gpa, skills, interests, no_ielts_preference)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(
-      'default-user',
-      'Anas (Student)',
-      'ayarianas79@gmail.com',
-      '+60172513031',
-      'undergrad',
-      'Bachelor of Arts (BA)',
-      'Advertising & Marketing',
-      3.85,
-      JSON.stringify(['Brand Strategy', 'Creative Copywriting', 'Market Research', 'Social Media', 'Figma', 'Campaign Analytics']),
-      JSON.stringify(['Advertising', 'Brand Strategy', 'Digital Marketing', 'Finance', 'Global Traineeships']),
-      1
-    );
-  }
+  // Seed primary administrator account under Anas (ayarianas79@gmail.com)
+  import('bcryptjs').then(bcrypt => {
+    const adminHash = bcrypt.default.hashSync('Admin12345!', 10);
+    const anasId = 'admin-anas-001';
+
+    // 1. Primary Admin Account: Anas
+    const existingAnas = db.prepare('SELECT id FROM users WHERE email = ?').get('ayarianas79@gmail.com');
+    if (!existingAnas) {
+      db.prepare(`
+        INSERT INTO users (id, email, password_hash, role, is_email_verified)
+        VALUES (?, ?, ?, ?, ?)
+      `).run(anasId, 'ayarianas79@gmail.com', adminHash, 'admin', 1);
+
+      db.prepare(`
+        INSERT INTO career_profiles (id, user_id, full_name, headline, degree_level, degree_title, field_of_study, gpa, skills, interests, profile_completion)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).run(
+        'cp-anas',
+        anasId,
+        'Anas',
+        'Founder & Lead Scholar — Advertising & Brand Strategy',
+        'undergrad',
+        'Bachelor of Arts (BA)',
+        'Advertising & Brand Strategy',
+        3.85,
+        JSON.stringify(['Brand Strategy & Positioning', 'Creative Copywriting', 'Market Analysis', 'Figma & UI Design', 'Full-Stack Architecture']),
+        JSON.stringify(['Brand Strategy', 'Global Fellowships', 'Creative Direction']),
+        100
+      );
+
+      db.prepare(`
+        INSERT INTO search_profiles (id, user_id, target_roles, required_locations, remote_only)
+        VALUES (?, ?, ?, ?, ?)
+      `).run(
+        'sp-anas',
+        anasId,
+        JSON.stringify(['Brand Strategist', 'Advertising Trainee', 'Marketing Specialist']),
+        JSON.stringify(['Netherlands', 'Germany', 'Worldwide', 'Remote']),
+        0
+      );
+    } else {
+      // Ensure existing account has admin privileges
+      db.prepare("UPDATE users SET role = 'admin' WHERE email = ?").run('ayarianas79@gmail.com');
+      db.prepare("UPDATE career_profiles SET full_name = 'Anas' WHERE user_id = ?").run(existingAnas.id);
+    }
+
+    console.log('[SQLite DB] Administrator account configured for Anas (ayarianas79@gmail.com).');
+  }).catch(e => console.warn('[SQLite DB] Seed bcrypt error:', e.message));
 
   // Seed initial opportunities from existing opportunities_db.json if empty
   const oppCount = db.prepare('SELECT COUNT(*) as count FROM opportunities').get().count;

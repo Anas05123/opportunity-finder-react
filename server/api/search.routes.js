@@ -1,8 +1,10 @@
 import express from 'express';
+import crypto from 'crypto';
 import db from '../db/sqliteClient.js';
 import { compileSearchConstraints } from '../services/constraintCompiler.js';
 import { discoverOpportunities } from '../services/discoveryOrchestrator.js';
 import { processConversationalQuery } from '../services/conversationalSearch.js';
+import { optionalAuth } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -10,15 +12,16 @@ const router = express.Router();
  * 1. POST /api/v3/search/intent
  * Natural Language to Compiled AST Constraint Predicates
  */
-router.post('/intent', async (req, res) => {
+router.post('/intent', optionalAuth, async (req, res) => {
   try {
     const { raw_query, user_profile } = req.body;
     if (!raw_query || !raw_query.trim()) {
       return res.status(400).json({ error: 'Query is required' });
     }
 
-    const compiled = compileSearchConstraints(raw_query, user_profile);
-    const nluResult = await processConversationalQuery({ query: raw_query, userProfile: user_profile });
+    const effectiveProfile = user_profile || req.careerProfile || {};
+    const compiled = compileSearchConstraints(raw_query, effectiveProfile);
+    const nluResult = await processConversationalQuery({ query: raw_query, userProfile: effectiveProfile });
 
     res.json({
       status: 'ready',
@@ -36,20 +39,39 @@ router.post('/intent', async (req, res) => {
  * Live Opportunity Discovery Orchestration:
  * SearchProfile -> Query Expansion -> Parallel Discovery -> Normalization -> Verification -> Deduplication -> Hard Filter -> Matching -> Ranking
  */
-router.post('/execute', async (req, res) => {
+router.post('/execute', optionalAuth, async (req, res) => {
   try {
     const { query, compiled_constraints, user_profile, debug } = req.body;
     const effectiveQuery = query || compiled_constraints?.raw_query || 'internship';
-    const effectiveConstraints = compiled_constraints || compileSearchConstraints(effectiveQuery, user_profile);
+    const effectiveProfile = user_profile || req.careerProfile || {};
+    const effectiveConstraints = compiled_constraints || compileSearchConstraints(effectiveQuery, effectiveProfile);
 
     console.log(`[Search V4 Router] Invoking Discovery Orchestrator for: "${effectiveQuery}"`);
 
     const discoveryResult = await discoverOpportunities({
       query: effectiveQuery,
-      userProfile: user_profile || {},
+      userProfile: effectiveProfile,
       compiledConstraints: effectiveConstraints,
       debug: Boolean(debug)
     });
+
+    // If user is authenticated, log search history
+    if (req.user) {
+      try {
+        db.prepare(`
+          INSERT INTO user_searches (id, user_id, query, filters, results_count)
+          VALUES (?, ?, ?, ?, ?)
+        `).run(
+          `search-${crypto.randomUUID().slice(0, 8)}`,
+          req.user.id,
+          effectiveQuery,
+          JSON.stringify(effectiveConstraints.predicates || {}),
+          discoveryResult.results.length
+        );
+      } catch (e) {
+        console.warn('Search history logging note:', e.message);
+      }
+    }
 
     // Build relaxation options when 0 results returned
     const relaxationOptions = [];
@@ -58,7 +80,7 @@ router.post('/execute', async (req, res) => {
         relaxationOptions.push({
           id: 'relax_location',
           type: 'location',
-          label: `Expand search to Greater ${effectiveConstraints.predicates.location.target_city || 'Klang Valley'} Metro Area`
+          label: `Expand search to Greater ${effectiveConstraints.predicates.location.target_city || 'Metro'} Area`
         });
       }
       if (effectiveConstraints.predicates?.compensation?.is_mandatory) {
@@ -98,44 +120,6 @@ router.post('/execute', async (req, res) => {
     console.error('[Search V4 Router Error]:', err);
     res.status(500).json({ error: err.message });
   }
-});
-
-/**
- * 3. GET /api/v3/opportunities/:id/evidence
- * Fetch complete verbatim evidence audit log for a specific opportunity
- */
-router.get('/opportunities/:id/evidence', (req, res) => {
-  try {
-    const { id } = req.params;
-    const evidence = db.prepare(`
-      SELECT * FROM opportunity_evidence WHERE opportunity_id = ?
-    `).all(id);
-
-    const snapshots = db.prepare(`
-      SELECT * FROM opportunity_snapshots WHERE opportunity_id = ? ORDER BY snapshot_timestamp DESC LIMIT 10
-    `).all(id);
-
-    res.json({
-      status: 'success',
-      opportunity_id: id,
-      evidence_count: evidence.length,
-      evidence,
-      snapshots
-    });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// Legacy backward-compatibility routes
-router.post('/conversational', async (req, res) => {
-  const { query, userProfile, previousAnswers } = req.body;
-  const conversationResult = await processConversationalQuery({
-    query,
-    userProfile,
-    previousAnswers: previousAnswers || {}
-  });
-  res.json({ status: 'success', ...conversationResult });
 });
 
 export default router;

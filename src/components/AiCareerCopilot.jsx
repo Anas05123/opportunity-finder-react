@@ -17,7 +17,7 @@ export default function AiCareerCopilot({ userProfile, triggerToast }) {
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
-      text: `Hello ${userProfile?.name?.split(' ')[0] || 'Anas'}! 👋 I am your **Google Gemini Career Copilot** (Gemini 3.6 Flash).\n\nI can draft custom cover letters for top agencies (Ogilvy, Google, Publicis), practice mock interview answers, optimize your CV bullets, and find high-value scholarships with English waivers.\n\nWhat career goal would you like to achieve today?`
+      text: `Hello ${userProfile?.name?.split(' ')[0] || 'there'}! 👋 I am your **Careerly Copilot**, your dedicated 24/7 AI career strategist and opportunity intelligence engine.\n\nI can draft custom high-impact application kits, practice mock behavioral interviews (STAR method), optimize your CV bullets for 90+ ATS score, and match top scholarships & global jobs with English waivers.\n\nWhat career goal would you like to achieve today?`
     }
   ]);
 
@@ -94,11 +94,15 @@ export default function AiCareerCopilot({ userProfile, triggerToast }) {
           className="copilot-floating-btn"
           aria-label="Open Gemini Career Copilot"
         >
-          <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-            <Sparkles size={18} color="#60a5fa" />
-            <span style={{ position: 'absolute', top: '-4px', right: '-4px', width: '8px', height: '8px', borderRadius: '50%', background: '#34d399', boxShadow: '0 0 8px #34d399' }} />
+          <div className="copilot-icon-capsule">
+            <span className="copilot-pulse-ring" />
+            <Sparkles size={16} color="#ffffff" />
           </div>
-          <span>Ask Gemini Career AI</span>
+          <div className="copilot-btn-text">
+            <span>Ask Career Copilot</span>
+            <span className="copilot-ai-tag">CAREERLY</span>
+            <span className="copilot-online-beacon" title="Live 24/7 AI Online" />
+          </div>
         </button>
       )}
 
@@ -132,13 +136,13 @@ export default function AiCareerCopilot({ userProfile, triggerToast }) {
               </div>
               <div>
                 <strong style={{ fontSize: '0.95rem', color: 'var(--foreground)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                  Gemini Career Copilot
+                  Careerly Copilot
                   <span style={{ fontSize: '0.68rem', fontWeight: '800', background: 'var(--accent-emerald-light)', color: 'var(--accent-emerald)', padding: '0.1rem 0.45rem', borderRadius: 'var(--radius-full)' }}>
-                    Gemini 3.6 Flash
+                    Intelligence 2.0
                   </span>
                 </strong>
                 <div style={{ fontSize: '0.74rem', color: 'var(--accent-emerald)', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.3rem', marginTop: '0.1rem' }}>
-                  <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--accent-emerald)', display: 'inline-block' }} /> Live 24/7 AI Advisor
+                  <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--accent-emerald)', display: 'inline-block' }} /> Live 24/7 AI Strategist
                 </div>
               </div>
             </div>

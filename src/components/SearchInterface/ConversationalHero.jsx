@@ -1,29 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Sparkles, ArrowRight, Search, RefreshCw, Globe, Zap, X, CornerDownLeft } from 'lucide-react';
+import { Search, RefreshCw, X, ArrowRight, Sparkles, Filter, SlidersHorizontal, MapPin, Briefcase } from 'lucide-react';
 
-const PROMPT_SUGGESTIONS = [
-  "I want a digital marketing specialist job anywhere",
-  "Find entry-level advertising jobs in Kuala Lumpur paying at least RM2500",
-  "Find me remote software engineering internships",
-  "Undergraduate scholarships with English waiver"
+const FILTER_SHORTCUTS = [
+  { label: 'Remote Only', query: 'Remote software developer / marketing' },
+  { label: 'Internships', query: 'Summer internships' },
+  { label: 'Scholarships', query: 'Fully funded master scholarships' },
+  { label: 'Finance & Banking', query: 'Finance analyst investment banking' },
+  { label: 'English Waiver', query: 'No IELTS required with English waiver' }
 ];
 
 export default function ConversationalHero({ onStartConversationalSearch, isSearching }) {
   const [queryInput, setQueryInput] = useState('');
-  const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef(null);
 
-  // Smooth rotating placeholder suggestions
-  useEffect(() => {
-    if (queryInput || isFocused) return;
-    const interval = setInterval(() => {
-      setPlaceholderIndex((prev) => (prev + 1) % PROMPT_SUGGESTIONS.length);
-    }, 4000);
-    return () => clearInterval(interval);
-  }, [queryInput, isFocused]);
-
-  // Global Keyboard Shortcut: Press '/' or 'Ctrl+K' / 'Cmd+K' to focus search
+  // Global Keyboard Shortcut: Press '/' or 'Cmd+K' / 'Ctrl+K'
   useEffect(() => {
     const handleKeyDown = (e) => {
       if ((e.key === '/' || ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k')) && document.activeElement !== inputRef.current) {
@@ -37,14 +28,14 @@ export default function ConversationalHero({ onStartConversationalSearch, isSear
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const targetQuery = queryInput.trim() || PROMPT_SUGGESTIONS[placeholderIndex];
-    if (!targetQuery) return;
-    onStartConversationalSearch(targetQuery);
+    const target = queryInput.trim();
+    if (!target) return;
+    onStartConversationalSearch(target);
   };
 
-  const handleSelectSuggestion = (suggestion) => {
-    setQueryInput(suggestion);
-    onStartConversationalSearch(suggestion);
+  const handleSelectShortcut = (shortcutQuery) => {
+    setQueryInput(shortcutQuery);
+    onStartConversationalSearch(shortcutQuery);
   };
 
   const handleClear = () => {
@@ -53,120 +44,71 @@ export default function ConversationalHero({ onStartConversationalSearch, isSear
   };
 
   return (
-    <section className="conversational-hero-section">
-      <div className="hero-conversational-container">
+    <div className="saas-command-search-bar">
+      
+      {/* Precision Search Form */}
+      <form onSubmit={handleSubmit} className={`saas-search-box ${isFocused ? 'is-focused' : ''}`}>
+        <div className="saas-search-input-prefix">
+          <Search size={16} color="var(--text-muted)" />
+        </div>
         
-        {/* AI Pill Badge */}
-        <div className="hero-pill-badge">
-          <Sparkles size={14} className="hero-sparkle-icon" />
-          <span>Careerly AI 2.0 • Real-Time Opportunity Discovery</span>
-        </div>
+        <input 
+          ref={inputRef}
+          type="text" 
+          className="saas-search-input"
+          placeholder="Filter by role, company, city, major, or target criteria... (Press / to search)"
+          value={queryInput}
+          onChange={(e) => setQueryInput(e.target.value)}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+          disabled={isSearching}
+        />
 
-        {/* Vision Title */}
-        <h1 className="conversational-title">
-          <span>Find your next opportunity with Careerly.</span><br />
-          <span className="conversational-title-sub" style={{ letterSpacing: '0.08em', fontSize: 'clamp(1.1rem, 2.5vw, 1.45rem)', textTransform: 'uppercase', color: 'var(--primary)', marginTop: '0.35rem', display: 'inline-block' }}>
-            Discover. Match. Succeed.
-          </span>
-        </h1>
-
-        <p className="conversational-desc">
-          Describe your dream role, target location, or educational goals in plain language. Careerly analyzes your qualifications, searches live ATS feeds & Google Jobs, and matches verified opportunities with zero fabrication.
-        </p>
-
-        {/* Clean, High-Precision Search Box */}
-        <form onSubmit={handleSubmit} className={`conversational-input-box ${isFocused ? 'is-focused' : ''}`}>
-          <div className="input-icon-wrapper">
-            <Search size={20} className="input-search-icon" />
-          </div>
-          
-          <input 
-            ref={inputRef}
-            type="text" 
-            className="natural-language-input"
-            placeholder={`e.g. ${PROMPT_SUGGESTIONS[placeholderIndex]}...`}
-            value={queryInput}
-            onChange={(e) => setQueryInput(e.target.value)}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
-            disabled={isSearching}
-          />
-
-          {/* Quick Clear Button */}
-          {queryInput && (
-            <button
-              type="button"
-              onClick={handleClear}
-              className="search-clear-btn"
-              aria-label="Clear query"
-              title="Clear input"
-            >
-              <X size={14} />
-            </button>
-          )}
-
-          {/* Shortcut Hint Key */}
-          {!isFocused && !queryInput && (
-            <span className="search-shortcut-hint" onClick={() => inputRef.current?.focus()}>
-              <kbd>/</kbd>
-            </span>
-          )}
-
-          <button 
-            type="submit" 
-            className="btn btn-search-action"
-            disabled={isSearching || (!queryInput.trim() && !PROMPT_SUGGESTIONS[placeholderIndex])}
+        {queryInput && (
+          <button
+            type="button"
+            onClick={handleClear}
+            className="saas-search-clear-btn"
+            aria-label="Clear query"
           >
-            {isSearching ? (
-              <>
-                <RefreshCw size={16} className="spin" /> Searching...
-              </>
-            ) : (
-              <>
-                Search <ArrowRight size={16} />
-              </>
-            )}
+            <X size={14} />
           </button>
-        </form>
+        )}
 
-        {/* Clean Suggestion Chips */}
-        <div className="prompt-suggestions-rail">
-          <span className="suggestions-label">Try asking:</span>
-          {PROMPT_SUGGESTIONS.map((sug, idx) => (
-            <button 
-              key={idx} 
-              type="button" 
-              className="suggestion-chip animated-chip-hover"
-              onClick={() => handleSelectSuggestion(sug)}
-            >
-              "{sug}"
-            </button>
-          ))}
-        </div>
+        <button 
+          type="submit" 
+          className="saas-search-submit-btn"
+          disabled={isSearching || !queryInput.trim()}
+        >
+          {isSearching ? (
+            <>
+              <RefreshCw size={13} className="spin" />
+              <span>Filtering...</span>
+            </>
+          ) : (
+            <>
+              <span>Search</span>
+              <ArrowRight size={13} />
+            </>
+          )}
+        </button>
+      </form>
 
-        {/* Value Highlights */}
-        <div className="value-highlights-grid">
-          <div className="value-highlight-item">
-            <div className="icon-halo-wrapper halo-blue">
-              <Sparkles size={16} color="var(--accent-blue)" />
-            </div>
-            <span>AI Intent Clarification & Precision Matching</span>
-          </div>
-          <div className="value-highlight-item">
-            <div className="icon-halo-wrapper halo-emerald">
-              <Zap size={16} color="var(--accent-emerald)" />
-            </div>
-            <span>Deterministic 8-Factor Mathematical Scoring</span>
-          </div>
-          <div className="value-highlight-item">
-            <div className="icon-halo-wrapper halo-purple">
-              <Globe size={16} color="var(--accent-purple, #a855f7)" />
-            </div>
-            <span>Jobs · Internships · Scholarships · Fellowships</span>
-          </div>
-        </div>
-
+      {/* Quick Filter Chips */}
+      <div className="saas-filter-chips-rail">
+        <span className="saas-filter-chips-label">Quick presets:</span>
+        {FILTER_SHORTCUTS.map((chip, idx) => (
+          <button 
+            key={idx} 
+            type="button" 
+            className="saas-filter-chip"
+            onClick={() => handleSelectShortcut(chip.query)}
+          >
+            {chip.label}
+          </button>
+        ))}
       </div>
-    </section>
+
+    </div>
   );
 }

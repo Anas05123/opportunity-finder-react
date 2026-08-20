@@ -5,12 +5,12 @@ import { callGeminiApi } from './geminiAi.js';
  * Generates tailored application kits, custom cover letters, and interview preparation checklists.
  */
 export async function generateApplicationKit({ opportunity, userProfile }) {
-  const name = userProfile?.name || 'Anas';
-  const degree = userProfile?.degree_title || 'Bachelor of Arts (BA)';
-  const major = userProfile?.major || 'Advertising & Marketing';
-  const gpa = userProfile?.gpa || '3.85';
-  const phone = userProfile?.phone || '+60172513031';
-  const email = userProfile?.email || 'ayarianas79@gmail.com';
+  const name = userProfile?.full_name || userProfile?.name || 'Applicant';
+  const degree = userProfile?.degree_title || 'Bachelor Degree';
+  const major = userProfile?.field_of_study || userProfile?.major || 'General';
+  const gpa = userProfile?.gpa || '3.50';
+  const phone = userProfile?.phone || '';
+  const email = userProfile?.email || 'applicant@careerly.net';
 
   const systemPrompt = `You are a Senior Career Strategist & Talent Advisor. Prepare a comprehensive, realistic Application Readiness Kit for the following opportunity:
 Company: ${opportunity.organization}

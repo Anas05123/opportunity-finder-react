@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { 
   ShieldCheck, Activity, Database, CheckCircle2, AlertTriangle, 
-  RefreshCw, Plus, Edit2, Play, Pause, Trash2, ExternalLink, Sliders, Layers, Check, Globe
+  RefreshCw, Plus, Edit2, Play, Pause, Trash2, ExternalLink, Sliders, Layers, Check, Globe,
+  Shield, Server, Lock
 } from 'lucide-react';
+import SecurityCenter from './Admin/SecurityCenter.jsx';
 
 const API_BASE_URL = 'http://localhost:5000/api/v1';
 
 export default function AdminDashboard({ triggerToast }) {
+  const [adminSection, setAdminSection] = useState('security'); // 'security' | 'sources'
   const [sources, setSources] = useState([]);
   const [stats, setStats] = useState({});
   const [opportunities, setOpportunities] = useState([]);
@@ -118,7 +121,29 @@ export default function AdminDashboard({ triggerToast }) {
 
   return (
     <div style={{ marginTop: '1.75rem' }}>
-      {/* Header Bar */}
+      {/* Top Admin Section Tabs */}
+      <div style={{ display: 'flex', gap: '0.65rem', marginBottom: '1.75rem', background: 'var(--bg-card)', padding: '0.45rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', width: 'fit-content' }}>
+        <button
+          className={`btn ${adminSection === 'security' ? 'btn-primary' : 'btn-ghost'}`}
+          onClick={() => setAdminSection('security')}
+          style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.86rem', padding: '0.55rem 1.15rem' }}
+        >
+          <ShieldCheck size={16} /> Enterprise Security Center
+        </button>
+        <button
+          className={`btn ${adminSection === 'sources' ? 'btn-primary' : 'btn-ghost'}`}
+          onClick={() => setAdminSection('sources')}
+          style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.86rem', padding: '0.55rem 1.15rem' }}
+        >
+          <Globe size={16} /> Scraper Sources & Registry
+        </button>
+      </div>
+
+      {adminSection === 'security' ? (
+        <SecurityCenter triggerToast={triggerToast} />
+      ) : (
+        <>
+          {/* Header Bar */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem', background: 'var(--bg-card)', padding: '1.5rem 2rem', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-card)' }}>
         <div>
           <h2 style={{ fontSize: '1.4rem', display: 'flex', alignItems: 'center', gap: '0.6rem', color: 'var(--text-headings)' }}>
@@ -406,6 +431,8 @@ export default function AdminDashboard({ triggerToast }) {
             </div>
           </div>
         </div>
+      )}
+        </>
       )}
     </div>
   );
