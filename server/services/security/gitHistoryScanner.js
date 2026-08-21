@@ -21,7 +21,7 @@ import {
   generateSecretFingerprint,
   createRedactedPreview
 } from './secretScanner.js';
-import { getAppVersion, getGitCommit } from '../securityAuditRunner.js';
+import { getAppVersion, getGitCommit } from './securityMeta.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

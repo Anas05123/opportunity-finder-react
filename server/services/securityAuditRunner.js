@@ -24,31 +24,7 @@ const ROOT_DIR = path.resolve(__dirname, '../../');
 const BASE_URL = 'http://localhost:5000/api/v1';
 axios.defaults.headers.common['x-security-audit'] = 'careerly-internal-audit';
 
-/**
- * Automatically detect Git commit SHA
- */
-export function getGitCommit() {
-  try {
-    const commit = execSync('git rev-parse --short HEAD', { cwd: ROOT_DIR, encoding: 'utf-8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
-    return commit || 'UNKNOWN';
-  } catch (e) {
-    return 'UNKNOWN';
-  }
-}
-
-/**
- * Automatically detect Application version
- */
-export function getAppVersion() {
-  try {
-    const pkgPath = path.join(ROOT_DIR, 'package.json');
-    if (fs.existsSync(pkgPath)) {
-      const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
-      return pkg.version || '2.0.0';
-    }
-  } catch (e) {}
-  return '2.0.0';
-}
+export { getGitCommit, getAppVersion } from './security/securityMeta.js';
 
 /**
  * Execute the 24-point Security Test Suite & Persist Machine-Readable Results

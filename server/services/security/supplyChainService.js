@@ -10,7 +10,7 @@ import { fileURLToPath } from 'url';
 import { runDependencyAudit } from './dependencyScanner.js';
 import { runSecretScan } from './secretScanner.js';
 import { runBundleSecretScan } from './bundleScanner.js';
-import { getAppVersion, getGitCommit } from '../securityAuditRunner.js';
+import { getAppVersion, getGitCommit } from './securityMeta.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

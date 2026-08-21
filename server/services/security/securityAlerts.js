@@ -15,7 +15,7 @@ import axios from 'axios';
 import db from '../../db/sqliteClient.js';
 import { transporter } from '../mailer.js';
 import { sanitizeSecurityDetails } from './securityEvents.js';
-import { getAppVersion, getGitCommit } from '../securityAuditRunner.js';
+import { getAppVersion, getGitCommit } from './securityMeta.js';
 
 /**
  * Deterministic Alert Policy Matrix
