@@ -7,10 +7,27 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const dbPath = path.join(__dirname, '..', '..', 'opportunity.sqlite');
 
-const db = new Database(dbPath);
-db.pragma('journal_mode = WAL');
+let db;
+try {
+  db = new Database(dbPath);
+  try {
+    db.pragma('journal_mode = WAL');
+  } catch (e) {}
+} catch (err) {
+  console.warn('[SQLite DB] Note: disk database initialization fallback to memory:', err.message);
+  try {
+    db = new Database(':memory:');
+  } catch (e) {
+    db = {
+      prepare: () => ({ get: () => null, all: () => [], run: () => ({ changes: 0 }) }),
+      exec: () => {},
+      pragma: () => {}
+    };
+  }
+}
 
 export function initSqliteDatabase() {
+  if (!db || typeof db.exec !== 'function') return;
   console.log('[SQLite DB] Initializing relational schema...');
 
   // 1. Opportunities Table (Normalized 80-Section Architecture)

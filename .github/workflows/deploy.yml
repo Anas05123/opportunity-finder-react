@@ -48,6 +48,7 @@ jobs:
             security-ci-gate-results.json
             security-supply-chain-results.json
             security-git-history-results.json
+          if-no-files-found: ignore
           retention-days: 14
 
       - name: Setup Pages

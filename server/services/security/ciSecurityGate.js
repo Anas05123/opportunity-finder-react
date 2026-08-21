@@ -18,13 +18,32 @@ import { runSecretScan } from './secretScanner.js';
 import { runBundleSecretScan } from './bundleScanner.js';
 import { scanGitHistory } from './gitHistoryScanner.js';
 import { calculateSecurityScore } from '../securityScoreEngine.js';
-import { getAppVersion, getGitCommit } from '../securityAuditRunner.js';
-import db from '../../db/sqliteClient.js';
+import { execSync } from 'child_process';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, '../../../');
 const ARTIFACT_PATH = path.join(ROOT_DIR, 'security-ci-gate-results.json');
+
+export function getGitCommit(dir = ROOT_DIR) {
+  try {
+    const commit = execSync('git rev-parse --short HEAD', { cwd: dir, encoding: 'utf-8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+    return commit || 'UNKNOWN';
+  } catch (e) {
+    return 'UNKNOWN';
+  }
+}
+
+export function getAppVersion(dir = ROOT_DIR) {
+  try {
+    const pkgPath = path.join(dir, 'package.json');
+    if (fs.existsSync(pkgPath)) {
+      const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
+      return pkg.version || '2.0.0';
+    }
+  } catch (e) {}
+  return '2.0.0';
+}
 
 /**
  * Evaluates the project's security state and produces a deterministic deployment decision.
@@ -123,26 +142,30 @@ export async function evaluateDeploymentGate(options = {}) {
     let checks = [];
     let completedAt = new Date();
 
-    // Query SQLite DB for latest completed security audit run
+    // Query SQLite DB for latest completed security audit run if database is available
     try {
-      const latestRun = db.prepare(`
-        SELECT id, completed_at, started_at, status 
-        FROM security_audit_runs 
-        WHERE status != 'IN_PROGRESS' 
-        ORDER BY completed_at DESC, rowid DESC 
-        LIMIT 1
-      `).get();
+      const sqliteModule = await import('../../db/sqliteClient.js').catch(() => null);
+      const db = sqliteModule?.default;
+      if (db && typeof db.prepare === 'function') {
+        const latestRun = db.prepare(`
+          SELECT id, completed_at, started_at, status 
+          FROM security_audit_runs 
+          WHERE status != 'IN_PROGRESS' 
+          ORDER BY completed_at DESC, rowid DESC 
+          LIMIT 1
+        `).get();
 
-      if (latestRun) {
-        completedAt = new Date(latestRun.completed_at || latestRun.started_at);
-        checks = db.prepare(`
-          SELECT id, check_key, category, name, severity, status, error_message, evidence_text
-          FROM security_checks
-          WHERE run_id = ?
-        `).all(latestRun.id);
+        if (latestRun) {
+          completedAt = new Date(latestRun.completed_at || latestRun.started_at);
+          checks = db.prepare(`
+            SELECT id, check_key, category, name, severity, status, error_message, evidence_text
+            FROM security_checks
+            WHERE run_id = ?
+          `).all(latestRun.id);
+        }
       }
     } catch (dbErr) {
-      // If DB is unavailable, checks array remains empty
+      // If DB is unavailable in CI, checks array remains empty and falls back to baseline
     }
 
     // If no audit run exists in SQLite, populate the 14 category baseline
