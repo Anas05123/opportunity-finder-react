@@ -147,8 +147,8 @@ function scanDiffForSecrets(diffText, commitHash, commitDate) {
  */
 export function scanGitHistory(options = {}) {
   const repoPath = options.repoPath || ROOT_DIR;
-  const maxCommits = options.maxCommits || 1000;
-  const timeoutMs = options.timeoutMs || 30000;
+  const maxCommits = options.maxCommits || 100;
+  const timeoutMs = options.timeoutMs || 20000;
 
   // 1. Verify Git availability and repository validity
   const gitVersionRes = safeGitExec(['--version'], { cwd: repoPath, timeout: timeoutMs });
@@ -249,8 +249,17 @@ export function scanGitHistory(options = {}) {
       commitHash,
       '-p',
       '--no-color',
-      '-U0'
-    ], { cwd: repoPath, timeout: timeoutMs });
+      '-U0',
+      '--',
+      '.',
+      ':!package-lock.json',
+      ':!*.sqlite*',
+      ':!*.png',
+      ':!*.jpg',
+      ':!*.jpeg',
+      ':!*.ico',
+      ':!dist'
+    ], { cwd: repoPath, timeout: timeoutMs, maxBuffer: 6 * 1024 * 1024 });
 
     if (diffRes.success && diffRes.output) {
       const commitFindings = scanDiffForSecrets(diffRes.output, commitHash, commitDate);
