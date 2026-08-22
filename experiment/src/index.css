@@ -352,6 +352,23 @@ html, body {
   transform: translateY(0);
 }
 
+.btn-secondary {
+  background: var(--bg-surface-elevated, #161b28);
+  border: 1px solid var(--border-default, rgba(255, 255, 255, 0.12));
+  color: var(--text-primary, #f8fafc);
+  box-shadow: var(--shadow-sm);
+}
+.btn-secondary:hover:not(:disabled) {
+  background: var(--bg-surface-hover, #1d2436);
+  border-color: var(--border-hover, #10b981);
+  color: var(--text-primary, #ffffff);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+.btn-secondary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
 .btn-outline {
   background: var(--bg-surface);
   border-color: var(--border-default);

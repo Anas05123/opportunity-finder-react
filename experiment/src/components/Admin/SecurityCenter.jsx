@@ -552,11 +552,13 @@ export default function SecurityCenter({ triggerToast }) {
                 className="btn btn-secondary"
                 disabled={isActionRunning}
                 onClick={() => runSecurityAction('Dependency Audit', '/admin/security/scan/dependencies', 'Dependency audit clean: 0 vulnerabilities!')}
-                style={{ justifyContent: 'flex-start', padding: '0.85rem 1rem', height: 'auto', textAlign: 'left' }}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', justifyContent: 'flex-start', padding: '0.85rem 1rem', height: 'auto', textAlign: 'left', background: 'var(--bg-surface-elevated)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-md)' }}
               >
-                <Package size={20} color="var(--accent-cyan)" style={{ flexShrink: 0, marginTop: '2px' }} />
+                <div style={{ width: '34px', height: '34px', borderRadius: 'var(--radius-sm)', background: 'var(--accent-blue-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Package size={18} color="var(--accent-blue)" />
+                </div>
                 <div>
-                  <div style={{ fontWeight: '800', fontSize: '0.86rem', color: 'var(--text-headings)' }}>Scan Dependencies</div>
+                  <div style={{ fontWeight: '800', fontSize: '0.86rem', color: 'var(--text-primary)' }}>Scan Dependencies</div>
                   <div style={{ fontSize: '0.74rem', color: 'var(--text-secondary)' }}>Live npm audit v2 analysis</div>
                 </div>
               </button>
@@ -565,11 +567,13 @@ export default function SecurityCenter({ triggerToast }) {
                 className="btn btn-secondary"
                 disabled={isActionRunning}
                 onClick={() => runSecurityAction('Source Secret Scan', '/admin/security/scan/secrets', 'Source secret scan completed!')}
-                style={{ justifyContent: 'flex-start', padding: '0.85rem 1rem', height: 'auto', textAlign: 'left' }}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', justifyContent: 'flex-start', padding: '0.85rem 1rem', height: 'auto', textAlign: 'left', background: 'var(--bg-surface-elevated)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-md)' }}
               >
-                <Lock size={20} color="var(--accent-amber)" style={{ flexShrink: 0, marginTop: '2px' }} />
+                <div style={{ width: '34px', height: '34px', borderRadius: 'var(--radius-sm)', background: 'var(--accent-amber-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Lock size={18} color="var(--accent-amber)" />
+                </div>
                 <div>
-                  <div style={{ fontWeight: '800', fontSize: '0.86rem', color: 'var(--text-headings)' }}>Scan Source Secrets</div>
+                  <div style={{ fontWeight: '800', fontSize: '0.86rem', color: 'var(--text-primary)' }}>Scan Source Secrets</div>
                   <div style={{ fontSize: '0.74rem', color: 'var(--text-secondary)' }}>11 high-confidence regex rules</div>
                 </div>
               </button>
@@ -578,11 +582,13 @@ export default function SecurityCenter({ triggerToast }) {
                 className="btn btn-secondary"
                 disabled={isActionRunning}
                 onClick={() => runSecurityAction('Historical Git Scan', '/admin/security/scan/git-history', 'Historical Git commit scan completed!')}
-                style={{ justifyContent: 'flex-start', padding: '0.85rem 1rem', height: 'auto', textAlign: 'left' }}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', justifyContent: 'flex-start', padding: '0.85rem 1rem', height: 'auto', textAlign: 'left', background: 'var(--bg-surface-elevated)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-md)' }}
               >
-                <GitBranch size={20} color="var(--accent-emerald)" style={{ flexShrink: 0, marginTop: '2px' }} />
+                <div style={{ width: '34px', height: '34px', borderRadius: 'var(--radius-sm)', background: 'var(--accent-emerald-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <GitBranch size={18} color="var(--accent-emerald)" />
+                </div>
                 <div>
-                  <div style={{ fontWeight: '800', fontSize: '0.86rem', color: 'var(--text-headings)' }}>Scan Git History</div>
+                  <div style={{ fontWeight: '800', fontSize: '0.86rem', color: 'var(--text-primary)' }}>Scan Git History</div>
                   <div style={{ fontSize: '0.74rem', color: 'var(--text-secondary)' }}>Traverse all reachable commits</div>
                 </div>
               </button>
@@ -591,11 +597,13 @@ export default function SecurityCenter({ triggerToast }) {
                 className="btn btn-secondary"
                 disabled={isActionRunning}
                 onClick={() => runSecurityAction('35-Point Security Audit', '/admin/security/audit/run', 'Full Security Audit Completed!')}
-                style={{ justifyContent: 'flex-start', padding: '0.85rem 1rem', height: 'auto', textAlign: 'left' }}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', justifyContent: 'flex-start', padding: '0.85rem 1rem', height: 'auto', textAlign: 'left', background: 'var(--bg-surface-elevated)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-md)' }}
               >
-                <ShieldCheck size={20} color="var(--accent-emerald)" style={{ flexShrink: 0, marginTop: '2px' }} />
+                <div style={{ width: '34px', height: '34px', borderRadius: 'var(--radius-sm)', background: 'var(--accent-emerald-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <ShieldCheck size={18} color="var(--accent-emerald)" />
+                </div>
                 <div>
-                  <div style={{ fontWeight: '800', fontSize: '0.86rem', color: 'var(--text-headings)' }}>Run 35-Point Audit</div>
+                  <div style={{ fontWeight: '800', fontSize: '0.86rem', color: 'var(--text-primary)' }}>Run 35-Point Audit</div>
                   <div style={{ fontSize: '0.74rem', color: 'var(--text-secondary)' }}>Full regression & scoring run</div>
                 </div>
               </button>
