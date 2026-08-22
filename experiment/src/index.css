@@ -1,135 +1,71 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
 /* ==========================================================================
-   CAREERLY HORIZON OS — DESIGN SYSTEM TOKENS
-   Palette: Nebula Deep Slate & Electric Iris + Cyber Sunset Aura
+   CAREERLY AURA OS — WORLD-CLASS DESIGN SYSTEM
+   Inspirations: Raycast × Linear × VisionOS × Stripe
    ========================================================================== */
 
 :root {
-  /* Canvas & Backgrounds */
-  --bg-canvas: #080a0f;
-  --bg-sidebar: #0b0e15;
-  --bg-surface: #0f131c;
-  --bg-surface-elevated: #151a26;
-  --bg-surface-overlay: #1c2232;
-  --bg-surface-active: #222a3d;
-  --bg-glass: rgba(15, 19, 28, 0.75);
-  --bg-glass-elevated: rgba(21, 26, 38, 0.85);
+  /* Canvas & Atmosphere */
+  --aura-bg: #07090e;
+  --aura-surface: rgba(14, 18, 28, 0.72);
+  --aura-surface-elevated: rgba(22, 28, 44, 0.85);
+  --aura-surface-solid: #0d111b;
+  --aura-surface-hover: rgba(30, 38, 58, 0.95);
+  
+  /* Hairline Glass Borders */
+  --aura-border: rgba(255, 255, 255, 0.08);
+  --aura-border-hover: rgba(255, 255, 255, 0.18);
+  --aura-border-active: rgba(99, 102, 241, 0.5);
+  --aura-glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.1);
 
-  /* Borders & Hairlines */
-  --border-subtle: rgba(255, 255, 255, 0.05);
-  --border-default: rgba(255, 255, 255, 0.09);
-  --border-hover: rgba(255, 255, 255, 0.18);
-  --border-focus: #6366f1;
-  --border-active: rgba(99, 102, 241, 0.4);
+  /* Luminous Gradients & Accents */
+  --aura-primary: #6366f1;
+  --aura-primary-hover: #4f46e5;
+  --aura-violet: #8b5cf6;
+  --aura-pink: #ec4899;
+  --aura-amber: #f59e0b;
+  --aura-emerald: #10b981;
+  --aura-cyan: #06b6d4;
 
-  /* Brand & Core Accents */
-  --primary: #6366f1;
-  --primary-hover: #4f46e5;
-  --primary-subtle: rgba(99, 102, 241, 0.12);
-  --primary-border: rgba(99, 102, 241, 0.3);
-  --primary-foreground: #ffffff;
+  --aura-grad-iris: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
+  --aura-grad-emerald: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
+  --aura-grad-sunset: linear-gradient(135deg, #f59e0b 0%, #ec4899 100%);
+  --aura-grad-card: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%);
 
-  --violet: #8b5cf6;
-  --violet-subtle: rgba(139, 92, 246, 0.12);
-  --pink: #ec4899;
-  --pink-subtle: rgba(236, 72, 153, 0.12);
-  --amber: #f59e0b;
-  --amber-subtle: rgba(245, 158, 11, 0.12);
-  --emerald: #10b981;
-  --emerald-subtle: rgba(16, 185, 129, 0.12);
-  --cyan: #06b6d4;
-  --cyan-subtle: rgba(6, 182, 212, 0.12);
-  --rose: #f43f5e;
-  --rose-subtle: rgba(244, 63, 94, 0.12);
-
-  /* Gradients */
-  --grad-iris: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
-  --grad-aurora: linear-gradient(135deg, #06b6d4 0%, #6366f1 50%, #8b5cf6 100%);
-  --grad-sunset: linear-gradient(135deg, #ec4899 0%, #f59e0b 100%);
-  --grad-surface: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0) 100%);
-
-  /* Typography Colors */
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --text-tertiary: #64748b;
-  --text-disabled: #475569;
-  --text-inverse: #080a0f;
-
-  /* Typography Fonts */
+  /* Typography */
   --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
 
-  /* Spacing Scale */
-  --space-1: 0.25rem;
-  --space-2: 0.5rem;
-  --space-3: 0.75rem;
-  --space-4: 1rem;
-  --space-5: 1.25rem;
-  --space-6: 1.5rem;
-  --space-8: 2rem;
-  --space-10: 2.5rem;
+  --aura-text-primary: #f8fafc;
+  --aura-text-secondary: #94a3b8;
+  --aura-text-tertiary: #64748b;
+  --aura-text-muted: #475569;
 
-  /* Radius Scale */
-  --radius-xs: 4px;
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 20px;
-  --radius-2xl: 28px;
-  --radius-full: 9999px;
+  /* Radius Scales */
+  --aura-radius-sm: 8px;
+  --aura-radius-md: 12px;
+  --aura-radius-lg: 18px;
+  --aura-radius-xl: 24px;
+  --aura-radius-full: 9999px;
 
-  /* Shadows & Depth */
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 12px 36px rgba(0, 0, 0, 0.5);
-  --shadow-glow-iris: 0 0 24px rgba(99, 102, 241, 0.25);
-  --shadow-glow-pink: 0 0 24px rgba(236, 72, 153, 0.25);
-  --shadow-glow-emerald: 0 0 24px rgba(16, 185, 129, 0.25);
+  /* Depth & Shadows */
+  --aura-shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --aura-shadow-md: 0 8px 28px rgba(0, 0, 0, 0.5);
+  --aura-shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.6);
+  --aura-glow-primary: 0 0 32px rgba(99, 102, 241, 0.28);
+  --aura-glow-emerald: 0 0 32px rgba(16, 185, 129, 0.28);
+  --aura-glow-pink: 0 0 32px rgba(236, 72, 153, 0.28);
 
-  /* Transitions */
+  /* Physics Transitions */
   --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   --trans-fast: 0.15s var(--ease-spring);
-  --trans-base: 0.22s var(--ease-spring);
-  --trans-smooth: 0.35s var(--ease-spring);
-}
-
-/* Light Theme Variables */
-[data-theme="light"] {
-  --bg-canvas: #f8fafc;
-  --bg-sidebar: #f1f5f9;
-  --bg-surface: #ffffff;
-  --bg-surface-elevated: #f8fafc;
-  --bg-surface-overlay: #ffffff;
-  --bg-surface-active: #e2e8f0;
-  --bg-glass: rgba(255, 255, 255, 0.85);
-  --bg-glass-elevated: rgba(248, 250, 252, 0.95);
-
-  --border-subtle: rgba(0, 0, 0, 0.04);
-  --border-default: rgba(0, 0, 0, 0.08);
-  --border-hover: rgba(0, 0, 0, 0.16);
-  --border-focus: #4f46e5;
-  --border-active: rgba(79, 70, 229, 0.3);
-
-  --primary: #4f46e5;
-  --primary-hover: #4338ca;
-  --primary-subtle: rgba(79, 70, 229, 0.08);
-  --primary-border: rgba(79, 70, 229, 0.25);
-  --primary-foreground: #ffffff;
-
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-tertiary: #94a3b8;
-  --text-disabled: #cbd5e1;
-  --text-inverse: #ffffff;
-
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
-  --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 12px 36px rgba(0, 0, 0, 0.12);
+  --trans-base: 0.25s var(--ease-spring);
+  --trans-smooth: 0.4s var(--ease-spring);
 }
 
 /* ==========================================================================
-   BASE HTML RESETS & BODY
+   RESET & AMBIENT CANVAS
    ========================================================================== */
 
 * {
@@ -143,22 +79,23 @@
 html, body {
   width: 100%;
   min-height: 100vh;
-  background-color: var(--bg-canvas);
-  color: var(--text-primary);
+  background-color: var(--aura-bg);
+  color: var(--aura-text-primary);
   font-family: var(--font-sans);
   font-size: 15px;
   line-height: 1.5;
   overflow-x: hidden;
 }
 
-/* Subtle dot mesh background */
+/* Atmospheric Aurora Spheres in Background */
 body {
   background-image: 
-    radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.08) 0%, transparent 60%),
-    radial-gradient(circle at 100% 100%, rgba(236, 72, 153, 0.04) 0%, transparent 40%),
-    radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
-  background-size: 100% 100%, 100% 100%, 24px 24px;
-  background-position: 0 0, 0 0, 0 0;
+    radial-gradient(circle at 15% 10%, rgba(99, 102, 241, 0.12) 0%, transparent 45%),
+    radial-gradient(circle at 85% 25%, rgba(236, 72, 153, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 50% 90%, rgba(16, 185, 129, 0.06) 0%, transparent 50%),
+    radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 32px 32px;
+  background-attachment: fixed;
 }
 
 /* ==========================================================================
@@ -175,7 +112,7 @@ body {
 
 .custom-scroll {
   scrollbar-width: thin;
-  scrollbar-color: var(--border-default) transparent;
+  scrollbar-color: var(--aura-border) transparent;
 }
 .custom-scroll::-webkit-scrollbar {
   width: 6px;
@@ -185,116 +122,65 @@ body {
   background: transparent;
 }
 .custom-scroll::-webkit-scrollbar-thumb {
-  background: var(--border-hover);
-  border-radius: var(--radius-full);
+  background: var(--aura-border-hover);
+  border-radius: var(--aura-radius-full);
 }
 .custom-scroll::-webkit-scrollbar-thumb:hover {
-  background: var(--text-tertiary);
+  background: var(--aura-text-tertiary);
 }
 
 /* ==========================================================================
-   HORIZON APP SHELL LAYOUT
+   AURA GLASS COMPONENTS & CARDS
    ========================================================================== */
 
-.horizon-app {
-  display: flex;
-  width: 100vw;
-  height: 100vh;
+.aura-glass {
+  background: var(--aura-surface);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border: 1px solid var(--aura-border);
+  box-shadow: var(--aura-shadow-sm), var(--aura-glass-highlight);
+}
+
+.aura-card {
+  background: var(--aura-surface);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--aura-border);
+  border-radius: var(--aura-radius-lg);
+  padding: 1.35rem;
+  box-shadow: var(--aura-shadow-sm), var(--aura-glass-highlight);
+  transition: all var(--trans-base);
+  position: relative;
   overflow: hidden;
-  position: relative;
 }
 
-.horizon-sidebar {
-  width: 260px;
-  flex-shrink: 0;
-  height: 100vh;
-  background: var(--bg-sidebar);
-  border-right: 1px solid var(--border-subtle);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  z-index: 40;
-  transition: width var(--trans-smooth), transform var(--trans-smooth);
+.aura-card:hover {
+  background: var(--aura-surface-elevated);
+  border-color: var(--aura-border-hover);
+  transform: translateY(-3px);
+  box-shadow: var(--aura-shadow-md);
 }
 
-.horizon-sidebar.collapsed {
-  width: 76px;
-}
-
-.horizon-main {
-  flex: 1;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  background: transparent;
-  position: relative;
-}
-
-.horizon-header {
-  height: 68px;
-  border-bottom: 1px solid var(--border-subtle);
-  background: var(--bg-glass);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 1.5rem;
-  z-index: 30;
-  flex-shrink: 0;
-}
-
-.horizon-content-area {
-  flex: 1;
-  overflow-y: auto;
-  position: relative;
+.aura-card.spotlight {
+  background: linear-gradient(135deg, rgba(22, 28, 44, 0.95) 0%, rgba(14, 18, 28, 0.9) 100%);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  box-shadow: var(--aura-shadow-md), var(--aura-glow-primary);
 }
 
 /* ==========================================================================
-   DUAL-PANE HORIZON WORKSPACE (Center Feed + Right Inspector)
+   AURA BUTTON PRIMITIVES
    ========================================================================== */
 
-.horizon-workspace {
-  display: grid;
-  grid-template-columns: 1fr 460px;
-  height: 100%;
-  overflow: hidden;
-}
-
-.horizon-workspace.single-pane {
-  grid-template-columns: 1fr;
-}
-
-.horizon-stream-pane {
-  height: 100%;
-  overflow-y: auto;
-  padding: 1.5rem 2rem;
-}
-
-.horizon-inspector-pane {
-  height: 100%;
-  overflow-y: auto;
-  border-left: 1px solid var(--border-default);
-  background: var(--bg-surface);
-  padding: 1.5rem;
-  position: relative;
-}
-
-/* ==========================================================================
-   HORIZON BUTTON PRIMITIVES
-   ========================================================================== */
-
-.hz-btn {
+.aura-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
   font-family: var(--font-sans);
   font-size: 0.88rem;
-  font-weight: 600;
+  font-weight: 700;
   padding: 0.62rem 1.15rem;
-  border-radius: var(--radius-md);
+  border-radius: var(--aura-radius-md);
   border: 1px solid transparent;
   cursor: pointer;
   transition: all var(--trans-fast);
@@ -303,200 +189,185 @@ body {
   text-decoration: none;
 }
 
-.hz-btn-primary {
-  background: var(--primary);
+.aura-btn-primary {
+  background: var(--aura-primary);
   color: #ffffff;
-  border-color: var(--primary);
-  box-shadow: var(--shadow-sm);
+  border-color: var(--aura-primary);
+  box-shadow: var(--aura-shadow-sm);
 }
-.hz-btn-primary:hover {
-  background: var(--primary-hover);
-  border-color: var(--primary-hover);
+.aura-btn-primary:hover {
+  background: var(--aura-primary-hover);
+  border-color: var(--aura-primary-hover);
   transform: translateY(-1px);
-  box-shadow: var(--shadow-glow-iris);
+  box-shadow: var(--aura-glow-primary);
 }
 
-.hz-btn-ai {
-  background: var(--grad-iris);
+.aura-btn-ai {
+  background: var(--aura-grad-iris);
   color: #ffffff;
   border: none;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--aura-shadow-sm);
   position: relative;
   overflow: hidden;
 }
-.hz-btn-ai:hover {
+.aura-btn-ai:hover {
   transform: translateY(-1px);
-  box-shadow: var(--shadow-glow-pink);
+  box-shadow: var(--aura-glow-pink);
   filter: brightness(1.08);
 }
 
-.hz-btn-secondary {
-  background: var(--bg-surface-elevated);
-  color: var(--text-primary);
-  border-color: var(--border-default);
+.aura-btn-secondary {
+  background: var(--aura-surface-elevated);
+  color: var(--aura-text-primary);
+  border-color: var(--aura-border);
 }
-.hz-btn-secondary:hover {
-  background: var(--bg-surface-overlay);
-  border-color: var(--border-hover);
+.aura-btn-secondary:hover {
+  background: var(--aura-surface-hover);
+  border-color: var(--aura-border-hover);
   color: #ffffff;
   transform: translateY(-1px);
 }
 
-.hz-btn-ghost {
+.aura-btn-ghost {
   background: transparent;
-  color: var(--text-secondary);
+  color: var(--aura-text-secondary);
 }
-.hz-btn-ghost:hover {
-  background: var(--bg-surface-elevated);
-  color: var(--text-primary);
+.aura-btn-ghost:hover {
+  background: var(--aura-surface-elevated);
+  color: var(--aura-text-primary);
 }
 
-.hz-btn-icon {
+.aura-btn-icon {
   width: 36px;
   height: 36px;
   padding: 0;
-  border-radius: var(--radius-sm);
+  border-radius: var(--aura-radius-sm);
   display: inline-flex;
   align-items: center;
   justify-content: center;
 }
 
 /* ==========================================================================
-   HORIZON CARD & PASSPORT STYLING
+   AURA BADGES & CHIPS
    ========================================================================== */
 
-.hz-card {
-  background: var(--bg-surface);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-lg);
-  padding: 1.35rem;
-  box-shadow: var(--shadow-sm);
-  transition: all var(--trans-fast);
-  position: relative;
-}
-
-.hz-card:hover {
-  border-color: var(--border-hover);
-  box-shadow: var(--shadow-md);
-  transform: translateY(-2px);
-}
-
-.hz-card.selected {
-  border-color: var(--primary);
-  background: var(--bg-surface-elevated);
-  box-shadow: var(--shadow-glow-iris);
-}
-
-/* Passport Card Header & Chips */
-.hz-passport {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  cursor: pointer;
-}
-
-.hz-chip {
+.aura-chip {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
   padding: 0.28rem 0.65rem;
-  border-radius: var(--radius-full);
+  border-radius: var(--aura-radius-full);
   font-size: 0.76rem;
   font-weight: 700;
   border: 1px solid transparent;
 }
 
-.hz-chip-iris {
-  background: var(--primary-subtle);
+.aura-chip-iris {
+  background: rgba(99, 102, 241, 0.12);
   color: #818cf8;
-  border-color: var(--primary-border);
+  border-color: rgba(99, 102, 241, 0.25);
 }
 
-.hz-chip-emerald {
-  background: var(--emerald-subtle);
+.aura-chip-emerald {
+  background: rgba(16, 185, 129, 0.12);
   color: #34d399;
   border-color: rgba(16, 185, 129, 0.25);
 }
 
-.hz-chip-amber {
-  background: var(--amber-subtle);
+.aura-chip-amber {
+  background: rgba(245, 158, 11, 0.12);
   color: #fbbf24;
   border-color: rgba(245, 158, 11, 0.25);
 }
 
-.hz-chip-pink {
-  background: var(--pink-subtle);
+.aura-chip-pink {
+  background: rgba(236, 72, 153, 0.12);
   color: #f472b6;
   border-color: rgba(236, 72, 153, 0.25);
 }
 
-.hz-chip-cyan {
-  background: var(--cyan-subtle);
-  color: #22d3ee;
-  border-color: rgba(6, 182, 212, 0.25);
-}
-
-.hz-chip-muted {
-  background: var(--bg-surface-elevated);
-  color: var(--text-secondary);
-  border-color: var(--border-default);
+.aura-chip-muted {
+  background: var(--aura-surface-elevated);
+  color: var(--aura-text-secondary);
+  border-color: var(--aura-border);
 }
 
 /* ==========================================================================
-   INPUTS & SEARCH OMNIBAR
+   OMNIBAR & SEARCH ISLAND
    ========================================================================== */
 
-.hz-omnibar {
+.aura-omnibar {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  background: var(--bg-surface-elevated);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-full);
-  padding: 0.5rem 1rem;
+  background: var(--aura-surface-elevated);
+  border: 1px solid var(--aura-border);
+  border-radius: var(--aura-radius-full);
+  padding: 0.55rem 1.15rem;
   width: 100%;
   max-width: 580px;
+  backdrop-filter: blur(20px);
+  box-shadow: var(--aura-shadow-sm);
   transition: all var(--trans-fast);
 }
 
-.hz-omnibar:focus-within {
-  border-color: var(--primary);
-  box-shadow: var(--shadow-glow-iris);
-  background: var(--bg-surface-overlay);
+.aura-omnibar:focus-within {
+  border-color: var(--aura-primary);
+  background: var(--aura-surface-hover);
+  box-shadow: var(--aura-glow-primary);
 }
 
-.hz-omnibar input {
+.aura-omnibar input {
   background: transparent;
   border: none;
   outline: none;
-  color: var(--text-primary);
+  color: var(--aura-text-primary);
   font-family: var(--font-sans);
-  font-size: 0.9rem;
+  font-size: 0.92rem;
   font-weight: 500;
   width: 100%;
 }
 
-.hz-omnibar input::placeholder {
-  color: var(--text-tertiary);
+.aura-omnibar input::placeholder {
+  color: var(--aura-text-tertiary);
 }
 
-.hz-input {
+/* ==========================================================================
+   DRAWER SLIDEOVER (PEEK STUDIO)
+   ========================================================================== */
+
+.aura-drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 7, 11, 0.65);
+  backdrop-filter: blur(12px);
+  z-index: 90;
+  display: flex;
+  justify-content: flex-end;
+  animation: fadeIn 0.2s ease;
+}
+
+.aura-drawer-panel {
   width: 100%;
-  background: var(--bg-surface-elevated);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
-  padding: 0.68rem 1rem;
-  color: var(--text-primary);
-  font-family: var(--font-sans);
-  font-size: 0.9rem;
-  outline: none;
-  transition: all var(--trans-fast);
+  max-width: 560px;
+  height: 100vh;
+  background: var(--aura-surface-solid);
+  border-left: 1px solid var(--aura-border);
+  box-shadow: var(--aura-shadow-lg);
+  display: flex;
+  flex-direction: column;
+  animation: slideLeft 0.28s var(--ease-spring);
+  z-index: 100;
 }
 
-.hz-input:focus {
-  border-color: var(--primary);
-  background: var(--bg-surface-overlay);
-  box-shadow: var(--shadow-glow-iris);
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideLeft {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
 }
 
 /* ==========================================================================
@@ -519,34 +390,4 @@ body {
 
 .spin-slow {
   animation: spinSlow 3s linear infinite;
-}
-
-/* ==========================================================================
-   RESPONSIVE BREAKPOINTS
-   ========================================================================== */
-
-@media (max-width: 1180px) {
-  .horizon-workspace {
-    grid-template-columns: 1fr;
-  }
-  .horizon-inspector-pane {
-    display: none;
-  }
-}
-
-@media (max-width: 768px) {
-  .horizon-sidebar {
-    position: absolute;
-    transform: translateX(-100%);
-    width: 260px;
-  }
-  .horizon-sidebar.open {
-    transform: translateX(0);
-  }
-  .horizon-stream-pane {
-    padding: 1rem;
-  }
-  .horizon-header {
-    padding: 0 1rem;
-  }
 }

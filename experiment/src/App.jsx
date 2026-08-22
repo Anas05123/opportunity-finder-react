@@ -1,51 +1,42 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
-  BrowserRouter as Router, 
-  Routes, 
-  Route, 
-  Navigate, 
-  useNavigate, 
-  useLocation 
+  BrowserRouter as Router 
 } from 'react-router-dom';
 
-import HorizonSidebar from './components/Horizon/Sidebar';
-import HorizonOmnibar from './components/Horizon/Omnibar';
-import HorizonPassportCard from './components/Horizon/PassportCard';
-import HorizonInspectorStudio from './components/Horizon/InspectorStudio';
-import HorizonKanbanPipeline from './components/Horizon/KanbanPipeline';
-import HorizonDataTable from './components/Horizon/DataTable';
-import HorizonAiLabModal from './components/Horizon/AiLabModal';
-import HorizonSecurityOps from './components/Horizon/SecurityOps';
+import AuraSidebar from './components/Aura/AuraSidebar';
+import AuraHeader from './components/Aura/AuraHeader';
+import SpotlightHero from './components/Aura/SpotlightHero';
+import BentoCard from './components/Aura/BentoCard';
+import AuraDrawer from './components/Aura/AuraDrawer';
+import AuraKanban from './components/Aura/AuraKanban';
+import AuraTable from './components/Aura/AuraTable';
+import AuraAiModal from './components/Aura/AuraAiModal';
+import AuraSecurity from './components/Aura/AuraSecurity';
 
 import UserProfileModal from './components/UserProfileModal';
-
 import { API_BASE_URL } from './config/api';
+
 import { 
   RefreshCw, 
-  Sparkles, 
   Search, 
-  Award, 
-  Briefcase, 
-  GraduationCap, 
-  Globe,
-  SlidersHorizontal,
-  Bookmark
+  Sparkles, 
+  Clock, 
+  Calendar,
+  Layers,
+  ArrowRight
 } from 'lucide-react';
 
 export default function App() {
   return (
     <Router>
-      <HorizonAppRoot />
+      <AuraAppRoot />
     </Router>
   );
 }
 
-function HorizonAppRoot() {
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  // Core App State
-  const [activeView, setActiveView] = useState('explore'); // 'explore' | 'saved' | 'applications' | 'ai-lab' | 'calendar' | 'security'
+function AuraAppRoot() {
+  // Navigation & View State
+  const [activeTab, setActiveTab] = useState('explore'); // 'explore' | 'saved' | 'applications' | 'calendar' | 'security'
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'table' | 'kanban'
 
@@ -78,7 +69,7 @@ function HorizonAppRoot() {
     }
   }, []);
 
-  // Fetch Live Opportunities
+  // Fetch Opportunities from backend API
   useEffect(() => {
     const fetchOpportunities = async () => {
       setIsLoading(true);
@@ -87,11 +78,8 @@ function HorizonAppRoot() {
         const data = await res.json();
         const opps = Array.isArray(data) ? data : (data.opportunities || []);
         setOpportunities(opps);
-        if (opps.length > 0 && !selectedOpportunity) {
-          setSelectedOpportunity(opps[0]);
-        }
       } catch (err) {
-        console.error('[Horizon] Failed to fetch opportunities:', err);
+        console.error('[Aura] Failed to fetch opportunities:', err);
       } finally {
         setIsLoading(false);
       }
@@ -106,7 +94,7 @@ function HorizonAppRoot() {
 
     const fetchUserData = async () => {
       try {
-        // Fetch Saved
+        // Saved
         const savedRes = await fetch(`${API_BASE_URL}/user/saved`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -116,7 +104,7 @@ function HorizonAppRoot() {
           setSavedOpportunityIds(items.map(s => s.opportunity_id || s.id));
         }
 
-        // Fetch Applications
+        // Applications
         const appRes = await fetch(`${API_BASE_URL}/applications`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -126,18 +114,16 @@ function HorizonAppRoot() {
           setApplications(apps);
         }
       } catch (e) {
-        console.warn('[Horizon] User data sync notice:', e.message);
+        console.warn('[Aura] User data sync notice:', e.message);
       }
     };
 
     fetchUserData();
   }, [token]);
 
-  // Toggle Save Opportunity
+  // Toggle Bookmark
   const handleToggleSave = async (oppId) => {
     const isCurrentlySaved = savedOpportunityIds.includes(oppId);
-    
-    // Optimistic Update
     if (isCurrentlySaved) {
       setSavedOpportunityIds(prev => prev.filter(id => id !== oppId));
     } else {
@@ -156,7 +142,6 @@ function HorizonAppRoot() {
 
   // Update CRM Application Stage
   const handleUpdateStage = async (oppId, newStage) => {
-    // Update state
     setApplications(prev => {
       const existing = prev.find(a => (a.opportunity_id || a.id) === oppId);
       if (existing) {
@@ -185,12 +170,10 @@ function HorizonAppRoot() {
   const filteredOpportunities = useMemo(() => {
     let result = opportunities;
 
-    // View filter
-    if (activeView === 'saved') {
+    if (activeTab === 'saved') {
       result = result.filter(o => savedOpportunityIds.includes(o.id));
     }
 
-    // Category filter
     if (selectedCategory === 'internships') {
       result = result.filter(o => (o.opportunity_type || '').toLowerCase().includes('intern') || (o.title || '').toLowerCase().includes('intern'));
     } else if (selectedCategory === 'scholarships') {
@@ -201,7 +184,6 @@ function HorizonAppRoot() {
       result = result.filter(o => o.is_remote === 1 || (o.location_country || '').toLowerCase().includes('remote') || (o.location_country || '').toLowerCase().includes('world'));
     }
 
-    // Search query filter
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       result = result.filter(o => 
@@ -213,7 +195,10 @@ function HorizonAppRoot() {
     }
 
     return result;
-  }, [opportunities, activeView, selectedCategory, searchQuery, savedOpportunityIds]);
+  }, [opportunities, activeTab, selectedCategory, searchQuery, savedOpportunityIds]);
+
+  const spotlightOpportunity = filteredOpportunities.length > 0 ? filteredOpportunities[0] : null;
+  const standardOpportunities = filteredOpportunities.length > 0 ? filteredOpportunities.slice(1) : [];
 
   const handleLogout = () => {
     localStorage.removeItem('careerly_token');
@@ -224,30 +209,27 @@ function HorizonAppRoot() {
   };
 
   return (
-    <div className="horizon-app">
-      {/* 1. Global Navigation Rail */}
-      <HorizonSidebar
-        activeView={activeView}
-        setActiveView={(v) => {
-          if (v === 'ai-lab') {
-            setIsAiLabOpen(true);
-          } else {
-            setActiveView(v);
-          }
-        }}
+    <div style={{ display: 'flex', width: '100vw', height: '100vh', overflow: 'hidden', position: 'relative' }}>
+      
+      {/* 1. Global Navigation Dock */}
+      <AuraSidebar
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
         isCollapsed={isSidebarCollapsed}
         setIsCollapsed={setIsSidebarCollapsed}
         savedCount={savedOpportunityIds.length}
         appliedCount={applications.length}
         user={user}
         onOpenProfile={() => setIsProfileOpen(true)}
+        onOpenAiLab={() => setIsAiLabOpen(true)}
         onLogout={handleLogout}
       />
 
-      {/* 2. Main Execution Area */}
-      <main className="horizon-main">
-        {/* Top Omnibar */}
-        <HorizonOmnibar
+      {/* 2. Main Workspace Canvas */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden', position: 'relative' }}>
+        
+        {/* Top Floating Omnibar */}
+        <AuraHeader
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
           selectedCategory={selectedCategory}
@@ -258,43 +240,34 @@ function HorizonAppRoot() {
           onOpenAiLab={() => setIsAiLabOpen(true)}
         />
 
-        {/* Content Area */}
-        <div className="horizon-content-area">
+        {/* Content Body */}
+        <div style={{ flex: 1, overflowY: 'auto', position: 'relative' }} className="custom-scroll">
           
           {/* VIEW: SECURITY OPERATIONS */}
-          {activeView === 'security' ? (
-            <div style={{ padding: '1.5rem 2rem', height: '100%' }}>
-              <HorizonSecurityOps />
+          {activeTab === 'security' ? (
+            <div style={{ padding: '2rem', height: '100%' }}>
+              <AuraSecurity />
             </div>
-          ) : activeView === 'calendar' ? (
+          ) : activeTab === 'calendar' ? (
             /* VIEW: DEADLINES TIMELINE */
-            <div style={{ padding: '2rem', height: '100%', overflowY: 'auto' }} className="custom-scroll">
-              <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-xl)', padding: '2rem' }}>
-                <h2 style={{ fontSize: '1.25rem', fontWeight: '800', color: '#fff', marginBottom: '0.5rem' }}>Upcoming Application Deadlines</h2>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.86rem', marginBottom: '1.5rem' }}>Chronological roadmap of all upcoming opportunity cutoffs.</p>
+            <div style={{ padding: '2rem', maxWidth: '1100px', margin: '0 auto' }}>
+              <div className="aura-card" style={{ padding: '2rem' }}>
+                <h2 style={{ fontSize: '1.35rem', fontWeight: '900', color: '#fff', marginBottom: '0.45rem' }}>Upcoming Application Roadmaps</h2>
+                <p style={{ color: 'var(--aura-text-secondary)', fontSize: '0.86rem', marginBottom: '1.75rem' }}>Chronological roadmap of official opportunity cutoffs.</p>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
                   {filteredOpportunities.slice(0, 15).map(opp => (
-                    <div 
-                      key={opp.id} 
-                      onClick={() => { setSelectedOpportunity(opp); setActiveView('explore'); }}
-                      style={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        justifyContent: 'space-between', 
-                        padding: '1rem 1.25rem', 
-                        background: 'var(--bg-surface-elevated)', 
-                        border: '1px solid var(--border-default)', 
-                        borderRadius: 'var(--radius-md)', 
-                        cursor: 'pointer' 
-                      }}
-                      className="hz-card-hover"
+                    <div
+                      key={opp.id}
+                      onClick={() => setSelectedOpportunity(opp)}
+                      className="aura-card"
+                      style={{ padding: '1.15rem 1.35rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
                     >
                       <div>
-                        <div style={{ fontWeight: '800', color: '#fff' }}>{opp.title}</div>
-                        <div style={{ fontSize: '0.76rem', color: 'var(--text-secondary)' }}>{opp.company || opp.organization}</div>
+                        <div style={{ fontWeight: '800', color: '#fff', fontSize: '0.96rem' }}>{opp.title}</div>
+                        <div style={{ fontSize: '0.78rem', color: 'var(--aura-text-secondary)' }}>{opp.company || opp.organization}</div>
                       </div>
-                      <span className="hz-chip hz-chip-amber">
+                      <span className="aura-chip aura-chip-amber">
                         {opp.deadline_raw || opp.deadline_utc || 'Rolling Admissions'}
                       </span>
                     </div>
@@ -302,86 +275,85 @@ function HorizonAppRoot() {
                 </div>
               </div>
             </div>
-          ) : viewMode === 'kanban' || activeView === 'applications' ? (
+          ) : viewMode === 'kanban' || activeTab === 'applications' ? (
             /* VIEW: KANBAN CRM PIPELINE */
-            <div style={{ padding: '1.5rem', height: '100%' }}>
-              <HorizonKanbanPipeline
+            <div style={{ padding: '1.5rem 2rem', height: '100%' }}>
+              <AuraKanban
                 applications={applications}
                 opportunities={opportunities}
-                onSelectOpportunity={(opp) => {
-                  setSelectedOpportunity(opp);
-                  setViewMode('grid');
-                  setActiveView('explore');
-                }}
+                onSelectOpportunity={(opp) => setSelectedOpportunity(opp)}
                 onUpdateStage={handleUpdateStage}
               />
             </div>
           ) : (
-            /* DUAL-PANE HORIZON WORKSPACE */
-            <div className={`horizon-workspace ${!selectedOpportunity ? 'single-pane' : ''}`}>
+            /* VIEW: BENTO STREAM & DATA TABLE */
+            <div style={{ padding: '2rem', maxWidth: '1440px', margin: '0 auto' }}>
               
-              {/* Left Pane: Match Stream / Table */}
-              <div className="horizon-stream-pane custom-scroll">
-                {isLoading ? (
-                  <div style={{ textAlign: 'center', padding: '6rem 0', color: 'var(--text-secondary)' }}>
-                    <RefreshCw size={36} className="spin-slow" color="var(--primary)" style={{ margin: '0 auto 1.25rem' }} />
-                    <h3 style={{ color: '#fff', fontSize: '1.1rem', fontWeight: '800' }}>Calibrating Global Intelligence Stream...</h3>
-                    <p style={{ fontSize: '0.84rem', marginTop: '0.35rem' }}>Syncing verified opportunity records from official corporate portals.</p>
-                  </div>
-                ) : viewMode === 'table' ? (
-                  <HorizonDataTable
-                    opportunities={filteredOpportunities}
-                    selectedId={selectedOpportunity?.id}
-                    onSelect={(opp) => setSelectedOpportunity(opp)}
-                    savedIds={savedOpportunityIds}
-                    onToggleSave={handleToggleSave}
-                  />
-                ) : filteredOpportunities.length === 0 ? (
-                  <div style={{ textAlign: 'center', padding: '5rem 1rem', color: 'var(--text-tertiary)' }}>
-                    <Search size={36} style={{ margin: '0 auto 1rem', opacity: 0.5 }} />
-                    <h3 style={{ color: '#fff', fontSize: '1.05rem', fontWeight: '800' }}>No Matching Opportunities Found</h3>
-                    <p style={{ fontSize: '0.84rem', marginTop: '0.35rem' }}>Try clearing filters or broadening your search keywords.</p>
-                  </div>
-                ) : (
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.15rem' }}>
-                    {filteredOpportunities.map(opp => (
-                      <HorizonPassportCard
+              {isLoading ? (
+                <div style={{ textAlign: 'center', padding: '8rem 0', color: 'var(--aura-text-secondary)' }}>
+                  <RefreshCw size={40} className="spin-slow" color="var(--aura-primary)" style={{ margin: '0 auto 1.25rem' }} />
+                  <h3 style={{ color: '#fff', fontSize: '1.15rem', fontWeight: '800' }}>Calibrating Global Intelligence Stream...</h3>
+                  <p style={{ fontSize: '0.84rem', marginTop: '0.35rem' }}>Syncing verified opportunity records from official corporate portals.</p>
+                </div>
+              ) : viewMode === 'table' ? (
+                <AuraTable
+                  opportunities={filteredOpportunities}
+                  onSelect={(opp) => setSelectedOpportunity(opp)}
+                  savedIds={savedOpportunityIds}
+                  onToggleSave={handleToggleSave}
+                />
+              ) : filteredOpportunities.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '6rem 1rem', color: 'var(--aura-text-tertiary)' }}>
+                  <Search size={40} style={{ margin: '0 auto 1rem', opacity: 0.5 }} />
+                  <h3 style={{ color: '#fff', fontSize: '1.1rem', fontWeight: '800' }}>No Matching Opportunities Found</h3>
+                  <p style={{ fontSize: '0.86rem', marginTop: '0.35rem' }}>Try clearing filters or broadening your search query.</p>
+                </div>
+              ) : (
+                <>
+                  {/* Spotlight Top Match Hero Bento Card */}
+                  {spotlightOpportunity && (
+                    <SpotlightHero
+                      opportunity={spotlightOpportunity}
+                      onSelect={(opp) => setSelectedOpportunity(opp)}
+                      isSaved={savedOpportunityIds.includes(spotlightOpportunity.id)}
+                      onToggleSave={handleToggleSave}
+                    />
+                  )}
+
+                  {/* Asymmetric Bento Stream Grid */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.25rem' }}>
+                    {standardOpportunities.map(opp => (
+                      <BentoCard
                         key={opp.id}
                         opportunity={opp}
-                        isSelected={selectedOpportunity?.id === opp.id}
-                        onSelect={() => setSelectedOpportunity(opp)}
+                        onSelect={(opp) => setSelectedOpportunity(opp)}
                         isSaved={savedOpportunityIds.includes(opp.id)}
                         onToggleSave={handleToggleSave}
-                        onApplyDirect={() => {}}
                       />
                     ))}
                   </div>
-                )}
-              </div>
-
-              {/* Right Pane: Inspector Studio */}
-              {selectedOpportunity && (
-                <div className="horizon-inspector-pane">
-                  <HorizonInspectorStudio
-                    opportunity={selectedOpportunity}
-                    onClose={() => setSelectedOpportunity(null)}
-                    isSaved={savedOpportunityIds.includes(selectedOpportunity.id)}
-                    onToggleSave={handleToggleSave}
-                    onUpdateStage={handleUpdateStage}
-                    currentStage={applications.find(a => (a.opportunity_id || a.id) === selectedOpportunity.id)?.stage}
-                    onOpenCvStudio={() => setIsAiLabOpen(true)}
-                  />
-                </div>
+                </>
               )}
 
             </div>
           )}
 
         </div>
-      </main>
+      </div>
+
+      {/* Slide-over Deep Intelligence Drawer */}
+      <AuraDrawer
+        opportunity={selectedOpportunity}
+        onClose={() => setSelectedOpportunity(null)}
+        isSaved={selectedOpportunity ? savedOpportunityIds.includes(selectedOpportunity.id) : false}
+        onToggleSave={handleToggleSave}
+        onUpdateStage={handleUpdateStage}
+        currentStage={selectedOpportunity ? applications.find(a => (a.opportunity_id || a.id) === selectedOpportunity.id)?.stage : null}
+        onOpenAiLab={() => setIsAiLabOpen(true)}
+      />
 
       {/* AI Career Lab Modal */}
-      <HorizonAiLabModal
+      <AuraAiModal
         isOpen={isAiLabOpen}
         onClose={() => setIsAiLabOpen(false)}
         userProfile={user}
@@ -396,6 +368,7 @@ function HorizonAppRoot() {
           onSaveProfile={(updated) => setUser(updated)}
         />
       )}
+
     </div>
   );
 }
