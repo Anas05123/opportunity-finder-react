@@ -967,7 +967,7 @@ html, body {
   color: #06070a;
   border-color: var(--primary);
   font-weight: 800;
-  box-shadow: 0 0 16px rgba(31, 228, 119, 0.35);
+  box-shadow: var(--shadow-sm);
 }
 
 .cat-pill.ad-active {
@@ -975,7 +975,7 @@ html, body {
   color: #06070a;
   border-color: var(--accent-amber);
   font-weight: 800;
-  box-shadow: 0 0 16px rgba(245, 158, 11, 0.3);
+  box-shadow: var(--shadow-sm);
 }
 
 .feed-toolbar {

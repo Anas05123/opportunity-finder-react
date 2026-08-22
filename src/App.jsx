@@ -925,9 +925,11 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
               </div>
 
               {/* View Layout Controls & Stats */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '0.75rem' }}>
-                <div style={{ color: 'var(--muted-foreground)', fontSize: '0.88rem', fontWeight: '600' }}>
-                  Showing <strong style={{ color: 'var(--foreground)' }}>{filteredOpportunities.length}</strong> verified opportunities
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', marginTop: '0.75rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+                <div style={{ color: 'var(--text-secondary)', fontSize: '0.88rem', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <span>Showing</span>
+                  <span style={{ color: 'var(--text-primary)', fontWeight: '800', fontFamily: 'var(--font-mono)' }}>{filteredOpportunities.length}</span>
+                  <span>verified opportunities</span>
                 </div>
 
                 <div style={{ display: 'flex', gap: '0.35rem', background: 'var(--card)', padding: '3px', borderRadius: '8px', border: '1px solid var(--border-default)' }}>
