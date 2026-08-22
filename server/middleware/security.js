@@ -198,7 +198,7 @@ export const emailLimiter = rateLimit({
 
 export const generalApiLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
-  max: process.env.NODE_ENV === 'production' ? 180 : 10000, // 180 req/min in prod, high headroom in dev/test
+  max: process.env.NODE_ENV === 'production' ? 300 : 10000, // 300 req/min in prod, high headroom in dev/test
   skip: (req) => {
     if (process.env.NODE_ENV === 'test') return true;
     const ip = req.ip || req.connection?.remoteAddress || '';
@@ -216,7 +216,7 @@ export const generalApiLimiter = rateLimit({
 
 export const adminLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
-  max: process.env.NODE_ENV === 'production' ? 40 : 1000, // 40 admin req/min
+  max: process.env.NODE_ENV === 'production' ? 180 : 2000, // 180 admin req/min (supports multi-widget Security Center)
   skip: (req) => {
     if (process.env.NODE_ENV === 'test') return true;
     const ip = req.ip || req.connection?.remoteAddress || '';
