@@ -4,8 +4,7 @@ import {
   Clock, ArrowRight, Building2, ChevronRight, Play, Check, Zap, Copy
 } from 'lucide-react';
 import FormattedMarkdown from '../utils/FormattedMarkdown.jsx';
-
-const API_BASE_URL = 'http://localhost:5000/api/v1';
+import { API_BASE_URL } from '../config/api.js';
 
 const MOCK_TARGET_COMPANIES = [
   { id: 'ogilvy', name: 'Ogilvy Worldwide', role: 'Brand Strategist & Creative Trainee', badge: 'Top Agency' },

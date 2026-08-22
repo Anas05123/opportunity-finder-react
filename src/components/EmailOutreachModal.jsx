@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Mail, Copy, ExternalLink, Send, Check, Sparkles, User, Building2, X, RefreshCw, AlertCircle, Edit3 } from 'lucide-react';
-
-const API_BASE_URL = 'http://localhost:5000/api/v1';
+import { API_BASE_URL } from '../config/api.js';
 
 // Real, verified official admissions and program inquiries emails
 const OFFICIAL_PROGRAM_EMAILS = {

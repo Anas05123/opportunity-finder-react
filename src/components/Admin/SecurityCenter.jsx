@@ -6,8 +6,7 @@ import {
   Terminal, Server, ExternalLink, ArrowUpDown, ChevronDown, ChevronUp, Bell, Send, Mail
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
-
-const API_BASE_URL = 'http://localhost:5000/api/v1';
+import { API_BASE_URL } from '../../config/api.js';
 
 export default function SecurityCenter({ triggerToast }) {
   const { user, isAdmin, isAuthenticated } = useAuth();

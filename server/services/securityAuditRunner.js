@@ -24,7 +24,8 @@ const ROOT_DIR = path.resolve(__dirname, '../../');
 const BASE_URL = 'http://localhost:5000/api/v1';
 axios.defaults.headers.common['x-security-audit'] = 'careerly-internal-audit';
 
-export { getGitCommit, getAppVersion } from './security/securityMeta.js';
+import { getGitCommit, getAppVersion } from './security/securityMeta.js';
+export { getGitCommit, getAppVersion };
 
 /**
  * Execute the 24-point Security Test Suite & Persist Machine-Readable Results

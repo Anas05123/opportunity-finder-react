@@ -4,6 +4,7 @@ import {
   CheckCircle2, AlertCircle, RefreshCw, Sun, Moon, Briefcase, GraduationCap, Globe
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
+import { API_BASE_URL } from '../../config/api.js';
 
 export default function AuthScreen({ triggerToast, theme, toggleTheme }) {
   const { login, signup } = useAuth();
@@ -40,7 +41,7 @@ export default function AuthScreen({ triggerToast, theme, toggleTheme }) {
         });
         if (triggerToast) triggerToast('🎉 Account created! Welcome to your onboarding calibration.');
       } else if (mode === 'forgot') {
-        const res = await fetch('http://localhost:5000/api/v1/auth/forgot-password', {
+        const res = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email })

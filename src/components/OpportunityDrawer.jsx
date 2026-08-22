@@ -7,8 +7,7 @@ import {
 import { resolveSafeJobUrl, resolveLinkedInSearchUrl, resolveGoogleJobsUrl } from '../utils/urlResolver.js';
 import FormattedMarkdown from '../utils/FormattedMarkdown.jsx';
 import { cleanStipendText, cleanHtmlText } from '../utils/formatUtils.js';
-
-const API_BASE_URL = 'http://localhost:5000/api/v1';
+import { API_BASE_URL } from '../config/api.js';
 
 export default function OpportunityDrawer({ 
   opportunity, 
@@ -134,6 +133,46 @@ export default function OpportunityDrawer({
                   Application Deadline: <strong style={{ color: 'var(--text-primary)' }}>{opportunity.deadline_raw || opportunity.deadline_utc || 'Open until filled'}</strong>
                 </div>
               </div>
+
+              {/* Tailored CV Application Strategy Banner (If matched from CV) */}
+              {opportunity.application_tips && (
+                <div style={{ background: 'var(--bg-surface-elevated)', border: '1px solid var(--primary)', borderRadius: 'var(--radius-xl)', padding: '1.25rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.65rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.88rem', fontWeight: '800', color: 'var(--primary)' }}>
+                      <Sparkles size={16} /> Tailored CV Application Strategy
+                    </div>
+                    {opportunity.cv_match_score && (
+                      <span className="bento-tag" style={{ background: 'var(--accent-emerald-subtle)', color: 'var(--accent-emerald)', borderColor: 'rgba(16, 185, 129, 0.3)', fontWeight: '800' }}>
+                        {opportunity.cv_match_score}% CV Match
+                      </span>
+                    )}
+                  </div>
+
+                  {opportunity.application_tips.why_you_match && (
+                    <div style={{ marginBottom: '0.65rem' }}>
+                      <span style={{ fontSize: '0.72rem', fontWeight: '800', textTransform: 'uppercase', color: 'var(--accent-emerald)' }}>
+                        Why Your Profile Fits:
+                      </span>
+                      <ul style={{ margin: '0.2rem 0 0 1rem', padding: 0, fontSize: '0.82rem', color: 'var(--text-primary)', lineHeight: '1.5' }}>
+                        {opportunity.application_tips.why_you_match.map((pt, idx) => (
+                          <li key={idx}>{pt}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {opportunity.application_tips.tailored_star_bullet && (
+                    <div style={{ background: 'var(--bg-surface)', border: '1px dashed var(--border-default)', padding: '0.65rem 0.85rem', borderRadius: 'var(--radius-md)', marginTop: '0.5rem' }}>
+                      <div style={{ fontSize: '0.72rem', fontWeight: '800', textTransform: 'uppercase', color: 'var(--accent-blue)', marginBottom: '0.2rem' }}>
+                        ✨ Recommended Resume Bullet for this Role:
+                      </div>
+                      <div style={{ fontSize: '0.84rem', fontWeight: '700', color: 'var(--text-primary)' }}>
+                        • {opportunity.application_tips.tailored_star_bullet}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Description */}
               <div>

@@ -4,8 +4,7 @@ import {
   Sparkles, Check, Building2, MapPin, Coins, RefreshCw, X, ShieldCheck, ArrowRight, Phone, Mail, User, Globe, Search, Edit3
 } from 'lucide-react';
 import { resolveSafeJobUrl, resolveLinkedInSearchUrl, resolveGoogleJobsUrl } from '../utils/urlResolver.js';
-
-const API_BASE_URL = 'http://localhost:5000/api/v1';
+import { API_BASE_URL } from '../config/api.js';
 
 export default function AutoApplyModal({ opportunity, userProfile, onClose, onApplied, triggerToast }) {
   if (!opportunity) return null;

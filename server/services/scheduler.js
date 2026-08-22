@@ -32,10 +32,11 @@ export async function runScraperPipeline() {
       console.log(`[*] Scraping source adapter: ${adapter.sourceName}...`);
       const extracted = await adapter.parse();
 
-      const { newCount, updatedCount, duplicateCount } = processAndDeduplicate(extracted);
+      const dedupResult = processAndDeduplicate(extracted || []);
+      const uniqueCount = Array.isArray(dedupResult?.unique) ? dedupResult.unique.length : 0;
+      const duplicateCount = dedupResult?.duplicatesCount || 0;
 
-      totalNew += newCount;
-      totalUpdated += updatedCount;
+      totalNew += uniqueCount;
       totalDuplicates += duplicateCount;
 
       db.upsertSource({
@@ -48,7 +49,7 @@ export async function runScraperPipeline() {
         last_success_at: new Date().toISOString()
       });
 
-      console.log(`[+] [${adapter.sourceName}] Ingestion complete: +${newCount} new, ${updatedCount} updated, ${duplicateCount} duplicates deduplicated.`);
+      console.log(`[+] [${adapter.sourceName}] Ingestion complete: +${uniqueCount} new, ${duplicateCount} duplicates deduplicated.`);
     } catch (err) {
       console.error(`[-] [${adapter.sourceName}] Scraper error:`, err.message);
     }

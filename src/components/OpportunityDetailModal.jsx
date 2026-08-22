@@ -4,8 +4,7 @@ import {
   ExternalLink, Bookmark, Wand2, ShieldCheck, Award, X, 
   FileText, Check, AlertCircle, Share2, Scale
 } from 'lucide-react';
-
-const API_BASE_URL = 'http://localhost:5000/api/v1';
+import { API_BASE_URL } from '../config/api.js';
 
 export default function OpportunityDetailModal({ opportunity, onClose, onSave, isSaved, onOpenAdvisor, onOpenCompare, onVerifiedUpdate }) {
   if (!opportunity) return null;

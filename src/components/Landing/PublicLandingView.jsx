@@ -160,21 +160,23 @@ export default function PublicLandingView({
           display: 'inline-flex',
           alignItems: 'center',
           gap: '0.5rem',
-          background: 'rgba(20, 24, 40, 0.7)',
-          border: '1px solid rgba(124, 58, 237, 0.4)',
-          color: '#c084fc',
+          background: 'rgba(31, 228, 119, 0.08)',
+          border: '1px solid rgba(31, 228, 119, 0.3)',
+          color: '#1FE477',
           padding: '0.4rem 1.15rem',
           borderRadius: '9999px',
           fontSize: '0.82rem',
           fontWeight: '700',
-          letterSpacing: '0.04em',
+          letterSpacing: '0.08em',
+          textTransform: 'uppercase',
+          fontFamily: "'JetBrains Mono', monospace",
           marginBottom: '1.75rem',
           backdropFilter: 'blur(12px)',
-          boxShadow: '0 0 20px rgba(124, 58, 237, 0.25)',
+          boxShadow: '0 0 20px rgba(31, 228, 119, 0.2)',
           position: 'relative',
           zIndex: 2
         }}>
-          <Sparkles size={14} color="#c084fc" />
+          <Sparkles size={14} color="#1FE477" />
           <span>CAREERLY • PRECISION CAREER DISCOVERY</span>
         </div>
 
@@ -184,6 +186,7 @@ export default function PublicLandingView({
           lineHeight: '1.14',
           fontWeight: '800',
           letterSpacing: '-0.035em',
+          fontFamily: "'Space Grotesk', sans-serif",
           color: '#ffffff',
           position: 'relative',
           zIndex: 2,
@@ -194,18 +197,18 @@ export default function PublicLandingView({
           <span style={{
             position: 'relative',
             display: 'inline-block',
-            background: 'linear-gradient(135deg, #c084fc 0%, #818cf8 50%, #38bdf8 100%)',
+            background: 'linear-gradient(135deg, #1FE477 0%, #56FF8E 50%, #38bdf8 100%)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent'
           }}>
             Careerly
-            {/* Brainwave Colored Curved SVG Underline */}
+            {/* Neoconda Cyber Mint Curved SVG Underline */}
             <svg style={{ position: 'absolute', bottom: '-8px', left: 0, width: '100%', height: '8px' }} viewBox="0 0 200 8" fill="none">
               <path d="M1 5.5C40 2 160 2 199 5.5" stroke="url(#curveGrad)" strokeWidth="3" strokeLinecap="round" />
               <defs>
                 <linearGradient id="curveGrad" x1="0" y1="0" x2="200" y2="0" gradientUnits="userSpaceOnUse">
-                  <stop stopColor="#a855f7" />
-                  <stop offset="0.5" stopColor="#6366f1" />
+                  <stop stopColor="#1FE477" />
+                  <stop offset="0.5" stopColor="#56FF8E" />
                   <stop offset="1" stopColor="#38bdf8" />
                 </linearGradient>
               </defs>

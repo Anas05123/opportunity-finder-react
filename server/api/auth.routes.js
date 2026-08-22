@@ -7,6 +7,16 @@ import { recordSecurityEvent, getSafeClientIp } from '../services/security/secur
 
 const router = express.Router();
 
+function safeJsonParse(raw, fallback = []) {
+  if (!raw) return fallback;
+  if (typeof raw !== 'string') return raw;
+  try {
+    return JSON.parse(raw);
+  } catch (e) {
+    return fallback;
+  }
+}
+
 /**
  * 1. POST /api/v1/auth/signup
  */
@@ -86,19 +96,19 @@ router.post('/signup', async (req, res) => {
       message: 'Account created successfully!',
       token,
       user: userRecord,
-      careerProfile: {
+      careerProfile: careerProfile ? {
         ...careerProfile,
-        skills: JSON.parse(careerProfile.skills || '[]'),
-        interests: JSON.parse(careerProfile.interests || '[]'),
-        languages: JSON.parse(careerProfile.languages || '[]'),
-        certifications: JSON.parse(careerProfile.certifications || '[]')
-      },
-      searchProfile: {
+        skills: safeJsonParse(careerProfile.skills, []),
+        interests: safeJsonParse(careerProfile.interests, []),
+        languages: safeJsonParse(careerProfile.languages, []),
+        certifications: safeJsonParse(careerProfile.certifications, [])
+      } : null,
+      searchProfile: searchProfile ? {
         ...searchProfile,
-        target_roles: JSON.parse(searchProfile.target_roles || '[]'),
-        opportunity_types: JSON.parse(searchProfile.opportunity_types || '[]'),
-        required_locations: JSON.parse(searchProfile.required_locations || '[]')
-      }
+        target_roles: safeJsonParse(searchProfile.target_roles, []),
+        opportunity_types: safeJsonParse(searchProfile.opportunity_types, []),
+        required_locations: safeJsonParse(searchProfile.required_locations, [])
+      } : null
     });
 
   } catch (err) {

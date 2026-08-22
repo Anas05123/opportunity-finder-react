@@ -31,8 +31,7 @@ import InterviewCoach from './components/InterviewCoach.jsx';
 import AiCareerCopilot from './components/AiCareerCopilot.jsx';
 import EvidenceInspectorModal from './components/EvidenceInspectorModal.jsx';
 import Footer from './components/Footer.jsx';
-
-const API_BASE_URL = 'http://localhost:5000/api/v1';
+import { API_BASE_URL, API_V3_URL } from './config/api.js';
 
 function CareerlyPlatform() {
   const { 
@@ -71,6 +70,7 @@ function CareerlyPlatform() {
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
+  const [cvMatchedContext, setCvMatchedContext] = useState(null);
   const itemsPerPage = 9;
   const feedTopRef = useRef(null);
   
@@ -260,7 +260,7 @@ function CareerlyPlatform() {
     const headers = { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) };
 
     try {
-      const res = await fetch(`http://localhost:5000/api/v3/search/intent`, {
+      const res = await fetch(`${API_V3_URL}/search/intent`, {
         method: 'POST',
         headers,
         body: JSON.stringify({
@@ -294,7 +294,7 @@ function CareerlyPlatform() {
     const headers = { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) };
 
     try {
-      const res = await fetch(`http://localhost:5000/api/v3/search/execute`, {
+      const res = await fetch(`${API_V3_URL}/search/execute`, {
         method: 'POST',
         headers,
         body: JSON.stringify({
@@ -339,6 +339,43 @@ function CareerlyPlatform() {
     await executeFinalSearch(pendingQuery, searchProfileContext);
   };
 
+  const handleNavigateFromCvToDiscover = async (role, suggestedRoles = [], skills = [], cvText = '') => {
+    setCvMatchedContext({ role, suggestedRoles, skills, cvText });
+    setSelectedPreset('all');
+    setActiveTab('explore');
+    setGlobalSearchQuery(role);
+    triggerToast(`🎯 Searching opportunities matched to CV: ${role}`);
+    
+    setIsSearchingPipeline(true);
+    try {
+      const matchRes = await fetch(`${API_BASE_URL}/ai/match-jobs-to-cv`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cvText,
+          targetRole: role,
+          suggestedRoles,
+          skills,
+          userProfile: careerProfile || {},
+          limit: 15
+        })
+      });
+      const matchData = await matchRes.json();
+      if (matchData.status === 'success' && Array.isArray(matchData.opportunities) && matchData.opportunities.length > 0) {
+        setOpportunities(matchData.opportunities);
+        setSearchSummaryBadge(`CV Match: "${role}" (${matchData.opportunities.length} tailored matches)`);
+        setCurrentPage(1);
+      } else {
+        await executeFinalSearch(role, null);
+      }
+    } catch (e) {
+      await executeFinalSearch(role, null);
+    } finally {
+      setIsSearchingPipeline(false);
+      if (feedTopRef.current) feedTopRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   const handleRelaxConstraint = async (option) => {
     triggerToast(`Relaxing constraint: ${option.label}...`);
     setIsSearchingPipeline(true);
@@ -355,6 +392,50 @@ function CareerlyPlatform() {
 
   // Filter & Pagination Logic
   const filteredOpportunities = opportunities.filter(op => {
+    if (cvMatchedContext && cvMatchedContext.role) {
+      const roleLower = cvMatchedContext.role.toLowerCase();
+      const titleLower = (op.title || '').toLowerCase();
+      const catLower = (op.category || '').toLowerCase();
+      const fieldLower = (op.field_of_study || '').toLowerCase();
+      const descLower = (op.description || op.description_text || '').toLowerCase();
+      const combined = `${titleLower} ${catLower} ${fieldLower}`;
+
+      // If opportunity has a cv_match_score, enforce threshold
+      if (typeof op.cv_match_score === 'number' && op.cv_match_score < 70) {
+        return false;
+      }
+
+      // Domain-specific keyword matching
+      const isDriving = /\b(chauffeur|conducteur|driver|transport|livreur|messagerie|fleet|vtc|navette)\b/i.test(roleLower);
+      const isDev = /\b(développeur|programmeur|software|developer|engineer|frontend|backend)\b/i.test(roleLower);
+      const isMarketing = /\b(marketing|brand|advertising|communication|publicité)\b/i.test(roleLower);
+      const isFinance = /\b(finance|comptable|accountant|analyst|audit)\b/i.test(roleLower);
+      const isHealth = /\b(santé|médical|infirmier|nurse|healthcare|medical|soins|clinical)\b/i.test(roleLower);
+
+      if (isDriving) {
+        const isDrivingJob = /\b(chauffeur|conducteur|driver|transport|livreur|messagerie|fleet|vtc|navette|logistique|logistics|véhicule)\b/i.test(combined);
+        const isTechRole = /\b(software|solutions architect|backend|frontend|data engineer|cloud)\b/i.test(titleLower);
+        if (!isDrivingJob || isTechRole) return false;
+      } else if (isDev) {
+        const isDevJob = /\b(developer|software|engineer|frontend|backend|fullstack|code|programming|développeur)\b/i.test(titleLower);
+        if (!isDevJob) return false;
+      } else if (isMarketing) {
+        const isMarketingJob = /\b(marketing|brand|advertising|communication|publicité|copywriter|content)\b/i.test(combined);
+        if (!isMarketingJob) return false;
+      } else if (isFinance) {
+        const isFinanceJob = /\b(finance|comptable|accountant|analyst|audit|banking)\b/i.test(combined);
+        if (!isFinanceJob) return false;
+      } else if (isHealth) {
+        const isHealthJob = /\b(santé|médical|infirmier|nurse|healthcare|medical|soins|clinical)\b/i.test(combined);
+        if (!isHealthJob) return false;
+      } else {
+        const words = roleLower.split(/\s+/).filter(w => w.length > 3);
+        if (words.length > 0 && !words.some(w => combined.includes(w) || descLower.includes(w))) {
+          return false;
+        }
+      }
+    }
+
     if (selectedPreset === 'advertising' && !op.field_of_study?.toLowerCase().includes('advert') && !op.field_of_study?.toLowerCase().includes('marketing') && !op.title?.toLowerCase().includes('brand')) {
       return false;
     }
@@ -405,6 +486,8 @@ function CareerlyPlatform() {
 
   return (
     <div className="saas-workspace">
+      {/* Neoconda Matrix Engineering Grid Canvas Background */}
+      <div className="matrix-grid-canvas" aria-hidden="true" />
       
       {/* 1. WORKSPACE SIDEBAR (AUTHENTICATED) */}
       {isAuthenticated && (
@@ -600,13 +683,13 @@ function CareerlyPlatform() {
           <>
             <header className="brainwave-navbar">
               <div className="sidebar-brand" onClick={() => setActiveTab('landing')} style={{ cursor: 'pointer' }}>
-                <div className="sidebar-logo" style={{ boxShadow: '0 0 15px rgba(124, 58, 237, 0.4)' }}>
+                <div className="sidebar-logo" style={{ boxShadow: '0 0 15px rgba(31, 228, 119, 0.4)' }}>
                   <img src="/careerly-logo.png" alt="Careerly Logo" />
                 </div>
-                <div className="sidebar-brand-name" style={{ fontSize: '1.15rem', fontWeight: '800', letterSpacing: '-0.02em', color: '#ffffff' }}>
+                <div className="sidebar-brand-name" style={{ fontSize: '1.15rem', fontWeight: '800', letterSpacing: '-0.02em', color: '#ffffff', fontFamily: "'Space Grotesk', sans-serif" }}>
                   Careerly
-                  <span style={{ fontSize: '0.68rem', color: '#c084fc', marginLeft: '0.4rem', fontWeight: '700', padding: '0.15rem 0.45rem', borderRadius: '4px', background: 'rgba(124, 58, 237, 0.25)', border: '1px solid rgba(124, 58, 237, 0.4)' }}>
-                    AI 2.0
+                  <span style={{ fontSize: '0.68rem', color: '#06070a', marginLeft: '0.4rem', fontWeight: '800', padding: '0.15rem 0.45rem', borderRadius: '4px', background: '#1FE477', boxShadow: '0 0 10px rgba(31, 228, 119, 0.4)' }}>
+                    CYBER 2.0
                   </span>
                 </div>
               </div>
@@ -808,12 +891,60 @@ function CareerlyPlatform() {
 
             <div className="content-container" ref={feedTopRef} style={{ marginTop: '2.5rem' }}>
               
+              {/* Dedicated CV-to-Jobs Filter Banner */}
+              {cvMatchedContext && (
+                <div style={{
+                  background: 'linear-gradient(135deg, rgba(31, 228, 119, 0.14) 0%, rgba(56, 189, 248, 0.1) 100%)',
+                  border: '1.5px solid #1FE477',
+                  borderRadius: 'var(--radius-2xl)',
+                  padding: '1.15rem 1.5rem',
+                  marginBottom: '1.75rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '1rem',
+                  flexWrap: 'wrap',
+                  boxShadow: '0 0 30px rgba(31, 228, 119, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.08)'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+                    <div style={{ width: '42px', height: '42px', borderRadius: '50%', background: '#1FE477', color: '#06070a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem', fontWeight: '900', flexShrink: 0, boxShadow: '0 0 16px rgba(31, 228, 119, 0.5)' }}>
+                      🎯
+                    </div>
+                    <div>
+                      <div style={{ fontWeight: '900', fontSize: '1.02rem', color: 'var(--foreground)', fontFamily: "'Space Grotesk', sans-serif" }}>
+                        Tailored Opportunities for CV: <span style={{ color: '#1FE477' }}>{cvMatchedContext.role}</span>
+                      </div>
+                      <div style={{ fontSize: '0.82rem', color: 'var(--muted-foreground)' }}>
+                        Verified positions matched to your extracted qualifications and career trajectory.
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button 
+                      className="btn btn-outline" 
+                      style={{ height: '36px', fontSize: '0.82rem', padding: '0 0.85rem' }}
+                      onClick={() => { setCvMatchedContext(null); setSearchSummaryBadge(''); fetchOpportunities(''); }}
+                    >
+                      Clear CV Filter
+                    </button>
+                    <button 
+                      className="btn btn-primary" 
+                      style={{ height: '36px', fontSize: '0.82rem', padding: '0 0.95rem' }}
+                      onClick={() => setActiveTab('cv_studio')}
+                    >
+                      Return to CV Studio
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* Active Search Summary Badge */}
               {searchSummaryBadge && (
                 <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'var(--card)', border: '1px solid var(--primary)', color: 'var(--foreground)', padding: '0.45rem 1.25rem', borderRadius: 'var(--radius-full)', fontSize: '0.84rem', fontWeight: '800', margin: '0 auto 1.75rem', boxShadow: 'var(--shadow-sm)' }}>
                   <Sparkles size={15} color="var(--primary)" /> {searchSummaryBadge}
                   <button 
-                    onClick={() => { setSearchSummaryBadge(''); fetchOpportunities(''); }} 
+                    onClick={() => { setSearchSummaryBadge(''); setCvMatchedContext(null); fetchOpportunities(''); }} 
                     style={{ background: 'transparent', border: 'none', color: 'var(--muted-foreground)', cursor: 'pointer', marginLeft: '0.45rem', fontSize: '0.9rem' }}
                   >
                     ✕
@@ -856,9 +987,15 @@ function CareerlyPlatform() {
                   <span style={{ fontSize: '1.15rem', fontWeight: '900', color: 'var(--foreground)' }}>
                     Verified Opportunities ({filteredOpportunities.length})
                   </span>
-                  <span className="bento-tag" style={{ background: 'var(--accent-emerald-light)', color: 'var(--accent-emerald)', borderColor: 'var(--accent-emerald)', fontWeight: '800' }}>
-                    Deterministic Ranked
-                  </span>
+                  {cvMatchedContext ? (
+                    <span className="bento-tag" style={{ background: 'var(--primary-subtle)', color: 'var(--primary)', borderColor: 'rgba(124, 58, 237, 0.3)', fontWeight: '800' }}>
+                      🎯 Matched for: {cvMatchedContext.role}
+                    </span>
+                  ) : (
+                    <span className="bento-tag" style={{ background: 'var(--accent-emerald-light)', color: 'var(--accent-emerald)', borderColor: 'var(--accent-emerald)', fontWeight: '800' }}>
+                      Deterministic Ranked
+                    </span>
+                  )}
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -1056,9 +1193,15 @@ function CareerlyPlatform() {
 
         {/* TAB: AI CV STUDIO & ATS ENHANCER */}
         {activeTab === 'cv_studio' && (
-          <div className="tab-content-anim">
-            <CvStudio userProfile={careerProfile} triggerToast={triggerToast} />
-          </div>
+            <CvStudio 
+              userProfile={careerProfile} 
+              triggerToast={triggerToast}
+              onNavigateToDiscover={handleNavigateFromCvToDiscover}
+              onSelectOpportunity={(op) => setDrawerOp(op)}
+              onPrepareKit={(op) => setPrepareAppOp(op)}
+              onToggleSave={(id) => toggleSaveApp(id)}
+              isOpportunitySaved={(id) => isOpportunitySaved(id)}
+            />
         )}
 
         {/* TAB: AI MOCK INTERVIEW COACH */}
@@ -1185,8 +1328,10 @@ function CareerlyPlatform() {
         />
       )}
 
-      {/* Floating 24/7 AI Career Copilot */}
-      <AiCareerCopilot userProfile={careerProfile || {}} triggerToast={triggerToast} />
+      {/* Floating 24/7 AI Career Copilot (Hidden when drawer or modal is open) */}
+      {!drawerOp && !prepareAppOp && !emailOutreachOp && !inspectingEvidenceOp && !authModalOpen && !activeQuestion && (
+        <AiCareerCopilot userProfile={careerProfile || {}} triggerToast={triggerToast} />
+      )}
 
       {/* Toast Notification */}
       {toastMessage && (

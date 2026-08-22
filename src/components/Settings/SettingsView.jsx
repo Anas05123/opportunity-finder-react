@@ -4,6 +4,7 @@ import {
   Save, KeyRound, Globe, Award, Briefcase, GraduationCap, RefreshCw 
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
+import { API_BASE_URL } from '../../config/api.js';
 
 export default function SettingsView({ triggerToast }) {
   const { user, careerProfile, searchProfile, updateCareerProfile, updateSearchPreferences, logout } = useAuth();
@@ -114,7 +115,7 @@ export default function SettingsView({ triggerToast }) {
     setFeedback({ type: '', text: '' });
 
     try {
-      const res = await fetch('http://localhost:5000/api/v1/user/account/password', {
+      const res = await fetch(`${API_BASE_URL}/user/account/password`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -144,7 +145,7 @@ export default function SettingsView({ triggerToast }) {
     }
 
     try {
-      const res = await fetch('http://localhost:5000/api/v1/user/account', {
+      const res = await fetch(`${API_BASE_URL}/user/account`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });

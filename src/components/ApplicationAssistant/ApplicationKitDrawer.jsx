@@ -4,8 +4,7 @@ import {
   Sparkles, ExternalLink, ShieldCheck, Mail, Send, Building2, MapPin, RefreshCw, BookOpen
 } from 'lucide-react';
 import { resolveSafeJobUrl, resolveLinkedInSearchUrl, resolveGoogleJobsUrl } from '../../utils/urlResolver.js';
-
-const API_BASE_URL = 'http://localhost:5000/api/v1';
+import { API_BASE_URL } from '../../config/api.js';
 
 export default function ApplicationKitDrawer({ opportunity, userProfile, onClose, onApplied, triggerToast }) {
   if (!opportunity) return null;

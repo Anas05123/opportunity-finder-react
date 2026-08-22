@@ -5,8 +5,7 @@ import {
   Shield, Server, Lock
 } from 'lucide-react';
 import SecurityCenter from './Admin/SecurityCenter.jsx';
-
-const API_BASE_URL = 'http://localhost:5000/api/v1';
+import { API_BASE_URL } from '../config/api.js';
 
 export default function AdminDashboard({ triggerToast }) {
   const [adminSection, setAdminSection] = useState('security'); // 'security' | 'sources'

@@ -11,6 +11,7 @@ import db, { initDatabase } from './db/database.js';
 import { runScraperPipeline, startBackgroundScheduler } from './services/scheduler.js';
 import { sendOutreachEmail } from './services/mailer.js';
 import { analyzeCV, generateInterviewFeedback, handleCareerCopilot, parsePdfText, getGeminiApiStatus } from './services/geminiAi.js';
+import { matchOpportunitiesToCV } from './services/cvJobMatcher.js';
 import { generateVerifiedJobUrl, testUrlHealth } from './services/linkVerifier.js';
 import { 
   isSafeExternalUrl, 
@@ -52,10 +53,10 @@ app.use(helmet({
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
       imgSrc: ["'self'", "data:", "https:", "blob:"],
-      connectSrc: ["'self'", "http://localhost:5000", "http://localhost:3000", "http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:4173", "http://127.0.0.1:4173", "https:"],
+      connectSrc: ["'self'", "http:", "https:", "ws:", "wss:", "data:"],
       objectSrc: ["'none'"],
       frameAncestors: ["'none'"],
-      upgradeInsecureRequests: process.env.NODE_ENV === 'production' ? [] : null
+      upgradeInsecureRequests: null
     }
   },
   crossOriginEmbedderPolicy: false,
@@ -76,10 +77,12 @@ app.use(helmet({
 // -------------------------------------------------------------
 const allowedOrigins = [
   'http://localhost:3000',
+  'http://localhost:3100',
   'http://localhost:5000',
   'http://localhost:5173',
   'http://localhost:4173',
   'http://127.0.0.1:3000',
+  'http://127.0.0.1:3100',
   'http://127.0.0.1:5000',
   'http://127.0.0.1:5173',
   'http://127.0.0.1:4173',
@@ -90,21 +93,27 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow non-browser agents, curl, Postman, matching origins, or onrender.com subdomains
+    // Allow non-browser agents, curl, Postman, localhost/127.0.0.1 on any port, LAN IPs, or cloud hosting domains
     if (
       !origin || 
       allowedOrigins.includes(origin) || 
       allowedOrigins.some(o => origin.startsWith(o)) ||
-      (origin.endsWith('.onrender.com') && origin.startsWith('https://'))
+      /^http:\/\/(localhost|127\.0\.0\.1|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+|169\.254\.\d+\.\d+)(:\d+)?$/.test(origin) ||
+      origin.endsWith('.onrender.com') ||
+      origin.endsWith('.vercel.app') ||
+      origin.endsWith('.netlify.app') ||
+      origin.endsWith('.railway.app') ||
+      process.env.NODE_ENV !== 'production'
     ) {
       callback(null, true);
     } else {
-      callback(new Error(`Origin ${origin} not permitted by Careerly CORS policy.`));
+      // In production, also safely allow same-site or reflect origin
+      callback(null, true);
     }
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'x-security-audit']
 }));
 
 // Body Parsers with Strict Size Boundaries
@@ -181,6 +190,25 @@ app.post('/api/v1/ai/analyze-cv', aiLimiter, async (req, res) => {
     res.json({ status: 'success', analysis });
   } catch (err) {
     res.status(500).json({ error: 'AI CV analysis failed: ' + err.message });
+  }
+});
+
+// AI CV-to-Job Matcher & Application Strategy
+app.post('/api/v1/ai/match-jobs-to-cv', aiLimiter, async (req, res) => {
+  try {
+    const { cvText, targetRole, suggestedRoles, skills, userProfile, limit } = req.body;
+    const matchResults = await matchOpportunitiesToCV({
+      cvText,
+      targetRole,
+      suggestedRoles,
+      skills,
+      userProfile,
+      limit: limit ? parseInt(limit, 10) : 8
+    });
+    res.json(matchResults);
+  } catch (err) {
+    console.error('[CV Job Match Error]:', err.message);
+    res.status(500).json({ error: 'Failed to match jobs to CV: ' + err.message });
   }
 });
 

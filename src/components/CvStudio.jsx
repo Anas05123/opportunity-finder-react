@@ -1,53 +1,84 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   FileText, Sparkles, CheckCircle2, AlertTriangle, ArrowRight, 
   Copy, Check, RefreshCw, Award, Zap, UploadCloud, FileCheck, 
   X, Briefcase, GraduationCap, Building2, UserCheck, ShieldAlert,
-  ChevronRight, Target, Flame
+  ChevronRight, Target, Flame, Compass, RotateCcw, HelpCircle
 } from 'lucide-react';
+import { API_BASE_URL } from '../config/api.js';
 
-const API_BASE_URL = 'http://localhost:5000/api/v1';
+const CV_STORAGE_KEY = 'careerly_cv_studio_cache_v2';
 
-export default function CvStudio({ userProfile, triggerToast }) {
-  const [cvText, setCvText] = useState(() => {
-    if (userProfile?.resume_text) return userProfile.resume_text;
-    const name = userProfile?.full_name || userProfile?.name || 'Scholar Candidate';
-    const degree = userProfile?.degree_title || 'Bachelor Degree';
-    const major = userProfile?.field_of_study || userProfile?.major || 'Computer Science';
-    const email = userProfile?.email || 'scholar@example.com';
-    const gpa = userProfile?.gpa || '3.50';
-    const skillsList = Array.isArray(userProfile?.skills) && userProfile.skills.length > 0
-      ? userProfile.skills
-      : ['Analytical Problem Solving', 'Full-Stack Architecture', 'Project Execution', 'Cross-Functional Strategy'];
-
-    return `${name.toUpperCase()}
-${degree} in ${major}
-Email: ${email} | Cumulative GPA: ${gpa} (English Medium of Instruction)
-
-SUMMARY:
-Results-driven ${major} scholar with a ${gpa} GPA. Experienced in high-impact project delivery, research synthesis, and analytical execution. Seeking competitive global roles and fellowship opportunities.
-
-CORE SKILLS:
-${skillsList.map(s => `- ${s}`).join('\n')}
-
-EXPERIENCE & PROJECTS:
-- Led end-to-end project initiatives delivering measurable engagement and efficiency improvements
-- Conducted deep research audits and deployed robust strategies across cross-functional workstreams
-- Authored technical documentation and presented structured findings to key stakeholders`;
+export default function CvStudio({ 
+  userProfile, 
+  triggerToast,
+  onNavigateToDiscover
+}) {
+  // Load initial persistent state from localStorage if available
+  const [persistedData] = useState(() => {
+    try {
+      const saved = localStorage.getItem(CV_STORAGE_KEY);
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
+    return null;
   });
 
-  const [targetRole, setTargetRole] = useState(userProfile?.field_of_study ? `${userProfile.field_of_study} Specialist` : 'Software Engineer / Technology Trainee');
-  const [employerType, setEmployerType] = useState('Top Multinational Agency & Enterprise');
+  const defaultCvText = () => {
+    if (userProfile?.resume_text) return userProfile.resume_text;
+    const name = userProfile?.full_name || userProfile?.name || 'Professional Candidate';
+    const degree = userProfile?.degree_title || 'Professional Certification / Degree';
+    const email = userProfile?.email || 'candidate@example.com';
+
+    return `${name.toUpperCase()}
+Email: ${email} | ${degree}
+
+RÉSUMÉ PROFESSIONNEL:
+Professionnel qualifié et rigoureux avec une solide expérience opérationnelle. Spécialisé dans la sécurité, la ponctualité et la satisfaction client de haut niveau.
+
+COMPÉTENCES CLÉS:
+- Conduite sécurisée & défensive
+- Permis de conduire & Maîtrise des véhicules
+- Gestion des itinéraires & Navigation GPS
+- Ponctualité & Service Client VIP
+- Maintenance préventive et vérification technique
+
+EXPÉRIENCE PROFESSIONNELLE:
+- Assuré plus de 450+ missions de transport et déplacements VIP avec un taux de ponctualité de 99,8% et zéro incident sur 3 ans
+- Optimisé les trajets urbains et interurbains réduisant les temps d'attente client de 25%
+- Maintenu un état irréprochable des véhicules et assuré la conformité stricte avec les réglementations de sécurité`;
+  };
+
+  const [cvText, setCvText] = useState(() => persistedData?.cvText || defaultCvText());
+  const [targetRole, setTargetRole] = useState(() => persistedData?.targetRole || 'Chauffeur Professionnel');
+  const [employerType, setEmployerType] = useState(() => persistedData?.employerType || 'Senior Hiring Manager (Role Specialist)');
+  const [uploadedFileName, setUploadedFileName] = useState(() => persistedData?.uploadedFileName || '');
+  const [uploadedFileSize, setUploadedFileSize] = useState(() => persistedData?.uploadedFileSize || '');
+  const [uploadedPdfBase64, setUploadedPdfBase64] = useState(() => persistedData?.uploadedPdfBase64 || '');
+  const [analysisResult, setAnalysisResult] = useState(() => persistedData?.analysisResult || null);
+
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isParsingPdf, setIsParsingPdf] = useState(false);
-  const [uploadedFileName, setUploadedFileName] = useState('');
-  const [uploadedFileSize, setUploadedFileSize] = useState('');
-  const [uploadedPdfBase64, setUploadedPdfBase64] = useState('');
   const [isDragging, setIsDragging] = useState(false);
-  const [analysisResult, setAnalysisResult] = useState(null);
   const [copiedSection, setCopiedSection] = useState('');
 
   const fileInputRef = useRef(null);
+
+  // Sync state changes to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem(CV_STORAGE_KEY, JSON.stringify({
+        cvText,
+        targetRole,
+        employerType,
+        uploadedFileName,
+        uploadedFileSize,
+        uploadedPdfBase64,
+        analysisResult
+      }));
+    } catch (e) {
+      console.warn('Failed syncing CV studio state to localStorage:', e);
+    }
+  }, [cvText, targetRole, employerType, uploadedFileName, uploadedFileSize, uploadedPdfBase64, analysisResult]);
 
   // PDF File Handler
   const handlePdfUpload = async (file) => {
@@ -80,10 +111,11 @@ EXPERIENCE & PROJECTS:
           const data = await res.json();
           if (data.status === 'success' && data.extractedText) {
             setCvText(data.extractedText);
-            if (triggerToast) triggerToast(`✓ Extracted text from ${file.name}!`);
+            if (triggerToast) triggerToast(`✓ Extracted text from ${file.name}! Analyzing...`);
+            triggerAnalysisWithData(data.extractedText, base64Data);
           } else {
-            console.warn('PDF parser notice:', data.error);
             if (triggerToast) triggerToast(`Loaded ${file.name} — ready for AI analysis!`);
+            triggerAnalysisWithData(cvText, base64Data);
           }
         } catch (serverErr) {
           console.warn('Backend PDF parse fallback:', serverErr.message);
@@ -116,20 +148,15 @@ EXPERIENCE & PROJECTS:
     setIsDragging(false);
   };
 
-  const handleAnalyzeCV = async () => {
-    if (!cvText.trim() && !uploadedPdfBase64) {
-      if (triggerToast) triggerToast('⚠️ Please enter or upload CV text first');
-      return;
-    }
-
+  const triggerAnalysisWithData = async (text, pdfBase64) => {
     setIsAnalyzing(true);
     try {
       const res = await fetch(`${API_BASE_URL}/ai/analyze-cv`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          cvText,
-          fileBase64: uploadedPdfBase64,
+          cvText: text || cvText,
+          fileBase64: pdfBase64 || uploadedPdfBase64,
           targetRole,
           employerType,
           userProfile
@@ -139,12 +166,37 @@ EXPERIENCE & PROJECTS:
       const data = await res.json();
       if (data.status === 'success' && data.analysis) {
         setAnalysisResult(data.analysis);
-        if (triggerToast) triggerToast('🎉 Executive Employer CV Audit Completed!');
+        const detected = data.analysis.detected_target_role || targetRole;
+        if (data.analysis.detected_target_role) {
+          setTargetRole(data.analysis.detected_target_role);
+        }
+        if (triggerToast) triggerToast(`🎉 AI CV Audit Complete • Position: ${detected}!`);
       }
     } catch (err) {
       if (triggerToast) triggerToast('Generated Employer Evaluation.');
     } finally {
       setIsAnalyzing(false);
+    }
+  };
+
+  const handleAnalyzeCV = () => {
+    if (!cvText.trim() && !uploadedPdfBase64) {
+      if (triggerToast) triggerToast('⚠️ Please enter or upload CV text first');
+      return;
+    }
+    triggerAnalysisWithData(cvText, uploadedPdfBase64);
+  };
+
+  const handleResetResume = () => {
+    if (window.confirm('Reset CV Studio to default sample resume?')) {
+      localStorage.removeItem(CV_STORAGE_KEY);
+      setCvText(defaultCvText());
+      setTargetRole('Chauffeur Professionnel');
+      setUploadedFileName('');
+      setUploadedFileSize('');
+      setUploadedPdfBase64('');
+      setAnalysisResult(null);
+      if (triggerToast) triggerToast('CV Studio reset to default.');
     }
   };
 
@@ -156,25 +208,37 @@ EXPERIENCE & PROJECTS:
   };
 
   return (
-    <div className="content-container">
+    <div className="content-container" style={{ maxWidth: '1320px', margin: '0 auto', padding: '0 1.25rem' }}>
       
-      {/* Header */}
-      <div style={{ marginBottom: '2rem' }}>
-        <div className="hero-pill-badge" style={{ marginBottom: '0.75rem' }}>
-          <Briefcase size={14} /> Executive Employer & Recruiter Intelligence
+      {/* Header Section */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '2rem' }}>
+        <div>
+          <div className="hero-pill-badge" style={{ marginBottom: '0.75rem', background: 'rgba(31, 228, 119, 0.08)', border: '1px solid rgba(31, 228, 119, 0.3)', color: '#1FE477' }}>
+            <Briefcase size={14} color="#1FE477" /> Multilingual AI CV Studio & Recruiter Audit
+          </div>
+          <h1 className="type-h1" style={{ fontSize: '2.1rem', letterSpacing: '-0.03em', fontFamily: "'Space Grotesk', sans-serif" }}>
+            Professional CV Analysis & ATS Optimization
+          </h1>
+          <p className="type-body-lg" style={{ marginTop: '0.35rem', maxWidth: '780px', color: 'var(--text-secondary)' }}>
+            Upload your resume in French or English for executive hiring evaluation, auto-detected target positions, ATS scoring, and STAR bullet rewrites. Your work is automatically saved.
+          </p>
         </div>
-        <h1 className="type-h1">
-          AI CV Studio & Professional Employer Audit
-        </h1>
-        <p className="type-body-lg" style={{ marginTop: '0.35rem', maxWidth: '720px' }}>
-          Upload your PDF resume to receive a real-time hiring evaluation from senior recruitment partners (Ogilvy, Google, Grab, McKinsey) — including 6-second screening verdicts, ATS scoring, and quantifiable STAR rewrites.
-        </p>
+
+        {/* Quick Reset Action */}
+        <button 
+          className="btn btn-outline" 
+          onClick={handleResetResume}
+          style={{ height: '36px', fontSize: '0.8rem', gap: '0.4rem', color: 'var(--text-muted)' }}
+          title="Reset to sample resume"
+        >
+          <RotateCcw size={14} /> Reset CV
+        </button>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))', gap: '1.5rem', alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1.75rem', alignItems: 'start' }}>
         
         {/* Left Column: PDF Uploader, Target Setup & CV Editor */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.35rem' }}>
           
           {/* 1. PDF Upload Drag-and-Drop Area */}
           <div 
@@ -183,13 +247,14 @@ EXPERIENCE & PROJECTS:
             onDragLeave={handleDragLeave}
             style={{ 
               background: isDragging ? 'var(--primary-subtle)' : 'var(--bg-surface)', 
-              border: isDragging ? '2px dashed var(--primary)' : '2px dashed var(--border-default)', 
+              border: isDragging ? '2px dashed var(--primary)' : '1.5px dashed var(--border-default)', 
               borderRadius: 'var(--radius-2xl)', 
-              padding: '1.5rem', 
+              padding: '1.75rem 1.5rem', 
               textAlign: 'center',
               cursor: 'pointer',
               transition: 'all 0.2s ease',
-              boxShadow: 'var(--shadow-sm)'
+              boxShadow: 'var(--shadow-sm)',
+              position: 'relative'
             }}
             onClick={() => fileInputRef.current?.click()}
           >
@@ -204,16 +269,18 @@ EXPERIENCE & PROJECTS:
             {isParsingPdf ? (
               <div style={{ padding: '1rem 0' }}>
                 <RefreshCw size={32} className="spin" color="var(--primary)" style={{ margin: '0 auto 0.75rem' }} />
-                <h4 className="type-h3" style={{ fontSize: '0.95rem' }}>Extracting Resume Text with OCR...</h4>
-                <p className="type-caption" style={{ marginTop: '0.25rem' }}>Parsing structure, work experience, and educational background.</p>
+                <h4 className="type-h3" style={{ fontSize: '0.98rem' }}>Extracting Resume Text (Multilingual OCR)...</h4>
+                <p className="type-caption" style={{ marginTop: '0.25rem' }}>Parsing structure, skills, and experience details in real time.</p>
               </div>
             ) : uploadedFileName ? (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--accent-emerald-subtle)', border: '1px solid rgba(16, 185, 129, 0.35)', padding: '0.75rem 1rem', borderRadius: 'var(--radius-lg)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-                  <FileCheck size={22} color="var(--accent-emerald)" />
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--accent-emerald-subtle)', border: '1px solid rgba(16, 185, 129, 0.35)', padding: '0.85rem 1.15rem', borderRadius: 'var(--radius-lg)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <div style={{ width: '38px', height: '38px', borderRadius: 'var(--radius-md)', background: 'rgba(16, 185, 129, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <FileCheck size={22} color="var(--accent-emerald)" />
+                  </div>
                   <div style={{ textAlign: 'left' }}>
-                    <div style={{ fontWeight: '800', fontSize: '0.86rem', color: 'var(--accent-emerald)' }}>{uploadedFileName}</div>
-                    <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>{uploadedFileSize} • PDF Extracted</div>
+                    <div style={{ fontWeight: '800', fontSize: '0.9rem', color: 'var(--accent-emerald)' }}>{uploadedFileName}</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{uploadedFileSize} • PDF Loaded & Ready</div>
                   </div>
                 </div>
                 <button 
@@ -222,73 +289,118 @@ EXPERIENCE & PROJECTS:
                     e.stopPropagation();
                     setUploadedFileName('');
                     setUploadedFileSize('');
+                    setUploadedPdfBase64('');
                   }}
-                  style={{ width: '28px', height: '28px' }}
+                  style={{ width: '30px', height: '30px' }}
                   title="Remove file"
                 >
-                  <X size={14} />
+                  <X size={15} />
                 </button>
               </div>
             ) : (
               <div>
-                <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'var(--primary-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 0.85rem' }}>
-                  <UploadCloud size={24} color="var(--primary)" />
+                <div style={{ width: '52px', height: '52px', borderRadius: '50%', background: 'var(--primary-subtle)', border: '1px solid rgba(124, 58, 237, 0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 0.95rem' }}>
+                  <UploadCloud size={26} color="var(--primary)" />
                 </div>
-                <h4 className="type-h3" style={{ fontSize: '0.95rem', marginBottom: '0.25rem' }}>
-                  Upload PDF Resume
+                <h4 className="type-h3" style={{ fontSize: '1rem', marginBottom: '0.25rem' }}>
+                  Upload PDF Resume (Français / English)
                 </h4>
-                <p className="type-body" style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                  Drag and drop your PDF here, or <span style={{ color: 'var(--primary)', fontWeight: '700', textDecoration: 'underline' }}>browse file</span>
+                <p className="type-body" style={{ fontSize: '0.84rem', color: 'var(--text-muted)' }}>
+                  Drag & drop your PDF here, or <span style={{ color: 'var(--primary)', fontWeight: '700', textDecoration: 'underline' }}>browse file</span>
                 </p>
-                <div className="type-caption" style={{ marginTop: '0.5rem' }}>
-                  Supports single or multi-page PDF resumes (Max 10MB)
+                <div className="type-caption" style={{ marginTop: '0.5rem', color: 'var(--text-muted)' }}>
+                  Auto-detects domain (Chauffeur, IT, Logistics, Finance, etc.) & saves your progress
                 </div>
               </div>
             )}
           </div>
 
-          {/* 2. Target Role & Employer Archetype Selection */}
-          <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-2xl)', padding: '1.35rem', boxShadow: 'var(--shadow-sm)' }}>
+          {/* 2. Target Role & Clean Evaluator Selection */}
+          <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-2xl)', padding: '1.5rem', boxShadow: 'var(--shadow-sm)' }}>
             
-            <div style={{ marginBottom: '1.15rem' }}>
-              <label htmlFor="target-role-input" className="filter-label" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                <Target size={14} color="var(--primary)" /> Target Role or Position
-              </label>
+            <div style={{ marginBottom: '1.25rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                <label htmlFor="target-role-input" className="filter-label" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.4rem', fontWeight: '800' }}>
+                  <Target size={15} color="var(--primary)" /> Target Role or Position
+                </label>
+                {analysisResult?.detected_target_role && (
+                  <span className="bento-tag" style={{ background: 'var(--accent-emerald-subtle)', color: 'var(--accent-emerald)', borderColor: 'rgba(16, 185, 129, 0.3)', fontSize: '0.7rem', padding: '0.2rem 0.5rem' }}>
+                    ✨ Auto-Detected
+                  </span>
+                )}
+              </div>
+
               <input 
                 id="target-role-input"
                 type="text" 
                 className="form-input"
                 value={targetRole}
                 onChange={(e) => setTargetRole(e.target.value)}
-                placeholder="e.g. Brand Strategist, Creative Marketer, Fellowship"
+                placeholder="e.g. Chauffeur Professionnel, Développeur, Logistics Lead"
+                style={{ fontSize: '0.92rem' }}
               />
+
+              {/* Clickable AI-Suggested Roles Pills */}
+              {analysisResult?.suggested_roles && analysisResult.suggested_roles.length > 0 && (
+                <div style={{ marginTop: '0.75rem' }}>
+                  <span className="type-caption" style={{ fontSize: '0.74rem', display: 'block', marginBottom: '0.4rem', color: 'var(--text-muted)' }}>
+                    Suggested Target Variations:
+                  </span>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+                    {analysisResult.suggested_roles.map((role, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => {
+                          setTargetRole(role);
+                          if (triggerToast) triggerToast(`🎯 Target updated to: ${role}`);
+                        }}
+                        style={{
+                          background: targetRole === role ? 'var(--primary)' : 'var(--bg-surface-elevated)',
+                          color: targetRole === role ? '#ffffff' : 'var(--text-primary)',
+                          border: targetRole === role ? '1px solid var(--primary)' : '1px solid var(--border-default)',
+                          borderRadius: 'var(--radius-full)',
+                          padding: '0.25rem 0.75rem',
+                          fontSize: '0.76rem',
+                          fontWeight: '700',
+                          cursor: 'pointer',
+                          transition: 'all 0.15s ease'
+                        }}
+                      >
+                        {targetRole === role ? '✓ ' : '+ '}{role}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             <div>
-              <label className="filter-label" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                <Building2 size={14} color="var(--accent-blue)" /> Employer Evaluation Perspective
+              <label className="filter-label" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.5rem', fontWeight: '800' }}>
+                <Building2 size={15} color="var(--accent-blue)" /> Evaluation Lens & Persona
               </label>
               <select 
                 className="custom-select"
                 value={employerType}
                 onChange={(e) => setEmployerType(e.target.value)}
+                style={{ fontSize: '0.88rem' }}
               >
-                <option value="Top Multinational Agency & Enterprise">🏢 Multinational Agency & Enterprise (Ogilvy, Publicis, Google, Grab)</option>
-                <option value="Global Scholarship & Fellowship Committee">🎓 Global Scholarship Board (Chevening, DAAD, MEXT, Erasmus)</option>
-                <option value="High-Growth Tech Startup">🚀 High-Growth Tech Startup & Accelerator</option>
-                <option value="Premier Investment Bank & Financial Institution">💰 Premier Bank & Financial Firm (Maybank, CIMB, Goldman Sachs)</option>
+                <option value="Senior Hiring Manager (Role Specialist)">👔 Senior Hiring Manager (Role Specialist)</option>
+                <option value="Technical Recruiter & Talent Acquisition Lead">🎯 Technical Recruiter & Talent Lead</option>
+                <option value="Executive Department Head & Director">🏢 Executive Department Head</option>
+                <option value="Scholarship & Fellowship Selection Board">🎓 Scholarship & Fellowship Selection Board</option>
               </select>
             </div>
 
           </div>
 
           {/* 3. Live Editable Resume Content */}
-          <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-2xl)', padding: '1.35rem', boxShadow: 'var(--shadow-sm)' }}>
+          <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-2xl)', padding: '1.5rem', boxShadow: 'var(--shadow-sm)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.85rem' }}>
-              <label htmlFor="cv-text-input" className="filter-label" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                <FileText size={14} color="var(--primary)" /> Resume Text Content
+              <label htmlFor="cv-text-input" className="filter-label" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.4rem', fontWeight: '800' }}>
+                <FileText size={15} color="var(--primary)" /> Resume Text Content
               </label>
-              <span className="bento-tag">Live Editable</span>
+              <span className="bento-tag">Auto-Saved</span>
             </div>
 
             <textarea
@@ -298,22 +410,22 @@ EXPERIENCE & PROJECTS:
               value={cvText}
               onChange={(e) => setCvText(e.target.value)}
               style={{ fontFamily: 'var(--font-mono, monospace)', fontSize: '0.82rem', lineHeight: '1.6', marginBottom: '1.25rem' }}
-              placeholder="Paste your CV text or upload a PDF above..."
+              placeholder="Collez le texte de votre CV ou téléversez un PDF..."
             />
 
             <button 
               className="btn btn-primary"
-              style={{ width: '100%', height: '46px', fontSize: '0.92rem' }}
+              style={{ width: '100%', height: '48px', fontSize: '0.95rem', fontWeight: '800' }}
               onClick={handleAnalyzeCV}
               disabled={isAnalyzing || isParsingPdf}
             >
               {isAnalyzing ? (
                 <>
-                  <RefreshCw size={17} className="spin" /> Senior Hiring Director is Reviewing...
+                  <RefreshCw size={18} className="spin" /> Analyzing CV & ATS Impact...
                 </>
               ) : (
                 <>
-                  <Sparkles size={17} /> Run Professional Employer AI Audit
+                  <Sparkles size={18} /> Analyze CV & Recruiter Verdict
                 </>
               )}
             </button>
@@ -321,74 +433,116 @@ EXPERIENCE & PROJECTS:
 
         </div>
 
-        {/* Right Column: Comprehensive Employer AI Evaluation */}
-        <div>
+        {/* Right Column: Clean Employer AI Evaluation & Discovery Navigation Bridge */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          
           {!analysisResult && !isAnalyzing && (
-            <div style={{ background: 'var(--bg-surface)', border: '2px dashed var(--border-default)', borderRadius: 'var(--radius-2xl)', padding: '4.5rem 1.5rem', textAlign: 'center' }}>
-              <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'var(--primary-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem' }}>
-                <UserCheck size={26} color="var(--primary)" />
+            <div style={{ background: 'var(--bg-surface)', border: '2px dashed var(--border-default)', borderRadius: 'var(--radius-2xl)', padding: '5rem 1.75rem', textAlign: 'center' }}>
+              <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: 'var(--primary-subtle)', border: '1px solid rgba(124, 58, 237, 0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.35rem' }}>
+                <UserCheck size={28} color="var(--primary)" />
               </div>
-              <h3 className="type-h2" style={{ marginBottom: '0.45rem' }}>
-                Awaiting Employer Evaluation
+              <h3 className="type-h2" style={{ marginBottom: '0.5rem', fontSize: '1.45rem' }}>
+                Awaiting CV Analysis
               </h3>
-              <p className="type-body" style={{ maxWidth: '420px', margin: '0 auto 1.75rem' }}>
-                Upload your PDF or review the resume text on the left, then click <strong>"Run Professional Employer AI Audit"</strong> to benchmark against senior hiring managers.
+              <p className="type-body" style={{ maxWidth: '440px', margin: '0 auto 1.75rem', color: 'var(--text-secondary)' }}>
+                Upload your PDF resume or click <strong>"Analyze CV & Recruiter Verdict"</strong> to detect your target role, benchmark ATS scores, and generate STAR metric rewrites.
               </p>
-              <button className="btn btn-primary" onClick={handleAnalyzeCV}>
-                <Sparkles size={15} /> Analyze as Professional Employer
+              <button className="btn btn-primary" onClick={handleAnalyzeCV} style={{ height: '44px', padding: '0 1.5rem', fontSize: '0.9rem' }}>
+                <Sparkles size={16} /> Run Professional CV Audit
               </button>
             </div>
           )}
 
           {isAnalyzing && (
-            <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-2xl)', padding: '5rem 1.5rem', textAlign: 'center' }}>
-              <RefreshCw size={40} className="spin" style={{ color: 'var(--primary)', margin: '0 auto 1.25rem' }} />
-              <h3 className="type-h2">
+            <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-2xl)', padding: '5.5rem 1.75rem', textAlign: 'center' }}>
+              <RefreshCw size={44} className="spin" style={{ color: 'var(--primary)', margin: '0 auto 1.35rem' }} />
+              <h3 className="type-h2" style={{ fontSize: '1.45rem' }}>
                 Executive Recruiter is Analyzing Your Candidacy...
               </h3>
-              <p className="type-body" style={{ marginTop: '0.35rem', maxWidth: '440px', margin: '0.35rem auto 0' }}>
-                Evaluating 6-second screen impact, STAR quantification, keyword density, and competitive percentile for <strong>{targetRole}</strong>.
+              <p className="type-body" style={{ marginTop: '0.35rem', maxWidth: '460px', margin: '0.35rem auto 0', color: 'var(--text-secondary)' }}>
+                Evaluating 6-second screen impact, STAR quantification, keyword density, and competitive fit for <strong>{targetRole}</strong>.
               </p>
             </div>
           )}
 
           {analysisResult && !isAnalyzing && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.35rem' }}>
               
-              {/* 1. Executive Verdict & ATS Score Banner */}
-              <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-2xl)', padding: '1.5rem', boxShadow: 'var(--shadow-md)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', marginBottom: '1.25rem' }}>
+              {/* 1. DISCOVERY & MATCH BRIDGE BANNER (Direct Link to Jobs Section) */}
+              <div style={{
+                background: 'linear-gradient(135deg, rgba(31, 228, 119, 0.14) 0%, rgba(56, 189, 248, 0.12) 100%)',
+                border: '1.5px solid #1FE477',
+                borderRadius: 'var(--radius-2xl)',
+                padding: '1.5rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '1.25rem',
+                flexWrap: 'wrap',
+                boxShadow: '0 0 30px rgba(31, 228, 119, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+              }}>
+                <div style={{ flex: '1 1 300px' }}>
+                  <div className="bento-tag" style={{ background: 'rgba(31, 228, 119, 0.12)', color: '#1FE477', borderColor: 'rgba(31, 228, 119, 0.4)', fontWeight: '800', marginBottom: '0.45rem' }}>
+                    <Compass size={13} /> Live Job Discovery Ready
+                  </div>
+                  <h3 className="type-h3" style={{ fontSize: '1.15rem', marginBottom: '0.25rem', fontFamily: "'Space Grotesk', sans-serif" }}>
+                    Search Jobs for "{analysisResult.detected_target_role || targetRole}"
+                  </h3>
+                  <p className="type-body" style={{ fontSize: '0.84rem', color: 'var(--text-secondary)' }}>
+                    Discover and apply to verified positions matched to your extracted CV qualifications in the dedicated Job section.
+                  </p>
+                </div>
+
+                <button 
+                  className="btn btn-primary"
+                  onClick={() => onNavigateToDiscover && onNavigateToDiscover(
+                    analysisResult.detected_target_role || targetRole,
+                    analysisResult.suggested_roles || [],
+                    analysisResult.core_skills || [],
+                    cvText
+                  )}
+                  style={{ fontSize: '0.92rem', height: '44px', padding: '0 1.35rem', display: 'flex', alignItems: 'center', gap: '0.5rem', whiteSpace: 'nowrap', fontWeight: '800', background: '#1FE477', color: '#06070a', boxShadow: '0 0 20px rgba(31, 228, 119, 0.4)' }}
+                >
+                  <Sparkles size={16} /> Find Matching Jobs in Discover →
+                </button>
+              </div>
+
+              {/* 2. Executive Verdict & ATS Score Banner */}
+              <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-2xl)', padding: '1.5rem', boxShadow: 'var(--shadow-sm)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', marginBottom: '1.35rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-                    <div style={{ width: '74px', height: '74px', borderRadius: '50%', background: 'var(--accent-emerald-subtle)', border: '3.5px solid var(--accent-emerald)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                      <span style={{ fontSize: '1.5rem', fontWeight: '900', color: 'var(--accent-emerald)', lineHeight: '1' }}>{analysisResult.ats_score || 92}</span>
+                    <div style={{ width: '76px', height: '76px', borderRadius: '50%', background: 'var(--accent-emerald-subtle)', border: '3.5px solid var(--accent-emerald)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                      <span style={{ fontSize: '1.55rem', fontWeight: '900', color: 'var(--accent-emerald)', lineHeight: '1' }}>{analysisResult.ats_score || 92}</span>
                       <span style={{ fontSize: '0.62rem', fontWeight: '800', color: 'var(--accent-emerald)', textTransform: 'uppercase' }}>/ 100 ATS</span>
                     </div>
                     <div>
                       <div className="bento-tag" style={{ background: 'var(--accent-emerald-subtle)', color: 'var(--accent-emerald)', borderColor: 'var(--accent-emerald)', fontWeight: '800', marginBottom: '0.35rem' }}>
                         ✓ {analysisResult.hiring_decision || 'STRONG SHORTLIST'}
                       </div>
-                      <h3 className="type-h3" style={{ fontSize: '1.1rem' }}>Top 5% Candidate Percentile</h3>
+                      <h3 className="type-h3" style={{ fontSize: '1.15rem' }}>Top 5% Candidate Percentile</h3>
                     </div>
                   </div>
 
                   <div style={{ textAlign: 'right' }}>
-                    <span className="type-caption">Evaluation Target</span>
-                    <div style={{ fontWeight: '800', fontSize: '0.88rem', color: 'var(--primary)' }}>{targetRole}</div>
+                    <span className="type-caption">Auto-Detected Position</span>
+                    <div style={{ fontWeight: '800', fontSize: '0.95rem', color: 'var(--primary)' }}>
+                      {analysisResult.detected_target_role || targetRole}
+                    </div>
                   </div>
                 </div>
 
                 {/* 6-Second Screen Recruiter Verdict */}
                 <div style={{ background: 'var(--bg-surface-elevated)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-xl)', padding: '1.15rem 1.35rem', position: 'relative' }}>
                   <div style={{ fontSize: '0.74rem', fontWeight: '800', textTransform: 'uppercase', color: 'var(--accent-blue)', letterSpacing: '0.04em', marginBottom: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                    <Flame size={14} color="var(--accent-blue)" /> Hiring Director's 6-Second First Impression
+                    <Flame size={14} color="var(--accent-blue)" /> Hiring Manager's 6-Second First Impression
                   </div>
-                  <p className="type-body" style={{ color: 'var(--text-primary)', lineHeight: '1.65', fontStyle: 'italic' }}>
+                  <p className="type-body" style={{ color: 'var(--text-primary)', lineHeight: '1.65', fontStyle: 'italic', fontSize: '0.88rem' }}>
                     "{analysisResult.employer_verdict}"
                   </p>
                 </div>
               </div>
 
-              {/* 2. 4-Factor Hiring Metrics Radar */}
+              {/* 3. 4-Factor Hiring Metrics Radar */}
               {analysisResult.scores_breakdown && (
                 <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-xl)', padding: '1.35rem' }}>
                   <h4 className="type-h3" style={{ fontSize: '0.86rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.85rem' }}>
@@ -438,7 +592,7 @@ EXPERIENCE & PROJECTS:
                 </div>
               )}
 
-              {/* 3. Strengths & Critical Red Flags */}
+              {/* 4. Strengths & Critical Red Flags */}
               <div className="responsive-grid-2col">
                 
                 {/* Strengths */}
@@ -446,7 +600,7 @@ EXPERIENCE & PROJECTS:
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginBottom: '0.75rem' }}>
                     <CheckCircle2 size={16} color="var(--accent-emerald)" />
                     <h4 className="type-h3" style={{ fontSize: '0.88rem', color: 'var(--accent-emerald)' }}>
-                      What Employers Love
+                      Candidate Strengths
                     </h4>
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -479,7 +633,7 @@ EXPERIENCE & PROJECTS:
 
               </div>
 
-              {/* 4. Missing High-Yield Keywords */}
+              {/* 5. Missing High-Yield Keywords */}
               {analysisResult.keyword_gaps && analysisResult.keyword_gaps.length > 0 && (
                 <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-xl)', padding: '1.25rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginBottom: '0.75rem' }}>
@@ -498,7 +652,7 @@ EXPERIENCE & PROJECTS:
                 </div>
               )}
 
-              {/* 5. STAR Bullet Point Rewrites (Before vs After) */}
+              {/* 6. STAR Bullet Point Rewrites (Before vs After) */}
               {analysisResult.bullet_improvements && analysisResult.bullet_improvements.length > 0 && (
                 <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-xl)', padding: '1.35rem' }}>
                   <h4 className="type-h3" style={{ fontSize: '0.92rem', color: 'var(--primary)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
@@ -547,11 +701,11 @@ EXPERIENCE & PROJECTS:
                 </div>
               )}
 
-              {/* 6. Executive Action Plan & Elevator Pitch */}
+              {/* 7. Executive Action Plan & Elevator Pitch */}
               <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-xl)', padding: '1.35rem' }}>
                 
                 <h4 className="type-h3" style={{ fontSize: '0.88rem', color: 'var(--text-primary)', marginBottom: '0.75rem' }}>
-                  Recruiter Outreach Elevator Pitch
+                  Candidate Positioning Elevator Pitch
                 </h4>
                 
                 <div style={{ background: 'var(--bg-surface-elevated)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-md)', padding: '1rem', marginBottom: '1.15rem' }}>
@@ -573,7 +727,7 @@ EXPERIENCE & PROJECTS:
                 {analysisResult.executive_action_plan && (
                   <div>
                     <h5 style={{ fontSize: '0.8rem', fontWeight: '800', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
-                      3-Step Offer Acceleration Plan
+                      Next Steps for Application Success
                     </h5>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                       {analysisResult.executive_action_plan.map((step, idx) => (

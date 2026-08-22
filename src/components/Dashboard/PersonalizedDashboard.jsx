@@ -4,6 +4,7 @@ import {
   Briefcase, Award, Zap, FileText, Target, Clock, ShieldCheck, ChevronRight
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
+import { API_BASE_URL } from '../../config/api.js';
 import OpportunityCard from '../OpportunityCard/OpportunityCard.jsx';
 
 export default function PersonalizedDashboard({
@@ -27,13 +28,13 @@ export default function PersonalizedDashboard({
       setIsLoading(true);
       try {
         const [recRes, savedRes, appRes] = await Promise.all([
-          fetch('http://localhost:5000/api/v1/user/dashboard-recommendations', {
+          fetch(`${API_BASE_URL}/user/dashboard-recommendations`, {
             headers: { Authorization: `Bearer ${token}` }
           }),
-          fetch('http://localhost:5000/api/v1/user/saved', {
+          fetch(`${API_BASE_URL}/user/saved`, {
             headers: { Authorization: `Bearer ${token}` }
           }),
-          fetch('http://localhost:5000/api/v1/applications', {
+          fetch(`${API_BASE_URL}/applications`, {
             headers: { Authorization: `Bearer ${token}` }
           })
         ]);
