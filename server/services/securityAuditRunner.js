@@ -167,8 +167,18 @@ export async function executeSecurityAudit(options = {}) {
         full_name: 'Audit User A',
         major: 'Computer Science'
       });
-      tokenA = resA.data.token;
-      userAId = resA.data.user.id;
+      if (resA.data.status === 'verification_required') {
+        const pendingA = db.prepare('SELECT verification_code FROM pending_registrations WHERE email = ?').get(userAEmail);
+        const verifyResA = await axios.post(`${BASE_URL}/auth/verify-email`, {
+          email: userAEmail,
+          code: pendingA?.verification_code
+        });
+        tokenA = verifyResA.data.token;
+        userAId = verifyResA.data.user.id;
+      } else {
+        tokenA = resA.data.token;
+        userAId = resA.data.user.id;
+      }
       recordCheck({
         check_key: 'AUTH_SIGNUP_USER_A',
         category: 'authentication',
@@ -204,8 +214,18 @@ export async function executeSecurityAudit(options = {}) {
         full_name: 'Audit User B',
         major: 'Marketing'
       });
-      tokenB = resB.data.token;
-      userBId = resB.data.user.id;
+      if (resB.data.status === 'verification_required') {
+        const pendingB = db.prepare('SELECT verification_code FROM pending_registrations WHERE email = ?').get(userBEmail);
+        const verifyResB = await axios.post(`${BASE_URL}/auth/verify-email`, {
+          email: userBEmail,
+          code: pendingB?.verification_code
+        });
+        tokenB = verifyResB.data.token;
+        userBId = verifyResB.data.user.id;
+      } else {
+        tokenB = resB.data.token;
+        userBId = resB.data.user.id;
+      }
       recordCheck({
         check_key: 'AUTH_SIGNUP_USER_B',
         category: 'authentication',

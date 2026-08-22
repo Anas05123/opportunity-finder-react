@@ -60,6 +60,14 @@ export default function OpportunityListView({
                   key={op.id} 
                   className="table-row-hover"
                   onClick={() => onSelectOp(op)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      onSelectOp(op);
+                    }
+                  }}
+                  tabIndex={0}
+                  style={{ cursor: 'pointer' }}
                 >
                   <td>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>

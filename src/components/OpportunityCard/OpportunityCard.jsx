@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 
 import { cleanStipendText, cleanHtmlText } from '../../utils/formatUtils.js';
+import { sanitizeUrl } from '../../utils/sanitizeUrl.js';
 
 export default function OpportunityCard({ 
   opportunity, 
@@ -41,7 +42,8 @@ export default function OpportunityCard({
 
   const handleCopyLink = (e) => {
     e.stopPropagation();
-    const url = opportunity.official_apply_url || opportunity.job_page_url || opportunity.source_url || window.location.href;
+    const rawUrl = opportunity.official_apply_url || opportunity.job_page_url || opportunity.source_url || window.location.href;
+    const url = sanitizeUrl(rawUrl, window.location.href);
     if (navigator.clipboard) {
       navigator.clipboard.writeText(url);
       setCopied(true);

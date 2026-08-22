@@ -1,15 +1,17 @@
 import axios from 'axios';
 import dns from 'dns/promises';
+import dnsSync from 'dns';
 import net from 'net';
 import http from 'http';
 import https from 'https';
 
 /**
- * SSRF-Safe HTTP Client (V3 Remediated)
+ * SSRF-Safe HTTP Client (V3 / V4 Hardened)
  * - Prohibits automatic redirects (maxRedirects: 0)
  * - Enforces manual redirect inspection and re-validation on every single hop
  * - Resolves DNS and checks ALL returned addresses against private/internal/cloud CIDR ranges
  * - Protects against IPv4-mapped IPv6, DNS rebinding, and metadata endpoints (169.254.169.254)
+ * - Socket-level custom lookup guarantees no DNS rebinding bypass at connection time
  */
 
 // Private & Cloud Metadata Subnets to block
@@ -35,14 +37,42 @@ const BLOCKED_IP_PATTERNS = [
   /^::ffff:0\./i                    // IPv4-mapped IPv6 This host
 ];
 
-function isIpRestricted(ipAddress) {
-  const normalized = ipAddress.toLowerCase().trim();
+export function isIpRestricted(ipAddress = '') {
+  const normalized = String(ipAddress).toLowerCase().trim();
   for (const pattern of BLOCKED_IP_PATTERNS) {
     if (pattern.test(normalized)) {
       return true;
     }
   }
   return false;
+}
+
+/**
+ * Socket-level DNS lookup to completely prevent DNS rebinding attacks
+ */
+function safeSocketLookup(hostname, options, callback) {
+  if (typeof options === 'function') {
+    callback = options;
+    options = {};
+  }
+
+  dnsSync.lookup(hostname, { all: true }, (err, addresses) => {
+    if (err) return callback(err);
+    if (!addresses || addresses.length === 0) {
+      return callback(new Error(`SSRF Blocked: No DNS addresses found for "${hostname}"`));
+    }
+
+    for (const entry of addresses) {
+      if (isIpRestricted(entry.address)) {
+        return callback(new Error(`SSRF Blocked: Destination IP "${entry.address}" for host "${hostname}" is restricted.`));
+      }
+    }
+
+    if (options && options.all) {
+      return callback(null, addresses);
+    }
+    return callback(null, addresses[0].address, addresses[0].family);
+  });
 }
 
 export async function validateSafeUrl(urlStr) {
@@ -60,8 +90,17 @@ export async function validateSafeUrl(urlStr) {
 
   const hostname = parsed.hostname.toLowerCase().trim();
 
-  // 2. Prohibit localhost variations
-  if (hostname === 'localhost' || hostname.endsWith('.localhost') || hostname.endsWith('.local') || hostname === '0.0.0.0') {
+  // 2. Prohibit localhost variations and cloud metadata aliases
+  if (
+    hostname === 'localhost' || 
+    hostname.endsWith('.localhost') || 
+    hostname.endsWith('.local') || 
+    hostname.endsWith('.internal') ||
+    hostname === '0.0.0.0' ||
+    hostname === '169.254.169.254' ||
+    hostname === 'metadata.google.internal' ||
+    hostname === 'instance-data'
+  ) {
     throw new Error(`SSRF Blocked: Forbidden destination host "${hostname}".`);
   }
 
@@ -95,7 +134,7 @@ export async function validateSafeUrl(urlStr) {
 }
 
 /**
- * Perform safe HTTP fetch with manual hop-by-hop redirect re-validation
+ * Perform safe HTTP fetch with manual hop-by-hop redirect re-validation and socket-level verification
  */
 export async function safeFetch(initialUrl, options = {}) {
   const maxRedirects = 3;
@@ -122,8 +161,8 @@ export async function safeFetch(initialUrl, options = {}) {
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,application/json;q=0.8,*/*;q=0.7',
         ...(options.headers || {})
       },
-      httpAgent: new http.Agent({ keepAlive: false }),
-      httpsAgent: new https.Agent({ keepAlive: false, rejectUnauthorized: true })
+      httpAgent: new http.Agent({ keepAlive: false, lookup: safeSocketLookup }),
+      httpsAgent: new https.Agent({ keepAlive: false, rejectUnauthorized: true, lookup: safeSocketLookup })
     });
 
     let response;
@@ -176,4 +215,4 @@ export async function safeFetch(initialUrl, options = {}) {
   throw new Error(`SSRF Error: Request failed after ${redirectCount} redirects`);
 }
 
-export default { validateSafeUrl, safeFetch };
+export default { isIpRestricted, validateSafeUrl, safeFetch };

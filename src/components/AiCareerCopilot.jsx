@@ -38,9 +38,13 @@ export default function AiCareerCopilot({ userProfile, triggerToast }) {
     setIsSending(true);
 
     try {
+      const token = localStorage.getItem('careerly_token');
       const res = await fetch(`${API_BASE_URL}/ai/career-copilot`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
         body: JSON.stringify({
           query: textToSend,
           userProfile

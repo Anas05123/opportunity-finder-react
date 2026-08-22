@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
+  BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation, useParams, Link 
+} from 'react-router-dom';
+import { 
   Compass, CheckSquare, Calendar, ShieldCheck, User, Search, 
   LayoutGrid, List, Sun, Moon, RefreshCw, Sparkles, Filter, 
   Megaphone, Zap, Mail, CheckCircle, Scale, Building2, MapPin, Clock, Coins, 
@@ -8,11 +11,16 @@ import {
 } from 'lucide-react';
 
 import { AuthProvider, useAuth } from './context/AuthContext.jsx';
+import ProtectedRoute from './components/Auth/ProtectedRoute.jsx';
+import AdminRoute from './components/Auth/AdminRoute.jsx';
+import PublicOnlyRoute from './components/Auth/PublicOnlyRoute.jsx';
 import AuthModal from './components/Auth/AuthModal.jsx';
-import OnboardingFlow from './components/Onboarding/OnboardingFlow.jsx';
+import AuthScreen from './components/Auth/AuthScreen.jsx';
+import OnboardingWizard from './components/Onboarding/OnboardingWizard.jsx';
 import PublicLandingView from './components/Landing/PublicLandingView.jsx';
 import PersonalizedDashboard from './components/Dashboard/PersonalizedDashboard.jsx';
 import SettingsView from './components/Settings/SettingsView.jsx';
+import NotFoundPage from './components/NotFoundPage.jsx';
 
 import ConversationalHero from './components/SearchInterface/ConversationalHero.jsx';
 import AIQuestionModal from './components/SearchInterface/AIQuestionModal.jsx';
@@ -33,17 +41,20 @@ import EvidenceInspectorModal from './components/EvidenceInspectorModal.jsx';
 import Footer from './components/Footer.jsx';
 import { API_BASE_URL, API_V3_URL } from './config/api.js';
 
-function CareerlyPlatform() {
+function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
   const { 
     user, 
     careerProfile, 
     searchProfile, 
     isAuthenticated, 
     isAdmin, 
-    isLoading: isAuthLoading, 
     needsOnboarding, 
     logout 
   } = useAuth();
+
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { id: routeOpportunityId } = useParams();
 
   const [opportunities, setOpportunities] = useState([]);
   const [savedOppsList, setSavedOppsList] = useState([]);
@@ -51,13 +62,8 @@ function CareerlyPlatform() {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedPreset, setSelectedPreset] = useState('all');
   
-  // Navigation State
-  const [activeTab, setActiveTab] = useState(() => {
-    return localStorage.getItem('careerly_token') ? 'explore' : 'landing';
-  });
   const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'list'
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
 
   // Auth Modal State
   const [authModalOpen, setAuthModalOpen] = useState(false);
@@ -73,42 +79,11 @@ function CareerlyPlatform() {
   const [cvMatchedContext, setCvMatchedContext] = useState(null);
   const itemsPerPage = 9;
   const feedTopRef = useRef(null);
-  
-  // Theme State
-  const [theme, setTheme] = useState(() => {
-    return localStorage.getItem('opp_theme') || 'dark';
-  });
 
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('opp_theme', theme);
-  }, [theme]);
-
-  // Navbar Scroll State
-  const [isScrolled, setIsScrolled] = useState(false);
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  const toggleTheme = () => {
-    const nextTheme = theme === 'dark' ? 'light' : 'dark';
-    setTheme(nextTheme);
-  };
-
-  // Synchronize Tab on Auth State Change
-  useEffect(() => {
-    if (isAuthenticated) {
-      if (activeTab === 'landing') setActiveTab('dashboard');
-    } else {
-      if (['dashboard', 'saved', 'tracker', 'settings', 'admin'].includes(activeTab)) {
-        setActiveTab('landing');
-      }
-    }
-  }, [isAuthenticated, activeTab]);
+  // Modals & Slide-Over Drawers
+  const [drawerOp, setDrawerOp] = useState(null);
+  const [prepareAppOp, setPrepareAppOp] = useState(null);
+  const [emailOutreachOp, setEmailOutreachOp] = useState(null);
 
   // Conversational AI Search State
   const [isSearchingPipeline, setIsSearchingPipeline] = useState(false);
@@ -116,18 +91,6 @@ function CareerlyPlatform() {
   const [searchProfileContext, setSearchProfileContext] = useState(null);
   const [pendingQuery, setPendingQuery] = useState('');
   const [searchSummaryBadge, setSearchSummaryBadge] = useState('');
-
-  // Modals & Slide-Over Drawers
-  const [drawerOp, setDrawerOp] = useState(null);
-  const [prepareAppOp, setPrepareAppOp] = useState(null);
-  const [emailOutreachOp, setEmailOutreachOp] = useState(null);
-
-  // Toast Notification
-  const [toastMessage, setToastMessage] = useState('');
-  const triggerToast = (msg) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(''), 2800);
-  };
 
   // Fetch Opportunities from SQLite / API
   const fetchOpportunities = async (searchOverride = null) => {
@@ -187,30 +150,46 @@ function CareerlyPlatform() {
     }
   }, [isAuthenticated]);
 
+  // Deep-link opportunity handling: /opportunities/:id
+  useEffect(() => {
+    if (routeOpportunityId && opportunities.length > 0) {
+      const found = opportunities.find(o => String(o.id) === String(routeOpportunityId));
+      if (found) {
+        setDrawerOp(found);
+      }
+    }
+  }, [routeOpportunityId, opportunities]);
+
   // Toggle Save Opportunity
   const toggleSaveApp = async (opportunityId) => {
     if (!isAuthenticated) {
-      setAuthModalMode('signup');
-      setAuthModalOpen(true);
+      navigate('/register');
       triggerToast('Create a free account to save opportunities to your dashboard.');
       return;
     }
 
+    const id = typeof opportunityId === 'object' && opportunityId !== null 
+      ? (opportunityId.id || opportunityId.opportunity_id) 
+      : opportunityId;
+    if (!id) return;
+
     const token = localStorage.getItem('careerly_token');
-    const isCurrentlySaved = savedOppsList.some(s => s.id === opportunityId || s.opportunity_id === opportunityId);
+    const isCurrentlySaved = savedOppsList.some(s => s.id === id || s.opportunity_id === id);
 
     try {
       if (isCurrentlySaved) {
-        setSavedOppsList(prev => prev.filter(s => s.id !== opportunityId && s.opportunity_id !== opportunityId));
-        await fetch(`${API_BASE_URL}/user/saved/${opportunityId}`, {
+        setSavedOppsList(prev => prev.filter(s => s.id !== id && s.opportunity_id !== id));
+        await fetch(`${API_BASE_URL}/user/saved/${id}`, {
           method: 'DELETE',
           headers: { Authorization: `Bearer ${token}` }
         });
         triggerToast('Removed from saved opportunities.');
       } else {
-        const opp = opportunities.find(o => o.id === opportunityId);
+        const opp = typeof opportunityId === 'object' && opportunityId !== null
+          ? opportunityId
+          : opportunities.find(o => o.id === id);
         if (opp) setSavedOppsList(prev => [opp, ...prev]);
-        await fetch(`${API_BASE_URL}/user/saved/${opportunityId}`, {
+        await fetch(`${API_BASE_URL}/user/saved/${id}`, {
           method: 'POST',
           headers: { Authorization: `Bearer ${token}` }
         });
@@ -229,8 +208,7 @@ function CareerlyPlatform() {
   // Update CRM Application Stage
   const handleUpdateAppStage = async (opportunityId, stage) => {
     if (!isAuthenticated) {
-      setAuthModalMode('signup');
-      setAuthModalOpen(true);
+      navigate('/register');
       return;
     }
 
@@ -342,180 +320,110 @@ function CareerlyPlatform() {
   const handleNavigateFromCvToDiscover = async (role, suggestedRoles = [], skills = [], cvText = '') => {
     setCvMatchedContext({ role, suggestedRoles, skills, cvText });
     setSelectedPreset('all');
-    setActiveTab('explore');
-    setGlobalSearchQuery(role);
+    navigate('/opportunities');
     triggerToast(`🎯 Searching opportunities matched to CV: ${role}`);
     
     setIsSearchingPipeline(true);
     try {
-      const matchRes = await fetch(`${API_BASE_URL}/ai/match-jobs-to-cv`, {
+      const res = await fetch(`${API_V3_URL}/search/execute`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          cvText,
-          targetRole: role,
-          suggestedRoles,
-          skills,
-          userProfile: careerProfile || {},
-          limit: 15
+          query: `${role} ${skills.slice(0, 4).join(' ')}`,
+          user_profile: {
+            ...careerProfile,
+            target_role: role,
+            skills: skills
+          }
         })
       });
-      const matchData = await matchRes.json();
-      if (matchData.status === 'success' && Array.isArray(matchData.opportunities) && matchData.opportunities.length > 0) {
-        setOpportunities(matchData.opportunities);
-        setSearchSummaryBadge(`CV Match: "${role}" (${matchData.opportunities.length} tailored matches)`);
+      const data = await res.json();
+      if (data.results) {
+        setOpportunities(data.results);
+        setSearchSummaryBadge(`CV Match: "${role}" (${data.results.length} opportunities)`);
         setCurrentPage(1);
-      } else {
-        await executeFinalSearch(role, null);
       }
     } catch (e) {
-      await executeFinalSearch(role, null);
+      console.warn('CV Search note:', e.message);
     } finally {
       setIsSearchingPipeline(false);
-      if (feedTopRef.current) feedTopRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
-  const handleRelaxConstraint = async (option) => {
-    triggerToast(`Relaxing constraint: ${option.label}...`);
-    setIsSearchingPipeline(true);
-    const updated = { ...(searchProfileContext || {}) };
-    if (option.type === 'location' && updated.predicates?.location) {
-      updated.predicates.location.mode = 'METRO_RADIUS';
-    }
-    if (option.type === 'compensation' && updated.predicates?.compensation) {
-      updated.predicates.compensation.is_mandatory = false;
-      updated.predicates.compensation.allow_unknown = true;
-    }
-    await executeFinalSearch(pendingQuery || 'internship', updated);
+  const handleRelaxConstraint = async (constraintKey, optVal) => {
+    if (!searchProfileContext) return;
+    const relaxed = { ...searchProfileContext };
+    if (constraintKey === 'location') relaxed.locations = [];
+    if (constraintKey === 'type') relaxed.types = [];
+    if (constraintKey === 'min_salary') delete relaxed.min_salary;
+    await executeFinalSearch(pendingQuery, relaxed);
+    triggerToast(`Re-running search with relaxed ${constraintKey} filter...`);
   };
 
   // Filter & Pagination Logic
   const filteredOpportunities = opportunities.filter(op => {
-    if (cvMatchedContext && cvMatchedContext.role) {
-      const roleLower = cvMatchedContext.role.toLowerCase();
-      const titleLower = (op.title || '').toLowerCase();
-      const catLower = (op.category || '').toLowerCase();
-      const fieldLower = (op.field_of_study || '').toLowerCase();
-      const descLower = (op.description || op.description_text || '').toLowerCase();
-      const combined = `${titleLower} ${catLower} ${fieldLower}`;
-
-      // If opportunity has a cv_match_score, enforce threshold
-      if (typeof op.cv_match_score === 'number' && op.cv_match_score < 70) {
-        return false;
-      }
-
-      // Domain-specific keyword matching
-      const isDriving = /\b(chauffeur|conducteur|driver|transport|livreur|messagerie|fleet|vtc|navette)\b/i.test(roleLower);
-      const isDev = /\b(développeur|programmeur|software|developer|engineer|frontend|backend)\b/i.test(roleLower);
-      const isMarketing = /\b(marketing|brand|advertising|communication|publicité)\b/i.test(roleLower);
-      const isFinance = /\b(finance|comptable|accountant|analyst|audit)\b/i.test(roleLower);
-      const isHealth = /\b(santé|médical|infirmier|nurse|healthcare|medical|soins|clinical)\b/i.test(roleLower);
-
-      if (isDriving) {
-        const isDrivingJob = /\b(chauffeur|conducteur|driver|transport|livreur|messagerie|fleet|vtc|navette|logistique|logistics|véhicule)\b/i.test(combined);
-        const isTechRole = /\b(software|solutions architect|backend|frontend|data engineer|cloud)\b/i.test(titleLower);
-        if (!isDrivingJob || isTechRole) return false;
-      } else if (isDev) {
-        const isDevJob = /\b(developer|software|engineer|frontend|backend|fullstack|code|programming|développeur)\b/i.test(titleLower);
-        if (!isDevJob) return false;
-      } else if (isMarketing) {
-        const isMarketingJob = /\b(marketing|brand|advertising|communication|publicité|copywriter|content)\b/i.test(combined);
-        if (!isMarketingJob) return false;
-      } else if (isFinance) {
-        const isFinanceJob = /\b(finance|comptable|accountant|analyst|audit|banking)\b/i.test(combined);
-        if (!isFinanceJob) return false;
-      } else if (isHealth) {
-        const isHealthJob = /\b(santé|médical|infirmier|nurse|healthcare|medical|soins|clinical)\b/i.test(combined);
-        if (!isHealthJob) return false;
-      } else {
-        const words = roleLower.split(/\s+/).filter(w => w.length > 3);
-        if (words.length > 0 && !words.some(w => combined.includes(w) || descLower.includes(w))) {
-          return false;
-        }
-      }
+    if (selectedPreset === 'all') return true;
+    if (selectedPreset === 'advertising') {
+      const text = `${op.title} ${op.category} ${op.role_family || ''} ${op.description}`.toLowerCase();
+      return text.includes('advertis') || text.includes('market') || text.includes('brand') || text.includes('creative') || text.includes('copywrit') || text.includes('media');
     }
-
-    if (selectedPreset === 'advertising' && !op.field_of_study?.toLowerCase().includes('advert') && !op.field_of_study?.toLowerCase().includes('marketing') && !op.title?.toLowerCase().includes('brand')) {
-      return false;
-    }
-    if (selectedPreset === 'finance' && !op.field_of_study?.toLowerCase().includes('finance') && !op.title?.toLowerCase().includes('analyst') && !op.title?.toLowerCase().includes('bank')) {
-      return false;
-    }
-    if (selectedPreset === 'fully_funded' && !op.funding_level?.includes('full') && op.is_paid !== 1) {
-      return false;
-    }
+    if (selectedPreset === 'scholarships') return op.category === 'scholarship' || op.opportunity_type === 'scholarship';
+    if (selectedPreset === 'internships') return op.category === 'internship' || op.opportunity_type === 'internship';
+    if (selectedPreset === 'fellowships') return op.category === 'fellowship' || op.opportunity_type === 'fellowship';
+    if (selectedPreset === 'remote') return op.location_modality === 'remote' || op.is_remote === 1;
     return true;
   });
 
   const totalPages = Math.ceil(filteredOpportunities.length / itemsPerPage);
-  const paginatedOpportunities = filteredOpportunities.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const paginatedOpportunities = filteredOpportunities.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   const handlePageChange = (newPage) => {
-    if (newPage >= 1 && newPage <= totalPages) {
-      setCurrentPage(newPage);
-      if (feedTopRef.current) feedTopRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
+    if (newPage < 1 || newPage > totalPages) return;
+    setCurrentPage(newPage);
+    if (feedTopRef.current) feedTopRef.current.scrollIntoView({ behavior: 'smooth' });
   };
 
-  // Render First-Time User Onboarding Flow if needed
-  if (isAuthenticated && needsOnboarding) {
-    return (
-      <div className="app-layout">
-        <OnboardingFlow triggerToast={triggerToast} />
-      </div>
-    );
-  }
-
-  const userInitial = careerProfile?.full_name ? careerProfile.full_name[0].toUpperCase() : user?.email ? user.email[0].toUpperCase() : 'U';
-  const displayName = careerProfile?.full_name || user?.email?.split('@')[0] || 'Member';
-  const displayEmail = user?.email || 'member@careerly.app';
-  const degreeBadge = careerProfile?.degree_level === 'masters' ? 'MSc' : careerProfile?.degree_level === 'phd' ? 'PhD' : 'BSc';
+  const displayName = careerProfile?.full_name || user?.full_name || (user?.email ? user.email.split('@')[0] : 'Guest Member');
+  const displayEmail = user?.email || 'guest@careerly.io';
+  const userInitial = displayName.charAt(0).toUpperCase();
 
   const tabTitles = {
-    dashboard: 'Personalized Dashboard',
-    explore: 'Opportunity Discovery & Matching',
+    landing: 'Home',
+    dashboard: 'Workspace Overview',
+    explore: 'Opportunity Discovery',
     saved: 'Saved Opportunities',
-    tracker: 'Application CRM Board',
-    cv_studio: 'AI CV & ATS Studio',
-    interview: 'AI Mock Interview Coach',
-    settings: 'Account & Match Preferences',
-    admin: 'Admin Operations & Security',
-    landing: 'Home'
+    tracker: 'Application CRM',
+    cv_studio: 'AI CV Studio & ATS Tailor',
+    interview: 'STAR Interview Coach',
+    calendar: 'Deadlines Timeline',
+    settings: 'Account & Security Settings',
+    admin: 'Enterprise Security Operations'
   };
 
   return (
     <div className="saas-workspace">
-      {/* Neoconda Matrix Engineering Grid Canvas Background */}
-      <div className="matrix-grid-canvas" aria-hidden="true" />
-      
-      {/* 1. WORKSPACE SIDEBAR (AUTHENTICATED) */}
+      {/* 1. SIDEBAR (AUTHENTICATED) */}
       {isAuthenticated && (
         <>
-          {/* Mobile Overlay */}
           {mobileMenuOpen && (
-            <div 
-              style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 890, backdropFilter: 'blur(4px)' }}
-              onClick={() => setMobileMenuOpen(false)}
-            />
+            <div className="sidebar-backdrop" onClick={() => setMobileMenuOpen(false)} />
           )}
 
           <aside className={`saas-sidebar ${mobileMenuOpen ? 'mobile-open' : ''}`}>
-            
-            {/* Sidebar Brand Header */}
+            {/* Sidebar Header */}
             <div className="sidebar-header">
-              <div 
-                className="sidebar-brand" 
-                onClick={() => { setActiveTab('dashboard'); setMobileMenuOpen(false); }}
-              >
+              <Link to="/dashboard" className="sidebar-brand">
                 <div className="sidebar-logo">
                   <img src="/careerly-logo.png" alt="Careerly Logo" />
                 </div>
                 <div className="sidebar-brand-name">
                   Careerly
-                  <span className="sidebar-plan-tag">MATCH 2.0</span>
+                  <span className="sidebar-plan-tag">SAAS</span>
                 </div>
-              </div>
+              </Link>
 
               {mobileMenuOpen && (
                 <button 
@@ -537,7 +445,7 @@ function CareerlyPlatform() {
                 <div className="sidebar-nav-list">
                   <button 
                     className={`sidebar-nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
-                    onClick={() => { setActiveTab('dashboard'); setMobileMenuOpen(false); }}
+                    onClick={() => { navigate('/dashboard'); setMobileMenuOpen(false); }}
                   >
                     <div className="sidebar-nav-item-left">
                       <Sparkles size={16} />
@@ -547,7 +455,7 @@ function CareerlyPlatform() {
 
                   <button 
                     className={`sidebar-nav-item ${activeTab === 'explore' ? 'active' : ''}`}
-                    onClick={() => { setActiveTab('explore'); setMobileMenuOpen(false); }}
+                    onClick={() => { navigate('/opportunities'); setMobileMenuOpen(false); }}
                   >
                     <div className="sidebar-nav-item-left">
                       <Compass size={16} />
@@ -557,7 +465,7 @@ function CareerlyPlatform() {
 
                   <button 
                     className={`sidebar-nav-item ${activeTab === 'saved' ? 'active' : ''}`}
-                    onClick={() => { setActiveTab('saved'); setMobileMenuOpen(false); }}
+                    onClick={() => { navigate('/saved'); setMobileMenuOpen(false); }}
                   >
                     <div className="sidebar-nav-item-left">
                       <Bookmark size={16} />
@@ -570,7 +478,7 @@ function CareerlyPlatform() {
 
                   <button 
                     className={`sidebar-nav-item ${activeTab === 'tracker' ? 'active' : ''}`}
-                    onClick={() => { setActiveTab('tracker'); setMobileMenuOpen(false); }}
+                    onClick={() => { navigate('/applications'); setMobileMenuOpen(false); }}
                   >
                     <div className="sidebar-nav-item-left">
                       <CheckSquare size={16} />
@@ -589,7 +497,7 @@ function CareerlyPlatform() {
                 <div className="sidebar-nav-list">
                   <button 
                     className={`sidebar-nav-item ${activeTab === 'cv_studio' ? 'active' : ''}`}
-                    onClick={() => { setActiveTab('cv_studio'); setMobileMenuOpen(false); }}
+                    onClick={() => { navigate('/cv-studio'); setMobileMenuOpen(false); }}
                   >
                     <div className="sidebar-nav-item-left">
                       <FileText size={16} />
@@ -599,11 +507,21 @@ function CareerlyPlatform() {
 
                   <button 
                     className={`sidebar-nav-item ${activeTab === 'interview' ? 'active' : ''}`}
-                    onClick={() => { setActiveTab('interview'); setMobileMenuOpen(false); }}
+                    onClick={() => { navigate('/interview'); setMobileMenuOpen(false); }}
                   >
                     <div className="sidebar-nav-item-left">
                       <Mic size={16} />
                       <span>Interview Coach</span>
+                    </div>
+                  </button>
+
+                  <button 
+                    className={`sidebar-nav-item ${activeTab === 'calendar' ? 'active' : ''}`}
+                    onClick={() => { navigate('/calendar'); setMobileMenuOpen(false); }}
+                  >
+                    <div className="sidebar-nav-item-left">
+                      <Calendar size={16} />
+                      <span>Deadlines</span>
                     </div>
                   </button>
                 </div>
@@ -615,7 +533,7 @@ function CareerlyPlatform() {
                 <div className="sidebar-nav-list">
                   <button 
                     className={`sidebar-nav-item ${activeTab === 'settings' ? 'active' : ''}`}
-                    onClick={() => { setActiveTab('settings'); setMobileMenuOpen(false); }}
+                    onClick={() => { navigate('/settings'); setMobileMenuOpen(false); }}
                   >
                     <div className="sidebar-nav-item-left">
                       <Settings size={16} />
@@ -626,7 +544,7 @@ function CareerlyPlatform() {
                   {isAdmin && (
                     <button 
                       className={`sidebar-nav-item ${activeTab === 'admin' ? 'active' : ''}`}
-                      onClick={() => { setActiveTab('admin'); setMobileMenuOpen(false); }}
+                      onClick={() => { navigate('/admin/security'); setMobileMenuOpen(false); }}
                     >
                       <div className="sidebar-nav-item-left">
                         <ShieldCheck size={16} color="var(--primary)" />
@@ -641,7 +559,21 @@ function CareerlyPlatform() {
 
             {/* Sidebar User Footer */}
             <div className="sidebar-footer">
-              <div className="sidebar-user-pill">
+              <div 
+                className="sidebar-user-pill"
+                onClick={() => { navigate('/settings'); setMobileMenuOpen(false); }}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    navigate('/settings');
+                    setMobileMenuOpen(false);
+                  }
+                }}
+                title="Account Settings"
+                style={{ cursor: 'pointer' }}
+              >
                 <div className="sidebar-user-avatar">
                   {userInitial}
                 </div>
@@ -662,7 +594,7 @@ function CareerlyPlatform() {
                 </button>
                 <button 
                   className="icon-button" 
-                  onClick={() => { logout(); triggerToast('Signed out of Careerly.'); }} 
+                  onClick={() => { logout(); navigate('/login'); triggerToast('Signed out of Careerly.'); }} 
                   title="Sign Out"
                   style={{ width: '28px', height: '28px', color: '#ef4444' }}
                 >
@@ -678,42 +610,47 @@ function CareerlyPlatform() {
       {/* 2. MAIN WORKSPACE CANVAS */}
       <div className="saas-main">
         
-        {/* Top Header Bar (Modern Spacious Brainwave / Luma Navbar) */}
+        {/* Top Header Bar */}
         {!isAuthenticated ? (
           <>
             <header className="brainwave-navbar">
-              <div className="sidebar-brand" onClick={() => setActiveTab('landing')} style={{ cursor: 'pointer' }}>
-                <div className="sidebar-logo" style={{ boxShadow: '0 0 15px rgba(31, 228, 119, 0.4)' }}>
-                  <img src="/careerly-logo.png" alt="Careerly Logo" />
+              <Link to="/" style={{ textDecoration: 'none' }}>
+                <div className="sidebar-brand" style={{ cursor: 'pointer' }}>
+                  <div className="sidebar-logo" style={{ boxShadow: '0 0 15px rgba(31, 228, 119, 0.4)' }}>
+                    <img src="/careerly-logo.png" alt="Careerly Logo" />
+                  </div>
+                  <div className="sidebar-brand-name" style={{ fontSize: '1.15rem', fontWeight: '800', letterSpacing: '-0.02em', color: '#ffffff', fontFamily: "'Space Grotesk', sans-serif" }}>
+                    Careerly
+                    <span style={{ fontSize: '0.68rem', color: '#06070a', marginLeft: '0.4rem', fontWeight: '800', padding: '0.15rem 0.45rem', borderRadius: '4px', background: '#1FE477', boxShadow: '0 0 10px rgba(31, 228, 119, 0.4)' }}>
+                      CYBER 2.0
+                    </span>
+                  </div>
                 </div>
-                <div className="sidebar-brand-name" style={{ fontSize: '1.15rem', fontWeight: '800', letterSpacing: '-0.02em', color: '#ffffff', fontFamily: "'Space Grotesk', sans-serif" }}>
-                  Careerly
-                  <span style={{ fontSize: '0.68rem', color: '#06070a', marginLeft: '0.4rem', fontWeight: '800', padding: '0.15rem 0.45rem', borderRadius: '4px', background: '#1FE477', boxShadow: '0 0 10px rgba(31, 228, 119, 0.4)' }}>
-                    CYBER 2.0
-                  </span>
-                </div>
-              </div>
+              </Link>
 
-              {/* Modern Centered Navigation Links (Desktop) */}
+              {/* Modern Centered Navigation Links */}
               <nav className="brainwave-nav-center">
+                <Link to="/opportunities" className="brainwave-nav-link" style={{ textDecoration: 'none' }}>
+                  Browse Catalog
+                </Link>
                 <button 
                   className="brainwave-nav-link" 
                   onClick={() => {
-                    const el = document.getElementById('features-section');
-                    if (el) el.scrollIntoView({ behavior: 'smooth' });
+                    navigate('/');
+                    setTimeout(() => {
+                      const el = document.getElementById('features-section');
+                      if (el) el.scrollIntoView({ behavior: 'smooth' });
+                    }, 100);
                   }}
                 >
                   Features
                 </button>
-                <button className="brainwave-nav-link" onClick={() => { setAuthModalMode('signup'); setAuthModalOpen(true); }}>
+                <Link to="/register" className="brainwave-nav-link" style={{ textDecoration: 'none' }}>
                   AI CV Studio
-                </button>
-                <button className="brainwave-nav-link" onClick={() => { setAuthModalMode('signup'); setAuthModalOpen(true); }}>
+                </Link>
+                <Link to="/register" className="brainwave-nav-link" style={{ textDecoration: 'none' }}>
                   STAR Coach
-                </button>
-                <button className="brainwave-nav-link" onClick={() => { setAuthModalMode('signup'); setAuthModalOpen(true); }}>
-                  7-Factor Engine
-                </button>
+                </Link>
               </nav>
 
               {/* Right Side Actions & Mobile Menu Toggle */}
@@ -728,22 +665,22 @@ function CareerlyPlatform() {
                   {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
                 </button>
 
-                <button
-                  onClick={() => { setAuthModalMode('login'); setAuthModalOpen(true); }}
+                <Link
+                  to="/login"
                   className="brainwave-btn-outline brainwave-desktop-only"
-                  style={{ height: '42px', padding: '0 1.4rem', fontSize: '0.86rem' }}
+                  style={{ height: '42px', padding: '0 1.4rem', fontSize: '0.86rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
                 >
                   Sign In
-                </button>
+                </Link>
 
-                <button
-                  onClick={() => { setAuthModalMode('signup'); setAuthModalOpen(true); }}
+                <Link
+                  to="/register"
                   className="brainwave-btn-glow brainwave-nav-cta"
-                  style={{ height: '42px', padding: '0 1.4rem', fontSize: '0.86rem' }}
+                  style={{ height: '42px', padding: '0 1.4rem', fontSize: '0.86rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
                 >
                   <span>Get Started</span>
                   <ArrowRight size={15} className="btn-arrow-icon" />
-                </button>
+                </Link>
 
                 <button
                   className="brainwave-hamburger-btn"
@@ -755,54 +692,37 @@ function CareerlyPlatform() {
               </div>
             </header>
 
-            {/* Mobile Navigation Dropdown for Unauthenticated Landing Page */}
+            {/* Mobile Navigation Dropdown */}
             {mobileMenuOpen && (
               <div className="brainwave-mobile-menu">
                 <div className="brainwave-mobile-nav-list">
-                  <button 
-                    className="brainwave-mobile-nav-item"
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      const el = document.getElementById('features-section');
-                      if (el) el.scrollIntoView({ behavior: 'smooth' });
-                    }}
-                  >
-                    Features
-                  </button>
-                  <button 
-                    className="brainwave-mobile-nav-item" 
-                    onClick={() => { setMobileMenuOpen(false); setAuthModalMode('signup'); setAuthModalOpen(true); }}
-                  >
+                  <Link to="/opportunities" className="brainwave-mobile-nav-item" onClick={() => setMobileMenuOpen(false)}>
+                    Browse Catalog
+                  </Link>
+                  <Link to="/login" className="brainwave-mobile-nav-item" onClick={() => setMobileMenuOpen(false)}>
                     AI CV Studio
-                  </button>
-                  <button 
-                    className="brainwave-mobile-nav-item" 
-                    onClick={() => { setMobileMenuOpen(false); setAuthModalMode('signup'); setAuthModalOpen(true); }}
-                  >
+                  </Link>
+                  <Link to="/login" className="brainwave-mobile-nav-item" onClick={() => setMobileMenuOpen(false)}>
                     STAR Coach
-                  </button>
-                  <button 
-                    className="brainwave-mobile-nav-item" 
-                    onClick={() => { setMobileMenuOpen(false); setAuthModalMode('signup'); setAuthModalOpen(true); }}
-                  >
-                    7-Factor Engine
-                  </button>
+                  </Link>
                 </div>
                 <div className="brainwave-mobile-menu-actions">
-                  <button
-                    onClick={() => { setMobileMenuOpen(false); setAuthModalMode('login'); setAuthModalOpen(true); }}
+                  <Link
+                    to="/login"
+                    onClick={() => setMobileMenuOpen(false)}
                     className="brainwave-btn-outline"
-                    style={{ width: '100%', height: '44px', justifyContent: 'center' }}
+                    style={{ width: '100%', height: '44px', justifyContent: 'center', textDecoration: 'none' }}
                   >
                     Sign In
-                  </button>
-                  <button
-                    onClick={() => { setMobileMenuOpen(false); setAuthModalMode('signup'); setAuthModalOpen(true); }}
+                  </Link>
+                  <Link
+                    to="/register"
+                    onClick={() => setMobileMenuOpen(false)}
                     className="brainwave-btn-glow"
-                    style={{ width: '100%', height: '44px', justifyContent: 'center' }}
+                    style={{ width: '100%', height: '44px', justifyContent: 'center', textDecoration: 'none' }}
                   >
                     Get Started Free
-                  </button>
+                  </Link>
                 </div>
               </div>
             )}
@@ -811,19 +731,18 @@ function CareerlyPlatform() {
           <header className="saas-header">
             <div className="saas-header-left">
               <button 
-                className="icon-button" 
+                className="saas-hamburger-trigger icon-button" 
                 onClick={() => setMobileMenuOpen(true)}
-                style={{ display: 'inline-flex' }}
                 aria-label="Open Navigation Menu"
               >
                 <Menu size={18} />
               </button>
 
-              <div className="saas-breadcrumbs">
-                <span>Careerly</span>
-                <span>/</span>
-                <span className="active">{tabTitles[activeTab] || 'Workspace'}</span>
-              </div>
+              <nav className="saas-breadcrumbs" aria-label="Breadcrumb">
+                <span className="breadcrumb-root">Careerly</span>
+                <span className="breadcrumb-separator">/</span>
+                <span className="breadcrumb-active active">{tabTitles[activeTab] || 'Workspace'}</span>
+              </nav>
             </div>
 
             <div className="saas-header-right">
@@ -859,9 +778,9 @@ function CareerlyPlatform() {
         {/* TAB: PUBLIC LANDING (UNAUTHENTICATED) */}
         {activeTab === 'landing' && (
           <PublicLandingView 
-            onOpenAuth={(mode) => { setAuthModalMode(mode); setAuthModalOpen(true); }}
+            onOpenAuth={(mode) => navigate(mode === 'signup' ? '/register' : '/login')}
             sampleOpportunities={opportunities}
-            onSelectOpportunity={(op) => setDrawerOp(op)}
+            onSelectOpportunity={(op) => { setDrawerOp(op); navigate(`/opportunities/${op.id}`); }}
             onPrepareKit={(op) => setPrepareAppOp(op)}
             onSaveOpportunity={(opId) => toggleSaveApp(opId)}
             isSaved={isOpportunitySaved}
@@ -872,11 +791,24 @@ function CareerlyPlatform() {
         {/* TAB: PERSONALIZED DASHBOARD (AUTHENTICATED) */}
         {activeTab === 'dashboard' && (
           <PersonalizedDashboard 
-            onSelectOpportunity={(op) => setDrawerOp(op)}
+            onSelectOpportunity={(op) => { setDrawerOp(op); navigate(`/opportunities/${op.id}`); }}
             onPrepareKit={(op) => setPrepareAppOp(op)}
             onSaveOpportunity={(opId) => toggleSaveApp(opId)}
             isSaved={isOpportunitySaved}
-            onNavigateTab={(tab) => { setActiveTab(tab); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+            onNavigateTab={(tab) => { 
+              const routes = {
+                explore: '/opportunities',
+                saved: '/saved',
+                tracker: '/applications',
+                cv_studio: '/cv-studio',
+                interview: '/interview',
+                calendar: '/calendar',
+                settings: '/settings',
+                admin: '/admin/security'
+              };
+              navigate(routes[tab] || '/dashboard');
+              window.scrollTo({ top: 0, behavior: 'smooth' }); 
+            }}
             triggerToast={triggerToast}
           />
         )}
@@ -931,7 +863,7 @@ function CareerlyPlatform() {
                     <button 
                       className="btn btn-primary" 
                       style={{ height: '36px', fontSize: '0.82rem', padding: '0 0.95rem' }}
-                      onClick={() => setActiveTab('cv_studio')}
+                      onClick={() => navigate('/cv-studio')}
                     >
                       Return to CV Studio
                     </button>
@@ -967,73 +899,69 @@ function CareerlyPlatform() {
                   <Megaphone size={14} /> Advertising & Marketing
                 </button>
                 <button 
-                  className={`cat-pill ${selectedPreset === 'finance' ? 'active' : ''}`}
-                  onClick={() => setSelectedPreset(selectedPreset === 'finance' ? 'all' : 'finance')}
+                  className={`cat-pill ${selectedPreset === 'internships' ? 'active' : ''}`}
+                  onClick={() => setSelectedPreset(selectedPreset === 'internships' ? 'all' : 'internships')}
                 >
-                  <Briefcase size={14} /> Finance & Banking
+                  <Briefcase size={14} /> Internships & Traineeships
                 </button>
                 <button 
-                  className={`cat-pill ${selectedPreset === 'fully_funded' ? 'active' : ''}`}
-                  onClick={() => setSelectedPreset(selectedPreset === 'fully_funded' ? 'all' : 'fully_funded')}
+                  className={`cat-pill ${selectedPreset === 'scholarships' ? 'active' : ''}`}
+                  onClick={() => setSelectedPreset(selectedPreset === 'scholarships' ? 'all' : 'scholarships')}
                 >
-                  <GraduationCap size={14} /> Fully Funded Scholarships
+                  <GraduationCap size={14} /> Global Scholarships
+                </button>
+                <button 
+                  className={`cat-pill ${selectedPreset === 'fellowships' ? 'active' : ''}`}
+                  onClick={() => setSelectedPreset(selectedPreset === 'fellowships' ? 'all' : 'fellowships')}
+                >
+                  <Award size={14} /> Fellowships & Grants
+                </button>
+                <button 
+                  className={`cat-pill ${selectedPreset === 'remote' ? 'active' : ''}`}
+                  onClick={() => setSelectedPreset(selectedPreset === 'remote' ? 'all' : 'remote')}
+                >
+                  <Globe size={14} /> Worldwide & Remote
                 </button>
               </div>
 
-              {/* Feed Toolbar */}
-              <div className="feed-toolbar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.75rem', gap: '1rem', flexWrap: 'wrap' }}>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-                  <span style={{ fontSize: '1.15rem', fontWeight: '900', color: 'var(--foreground)' }}>
-                    Verified Opportunities ({filteredOpportunities.length})
-                  </span>
-                  {cvMatchedContext ? (
-                    <span className="bento-tag" style={{ background: 'var(--primary-subtle)', color: 'var(--primary)', borderColor: 'rgba(124, 58, 237, 0.3)', fontWeight: '800' }}>
-                      🎯 Matched for: {cvMatchedContext.role}
-                    </span>
-                  ) : (
-                    <span className="bento-tag" style={{ background: 'var(--accent-emerald-light)', color: 'var(--accent-emerald)', borderColor: 'var(--accent-emerald)', fontWeight: '800' }}>
-                      Deterministic Ranked
-                    </span>
-                  )}
+              {/* View Layout Controls & Stats */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+                <div style={{ color: 'var(--muted-foreground)', fontSize: '0.88rem', fontWeight: '600' }}>
+                  Showing <strong style={{ color: 'var(--foreground)' }}>{filteredOpportunities.length}</strong> verified opportunities
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                  <div style={{ display: 'flex', gap: '0.35rem', background: 'var(--card)', border: '1px solid var(--border-default)', padding: '0.25rem', borderRadius: 'var(--radius-md)' }}>
-                    <button 
-                      className={`icon-button ${viewMode === 'grid' ? 'active' : ''}`}
-                      onClick={() => setViewMode('grid')}
-                      style={{ width: '32px', height: '32px', background: viewMode === 'grid' ? 'var(--primary-subtle)' : 'transparent' }}
-                      title="Grid View"
-                    >
-                      <LayoutGrid size={15} />
-                    </button>
-                    <button 
-                      className={`icon-button ${viewMode === 'list' ? 'active' : ''}`}
-                      onClick={() => setViewMode('list')}
-                      style={{ width: '32px', height: '32px', background: viewMode === 'list' ? 'var(--primary-subtle)' : 'transparent' }}
-                      title="List View"
-                    >
-                      <List size={15} />
-                    </button>
-                  </div>
+                <div style={{ display: 'flex', gap: '0.35rem', background: 'var(--card)', padding: '3px', borderRadius: '8px', border: '1px solid var(--border-default)' }}>
+                  <button 
+                    onClick={() => setViewMode('grid')}
+                    className={`icon-button ${viewMode === 'grid' ? 'active' : ''}`}
+                    style={{ width: '32px', height: '32px', borderRadius: '6px' }}
+                    title="Grid View"
+                  >
+                    <LayoutGrid size={15} />
+                  </button>
+                  <button 
+                    onClick={() => setViewMode('list')}
+                    className={`icon-button ${viewMode === 'list' ? 'active' : ''}`}
+                    style={{ width: '32px', height: '32px', borderRadius: '6px' }}
+                    title="List View"
+                  >
+                    <List size={15} />
+                  </button>
                 </div>
               </div>
 
-              {/* Opportunities Grid / List */}
+              {/* Feed Grid or List */}
               {isLoading ? (
-                <div style={{ textAlign: 'center', padding: '4rem 1rem' }}>
-                  <RefreshCw size={28} className="spin" color="var(--primary)" style={{ margin: '0 auto 1rem' }} />
-                  <p style={{ fontWeight: '700', color: 'var(--foreground)' }}>Loading verified opportunities...</p>
+                <div style={{ textAlign: 'center', padding: '5rem 0', color: 'var(--muted-foreground)' }}>
+                  <RefreshCw size={32} className="spin-slow" color="var(--primary)" style={{ margin: '0 auto 1rem' }} />
+                  <p style={{ fontWeight: '700' }}>Calibrating live opportunity matches...</p>
                 </div>
               ) : viewMode === 'grid' ? (
                 <OpportunityGridView 
                   opportunities={paginatedOpportunities}
-                  funnelMetrics={searchFunnelMetrics}
-                  relaxationOptions={searchRelaxationOptions}
-                  onSelectOp={(op) => setDrawerOp(op)}
-                  onPrepareApplication={(op) => setPrepareAppOp(op)}
+                  onSelectOp={(op) => { setDrawerOp(op); navigate(`/opportunities/${op.id}`); }}
                   onToggleSave={(oppId) => toggleSaveApp(oppId)}
+                  onPrepareApplication={(op) => setPrepareAppOp(op)}
                   onInspectEvidence={(op) => setInspectingEvidenceOp(op)}
                   onRelaxConstraint={handleRelaxConstraint}
                   savedIds={savedOppsList.map(s => s.id || s.opportunity_id)}
@@ -1041,7 +969,7 @@ function CareerlyPlatform() {
               ) : (
                 <OpportunityListView 
                   opportunities={paginatedOpportunities}
-                  onSelectOp={(op) => setDrawerOp(op)}
+                  onSelectOp={(op) => { setDrawerOp(op); navigate(`/opportunities/${op.id}`); }}
                   onToggleSave={(oppId) => toggleSaveApp(oppId)}
                   savedIds={savedOppsList.map(s => s.id || s.opportunity_id)}
                   onAutoApply={(op) => setPrepareAppOp(op)}
@@ -1094,7 +1022,7 @@ function CareerlyPlatform() {
                   <OpportunityCard
                     key={opp.id || opp.opportunity_id}
                     opportunity={opp}
-                    onSelectOp={(o) => setDrawerOp(o)}
+                    onSelectOp={(o) => { setDrawerOp(o); navigate(`/opportunities/${o.id}`); }}
                     onPrepareApplication={(o) => setPrepareAppOp(o)}
                     onToggleSave={(id) => toggleSaveApp(id)}
                     isSaved={true}
@@ -1108,7 +1036,7 @@ function CareerlyPlatform() {
                 <p className="type-body" style={{ marginTop: '0.35rem', marginBottom: '1.5rem' }}>
                   Explore the catalog and bookmark opportunities you'd like to track or prepare applications for.
                 </p>
-                <button onClick={() => setActiveTab('explore')} className="action-btn-primary">
+                <button onClick={() => navigate('/opportunities')} className="action-btn-primary">
                   Browse Opportunities Catalog
                 </button>
               </div>
@@ -1127,6 +1055,23 @@ function CareerlyPlatform() {
                 Manage your active applications across Saved, Preparing, Applied, Interview, and Offer stages.
               </p>
             </div>
+
+            {applicationsList.length === 0 && (
+              <div style={{ background: 'var(--card)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-xl)', padding: '1.25rem 1.5rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <div style={{ width: '36px', height: '36px', borderRadius: 'var(--radius-md)', background: 'var(--primary-subtle)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <CheckSquare size={18} />
+                  </div>
+                  <div>
+                    <div style={{ fontWeight: '700', fontSize: '0.92rem', color: 'var(--foreground)' }}>Your CRM pipeline is ready</div>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--muted-foreground)' }}>Save opportunities or launch application prep kits to track your multi-stage progress here.</div>
+                  </div>
+                </div>
+                <button onClick={() => navigate('/opportunities')} className="action-btn-primary" style={{ fontSize: '0.82rem', padding: '0.45rem 1rem' }}>
+                  Discover Opportunities
+                </button>
+              </div>
+            )}
 
             <div className="kanban-board-scroll">
               {['saved', 'preparing', 'applied', 'interview', 'offer', 'rejected'].map(st => {
@@ -1176,7 +1121,7 @@ function CareerlyPlatform() {
                             <button 
                               className="btn btn-outline"
                               style={{ fontSize: '0.75rem', padding: '0.3rem 0.65rem' }}
-                              onClick={() => setDrawerOp(app)}
+                              onClick={() => { setDrawerOp(app); navigate(`/opportunities/${app.opportunity_id || app.id}`); }}
                             >
                               Details
                             </button>
@@ -1197,7 +1142,7 @@ function CareerlyPlatform() {
               userProfile={careerProfile} 
               triggerToast={triggerToast}
               onNavigateToDiscover={handleNavigateFromCvToDiscover}
-              onSelectOpportunity={(op) => setDrawerOp(op)}
+              onSelectOpportunity={(op) => { setDrawerOp(op); navigate(`/opportunities/${op.id}`); }}
               onPrepareKit={(op) => setPrepareAppOp(op)}
               onToggleSave={(id) => toggleSaveApp(id)}
               isOpportunitySaved={(id) => isOpportunitySaved(id)}
@@ -1213,7 +1158,7 @@ function CareerlyPlatform() {
 
         {/* TAB: DEADLINES TIMELINE */}
         {activeTab === 'calendar' && (
-          <div className="content-container" style={{ maxWidth: '860px', margin: '2rem auto' }}>
+          <div className="content-container" style={{ maxWidth: '860px', margin: '2rem auto', padding: '0 1rem' }}>
             <div style={{ marginBottom: '1.75rem' }}>
               <h2 style={{ fontSize: '1.5rem', fontWeight: '900', color: 'var(--foreground)', marginBottom: '0.3rem' }}>
                 Application Deadlines Timeline
@@ -1223,54 +1168,96 @@ function CareerlyPlatform() {
               </p>
             </div>
 
-            {opportunities.slice(0, 15).map(op => (
-              <div key={op.id} style={{ background: 'var(--card)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-xl)', padding: '1.35rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', boxShadow: 'var(--shadow-sm)' }}>
-                <div>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--primary)', fontWeight: '800', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                    <Calendar size={14} /> Deadline: {op.deadline_utc || 'Open Intake'}
-                  </div>
-                  <div style={{ fontWeight: '800', fontSize: '1.05rem', color: 'var(--foreground)' }}>{op.title}</div>
-                  <div style={{ fontSize: '0.82rem', color: 'var(--muted-foreground)', marginTop: '0.15rem' }}>{op.organization || op.company} • {op.location_country}</div>
-                </div>
+            {opportunities.length > 0 ? (
+              opportunities.slice(0, 15).map(op => {
+                const isRolling = !op.deadline_utc || op.deadline_utc.toLowerCase().includes('open') || op.deadline_utc.toLowerCase().includes('rolling');
+                return (
+                  <div key={op.id} style={{ background: 'var(--card)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-xl)', padding: '1.35rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', boxShadow: 'var(--shadow-sm)' }}>
+                    <div>
+                      <div style={{ fontSize: '0.8rem', color: isRolling ? 'var(--accent-emerald)' : 'var(--primary)', fontWeight: '800', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                        <Calendar size={14} /> {isRolling ? 'Rolling / Open Intake' : `Cut-off: ${op.deadline_utc}`}
+                      </div>
+                      <div style={{ fontWeight: '800', fontSize: '1.05rem', color: 'var(--foreground)' }}>{op.title}</div>
+                      <div style={{ fontSize: '0.82rem', color: 'var(--muted-foreground)', marginTop: '0.15rem' }}>{op.organization || op.company} • {op.location_country || 'Global'}</div>
+                    </div>
 
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  <button className="btn btn-emerald" style={{ fontSize: '0.82rem', padding: '0.45rem 0.95rem' }} onClick={() => setPrepareAppOp(op)}>
-                    <Zap size={14} /> Prepare Kit
-                  </button>
-                  <button className="btn btn-outline" style={{ fontSize: '0.82rem', padding: '0.45rem 0.85rem' }} onClick={() => setDrawerOp(op)}>
-                    Inspect
-                  </button>
-                </div>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <button className="btn btn-emerald" style={{ fontSize: '0.82rem', padding: '0.45rem 0.95rem' }} onClick={() => setPrepareAppOp(op)}>
+                        <Zap size={14} /> Prepare Kit
+                      </button>
+                      <button className="btn btn-outline" style={{ fontSize: '0.82rem', padding: '0.45rem 0.85rem' }} onClick={() => { setDrawerOp(op); navigate(`/opportunities/${op.id}`); }}>
+                        Inspect
+                      </button>
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <div style={{ textAlign: 'center', padding: '3.5rem 1.5rem', background: 'var(--card)', borderRadius: 'var(--radius-2xl)', border: '1px solid var(--border-default)' }}>
+                <Calendar size={36} color="var(--primary)" style={{ marginBottom: '0.85rem' }} />
+                <h3 className="type-h3">No upcoming deadlines found</h3>
+                <p className="type-body" style={{ marginTop: '0.35rem' }}>
+                  Explore active opportunities to track upcoming deadlines and intake schedules.
+                </p>
               </div>
-            ))}
+            )}
           </div>
         )}
 
         {/* TAB: SETTINGS VIEW */}
-        {activeTab === 'settings' && isAuthenticated && (
+        {activeTab === 'settings' && (
           <SettingsView triggerToast={triggerToast} />
         )}
 
         {/* TAB: ADMIN OPERATIONS (ADMIN ONLY) */}
-        {activeTab === 'admin' && isAdmin && (
+        {activeTab === 'admin' && (
           <AdminDashboard triggerToast={triggerToast} />
         )}
 
       </main>
 
       {/* Modern Careerly Footer */}
-      <Footer onNavigateTab={(tab) => { setActiveTab(tab); window.scrollTo({ top: 0, behavior: 'smooth' }); }} />
+      <Footer onNavigateTab={(tab) => { 
+        const routes = {
+          explore: '/opportunities',
+          saved: '/saved',
+          tracker: '/applications',
+          cv_studio: '/cv-studio',
+          interview: '/interview',
+          calendar: '/calendar',
+          settings: '/settings',
+          admin: '/admin/security'
+        };
+        navigate(routes[tab] || '/'); 
+        window.scrollTo({ top: 0, behavior: 'smooth' }); 
+      }} />
 
       </div> {/* saas-content-canvas */}
     </div> {/* saas-main */}
 
-      {/* Authentication Modal */}
-      <AuthModal 
-        isOpen={authModalOpen}
-        onClose={() => setAuthModalOpen(false)}
-        initialMode={authModalMode}
-        triggerToast={triggerToast}
-      />
+      {/* Slide-Over Inspection Drawer */}
+      {drawerOp && (
+        <OpportunityDrawer 
+          opportunity={drawerOp}
+          onClose={() => { setDrawerOp(null); if (routeOpportunityId) navigate('/opportunities'); }}
+          onToggleSave={(id) => toggleSaveApp(id)}
+          isSaved={isOpportunitySaved(drawerOp.id)}
+          onAutoApply={(op) => { setPrepareAppOp(op); setDrawerOp(null); }}
+          onEmailOutreach={(op) => { setEmailOutreachOp(op); setDrawerOp(null); }}
+          triggerToast={triggerToast}
+        />
+      )}
+
+      {/* Application Readiness Kit Drawer */}
+      {prepareAppOp && (
+        <ApplicationKitDrawer 
+          opportunity={prepareAppOp}
+          userProfile={careerProfile || {}}
+          onClose={() => setPrepareAppOp(null)}
+          onApplied={(opId, st) => handleUpdateAppStage(opId, st)}
+          triggerToast={triggerToast}
+        />
+      )}
 
       {/* Dynamic AI Question Modal */}
       <AIQuestionModal 
@@ -1284,30 +1271,6 @@ function CareerlyPlatform() {
       <SearchProgressExperience 
         isActive={isSearchingPipeline}
       />
-
-      {/* Application Readiness Kit Drawer */}
-      {prepareAppOp && (
-        <ApplicationKitDrawer 
-          opportunity={prepareAppOp}
-          userProfile={careerProfile || {}}
-          onClose={() => setPrepareAppOp(null)}
-          onApplied={(opId, st) => handleUpdateAppStage(opId, st)}
-          triggerToast={triggerToast}
-        />
-      )}
-
-      {/* Slide-Over Inspection Drawer */}
-      {drawerOp && (
-        <OpportunityDrawer 
-          opportunity={drawerOp}
-          onClose={() => setDrawerOp(null)}
-          onToggleSave={(id) => toggleSaveApp(id)}
-          isSaved={isOpportunitySaved(drawerOp.id)}
-          onAutoApply={(op) => { setPrepareAppOp(op); setDrawerOp(null); }}
-          onEmailOutreach={(op) => { setEmailOutreachOp(op); setDrawerOp(null); }}
-          triggerToast={triggerToast}
-        />
-      )}
 
       {/* Evidence Inspector Modal */}
       {inspectingEvidenceOp && (
@@ -1328,43 +1291,193 @@ function CareerlyPlatform() {
         />
       )}
 
-      {/* Floating 24/7 AI Career Copilot (Hidden when drawer or modal is open) */}
+      {/* Floating 24/7 AI Career Copilot */}
       {!drawerOp && !prepareAppOp && !emailOutreachOp && !inspectingEvidenceOp && !authModalOpen && !activeQuestion && (
         <AiCareerCopilot userProfile={careerProfile || {}} triggerToast={triggerToast} />
       )}
-
-      {/* Toast Notification */}
-      {toastMessage && (
-        <div role="status" aria-live="polite" style={{
-          position: 'fixed',
-          bottom: '2rem',
-          left: '2rem',
-          background: 'var(--card)',
-          border: '1px solid var(--border-default)',
-          color: 'var(--foreground)',
-          padding: '0.75rem 1.35rem',
-          borderRadius: 'var(--radius-md)',
-          boxShadow: 'var(--shadow-lg)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.6rem',
-          zIndex: 4000,
-          fontSize: '0.86rem',
-          fontWeight: '700'
-        }}>
-          <CheckCircle size={17} color="var(--accent-emerald)" />
-          <span>{toastMessage}</span>
-        </div>
-      )}
-
     </div>
   );
 }
 
+function HomeRoute({ theme, toggleTheme, triggerToast }) {
+  const { isAuthenticated, isLoading, needsOnboarding } = useAuth();
+  if (isLoading) return null;
+  if (isAuthenticated) {
+    if (needsOnboarding) return <Navigate to="/onboarding" replace />;
+    return <Navigate to="/dashboard" replace />;
+  }
+  return <CareerlyWorkspace activeTab="landing" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />;
+}
+
 export default function App() {
+  const [theme, setTheme] = useState(() => localStorage.getItem('opp_theme') || 'dark');
+  const [toastMessage, setToastMessage] = useState('');
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('opp_theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    const nextTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(nextTheme);
+  };
+
+  const triggerToast = (msg) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(''), 2800);
+  };
+
   return (
-    <AuthProvider>
-      <CareerlyPlatform />
-    </AuthProvider>
+    <BrowserRouter>
+      <AuthProvider>
+        <Routes>
+          {/* Public Home & Landing */}
+          <Route path="/" element={
+            <HomeRoute theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
+          } />
+
+          {/* Authentication Dedicated Pages */}
+          <Route path="/login" element={
+            <PublicOnlyRoute>
+              <AuthScreen triggerToast={triggerToast} theme={theme} toggleTheme={toggleTheme} />
+            </PublicOnlyRoute>
+          } />
+          <Route path="/register" element={
+            <PublicOnlyRoute>
+              <AuthScreen triggerToast={triggerToast} theme={theme} toggleTheme={toggleTheme} />
+            </PublicOnlyRoute>
+          } />
+          <Route path="/signup" element={<Navigate to="/register" replace />} />
+          <Route path="/verify-email" element={
+            <PublicOnlyRoute>
+              <AuthScreen triggerToast={triggerToast} theme={theme} toggleTheme={toggleTheme} />
+            </PublicOnlyRoute>
+          } />
+          <Route path="/forgot-password" element={
+            <PublicOnlyRoute>
+              <AuthScreen triggerToast={triggerToast} theme={theme} toggleTheme={toggleTheme} />
+            </PublicOnlyRoute>
+          } />
+          <Route path="/reset-password" element={
+            <PublicOnlyRoute>
+              <AuthScreen triggerToast={triggerToast} theme={theme} toggleTheme={toggleTheme} />
+            </PublicOnlyRoute>
+          } />
+
+          {/* 4-Step Academic & Career Calibration Onboarding */}
+          <Route path="/onboarding" element={
+            <ProtectedRoute>
+              <OnboardingWizard triggerToast={triggerToast} onComplete={() => window.location.href = '/dashboard'} />
+            </ProtectedRoute>
+          } />
+
+          {/* Authenticated Core Workspace Routes */}
+          <Route path="/dashboard" element={
+            <ProtectedRoute>
+              <CareerlyWorkspace activeTab="dashboard" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
+            </ProtectedRoute>
+          } />
+
+          {/* Public & Authenticated Opportunity Discovery */}
+          <Route path="/opportunities" element={
+            <CareerlyWorkspace activeTab="explore" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
+          } />
+          <Route path="/opportunities/:id" element={
+            <CareerlyWorkspace activeTab="explore" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
+          } />
+
+          {/* Authenticated Feature Routes */}
+          <Route path="/applications" element={
+            <ProtectedRoute>
+              <CareerlyWorkspace activeTab="tracker" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/saved" element={
+            <ProtectedRoute>
+              <CareerlyWorkspace activeTab="saved" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/cv-studio" element={
+            <ProtectedRoute>
+              <CareerlyWorkspace activeTab="cv_studio" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/interview" element={
+            <ProtectedRoute>
+              <CareerlyWorkspace activeTab="interview" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/calendar" element={
+            <ProtectedRoute>
+              <CareerlyWorkspace activeTab="calendar" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/profile" element={
+            <ProtectedRoute>
+              <CareerlyWorkspace activeTab="settings" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/settings" element={
+            <ProtectedRoute>
+              <CareerlyWorkspace activeTab="settings" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
+            </ProtectedRoute>
+          } />
+
+          {/* Administrative Security Operations Routes */}
+          <Route path="/admin" element={
+            <AdminRoute>
+              <CareerlyWorkspace activeTab="admin" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
+            </AdminRoute>
+          } />
+          <Route path="/admin/*" element={
+            <AdminRoute>
+              <CareerlyWorkspace activeTab="admin" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
+            </AdminRoute>
+          } />
+
+          {/* 404 Catch-All */}
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+
+        {/* Global Toast Notification */}
+        {toastMessage && (
+          <div 
+            role="status" 
+            aria-live="polite" 
+            className="toast-entrance-slide"
+            style={{
+              position: 'fixed',
+              bottom: '2rem',
+              left: '2rem',
+              background: 'var(--card)',
+              border: '1px solid var(--border-default)',
+              color: 'var(--foreground)',
+              padding: '0.75rem 1.15rem',
+              borderRadius: 'var(--radius-lg)',
+              boxShadow: 'var(--shadow-lg), 0 10px 30px rgba(0,0,0,0.3)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.65rem',
+              zIndex: 4000,
+              fontSize: '0.86rem',
+              fontWeight: '700',
+              backdropFilter: 'blur(16px)',
+              maxWidth: '90vw'
+            }}
+          >
+            <CheckCircle size={17} color="var(--accent-emerald)" style={{ flexShrink: 0 }} />
+            <span style={{ flex: 1 }}>{toastMessage}</span>
+            <button 
+              onClick={() => setToastMessage('')}
+              style={{ background: 'none', border: 'none', color: 'var(--muted-foreground)', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '2px', marginLeft: '0.25rem' }}
+              aria-label="Dismiss notification"
+            >
+              <X size={14} />
+            </button>
+          </div>
+        )}
+      </AuthProvider>
+    </BrowserRouter>
   );
 }

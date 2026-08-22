@@ -48,8 +48,17 @@ EXPÉRIENCE PROFESSIONNELLE:
 - Maintenu un état irréprochable des véhicules et assuré la conformité stricte avec les réglementations de sécurité`;
   };
 
+  const getCalibratedRole = () => {
+    if (userProfile?.headline) return userProfile.headline;
+    if (userProfile?.target_roles && Array.isArray(userProfile.target_roles) && userProfile.target_roles.length > 0) {
+      return userProfile.target_roles[0];
+    }
+    if (userProfile?.field_of_study) return `${userProfile.field_of_study} Specialist`;
+    return 'Software Engineer';
+  };
+
   const [cvText, setCvText] = useState(() => persistedData?.cvText || defaultCvText());
-  const [targetRole, setTargetRole] = useState(() => persistedData?.targetRole || 'Chauffeur Professionnel');
+  const [targetRole, setTargetRole] = useState(() => persistedData?.targetRole || getCalibratedRole());
   const [employerType, setEmployerType] = useState(() => persistedData?.employerType || 'Senior Hiring Manager (Role Specialist)');
   const [uploadedFileName, setUploadedFileName] = useState(() => persistedData?.uploadedFileName || '');
   const [uploadedFileSize, setUploadedFileSize] = useState(() => persistedData?.uploadedFileSize || '');
@@ -99,9 +108,13 @@ EXPÉRIENCE PROFESSIONNELLE:
         setUploadedPdfBase64(base64Data);
 
         try {
+          const token = localStorage.getItem('careerly_token');
           const res = await fetch(`${API_BASE_URL}/ai/parse-pdf`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+              'Content-Type': 'application/json',
+              ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+            },
             body: JSON.stringify({
               fileBase64: base64Data,
               fileName: file.name
@@ -151,9 +164,13 @@ EXPÉRIENCE PROFESSIONNELLE:
   const triggerAnalysisWithData = async (text, pdfBase64) => {
     setIsAnalyzing(true);
     try {
+      const token = localStorage.getItem('careerly_token');
       const res = await fetch(`${API_BASE_URL}/ai/analyze-cv`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
         body: JSON.stringify({
           cvText: text || cvText,
           fileBase64: pdfBase64 || uploadedPdfBase64,

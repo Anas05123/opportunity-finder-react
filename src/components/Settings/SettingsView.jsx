@@ -42,6 +42,36 @@ export default function SettingsView({ triggerToast }) {
 
   const token = localStorage.getItem('careerly_token');
 
+  // Synchronize form fields whenever careerProfile loads asynchronously
+  useEffect(() => {
+    if (careerProfile) {
+      if (careerProfile.full_name !== undefined) setFullName(careerProfile.full_name || '');
+      if (careerProfile.headline !== undefined) setHeadline(careerProfile.headline || '');
+      if (careerProfile.phone !== undefined) setPhone(careerProfile.phone || '');
+      if (careerProfile.degree_level) setDegreeLevel(careerProfile.degree_level);
+      if (careerProfile.degree_title) setDegreeTitle(careerProfile.degree_title);
+      if (careerProfile.field_of_study) setMajor(careerProfile.field_of_study);
+      if (careerProfile.university) setUniversity(careerProfile.university);
+      if (careerProfile.gpa !== undefined && careerProfile.gpa !== null) setGpa(careerProfile.gpa);
+      if (Array.isArray(careerProfile.skills)) setSkills(careerProfile.skills.join(', '));
+      if (careerProfile.portfolio_url !== undefined) setPortfolioUrl(careerProfile.portfolio_url || '');
+      if (careerProfile.linkedin_url !== undefined) setLinkedinUrl(careerProfile.linkedin_url || '');
+      if (careerProfile.github_url !== undefined) setGithubUrl(careerProfile.github_url || '');
+      if (careerProfile.no_ielts_preference !== undefined) setNoIelts(careerProfile.no_ielts_preference);
+    }
+  }, [careerProfile]);
+
+  // Synchronize search preferences whenever searchProfile loads asynchronously
+  useEffect(() => {
+    if (searchProfile) {
+      if (Array.isArray(searchProfile.target_roles)) setTargetRoles(searchProfile.target_roles.join(', '));
+      if (Array.isArray(searchProfile.required_locations)) setRequiredLocations(searchProfile.required_locations.join(', '));
+      if (searchProfile.remote_only !== undefined) setRemoteOnly(Boolean(searchProfile.remote_only));
+      if (searchProfile.min_salary !== undefined) setMinSalary(searchProfile.min_salary || '');
+      if (searchProfile.visa_sponsorship_required !== undefined) setVisaSponsorship(Boolean(searchProfile.visa_sponsorship_required));
+    }
+  }, [searchProfile]);
+
   const handleSaveProfile = async (e) => {
     e.preventDefault();
     setIsSaving(true);

@@ -21,6 +21,7 @@ import {
   searchLimiter, 
   emailLimiter, 
   generalApiLimiter,
+  adminLimiter,
   validatePdfBase64,
   sanitizeFileName 
 } from './middleware/security.js';
@@ -33,6 +34,7 @@ import opportunitiesRouter from './api/opportunities.routes.js';
 import searchRouter from './api/search.routes.js';
 import applicationsRouter from './api/applications.routes.js';
 import securityRouter from './api/security.routes.js';
+import adminRouter from './api/admin.routes.js';
 import { authenticateToken, optionalAuth, requireAdmin } from './middleware/auth.js';
 
 // Initialize Databases
@@ -43,23 +45,66 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // -------------------------------------------------------------
-// 1. ENTERPRISE SECURITY HEADERS (HELMET)
+// 1. LEAST-PRIVILEGE ENTERPRISE SECURITY HEADERS (HELMET)
 // -------------------------------------------------------------
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-      fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
-      imgSrc: ["'self'", "data:", "https:", "blob:"],
-      connectSrc: ["'self'", "http:", "https:", "ws:", "wss:", "data:"],
+      scriptSrc: [
+        "'self'", 
+        "https://accounts.google.com", 
+        "https://apis.google.com"
+      ],
+      styleSrc: [
+        "'self'", 
+        "'unsafe-inline'", 
+        "https://fonts.googleapis.com"
+      ],
+      fontSrc: [
+        "'self'", 
+        "https://fonts.gstatic.com", 
+        "data:"
+      ],
+      imgSrc: [
+        "'self'", 
+        "data:", 
+        "blob:", 
+        "https://lh3.googleusercontent.com", 
+        "https://*.googleusercontent.com",
+        "https://*.google.com",
+        "https://images.unsplash.com"
+      ],
+      connectSrc: [
+        "'self'",
+        "https://accounts.google.com",
+        "https://apis.google.com",
+        "https://identitytoolkit.googleapis.com",
+        "https://opportunity-finder-gsxr.onrender.com",
+        "http://localhost:5000",
+        "http://127.0.0.1:5000",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "ws://localhost:5173",
+        "ws://127.0.0.1:5173",
+        "ws://localhost:3100",
+        "ws://127.0.0.1:3100"
+      ],
+      frameSrc: [
+        "'self'",
+        "https://accounts.google.com"
+      ],
       objectSrc: ["'none'"],
+      baseUri: ["'self'"],
+      formAction: ["'self'", "https://accounts.google.com"],
       frameAncestors: ["'none'"],
       upgradeInsecureRequests: null
     }
   },
   crossOriginEmbedderPolicy: false,
+  crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' },
   crossOriginResourcePolicy: { policy: 'cross-origin' },
   referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
   hsts: {
@@ -73,7 +118,7 @@ app.use(helmet({
 }));
 
 // -------------------------------------------------------------
-// 2. CONTROLLED CORS CONFIGURATION
+// 2. CONTROLLED CORS CONFIGURATION (STRICT ALLOWLIST)
 // -------------------------------------------------------------
 const allowedOrigins = [
   'http://localhost:3000',
@@ -93,23 +138,28 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow non-browser agents, curl, Postman, localhost/127.0.0.1 on any port, LAN IPs, or cloud hosting domains
-    if (
-      !origin || 
-      allowedOrigins.includes(origin) || 
-      allowedOrigins.some(o => origin.startsWith(o)) ||
-      /^http:\/\/(localhost|127\.0\.0\.1|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+|169\.254\.\d+\.\d+)(:\d+)?$/.test(origin) ||
-      origin.endsWith('.onrender.com') ||
-      origin.endsWith('.vercel.app') ||
-      origin.endsWith('.netlify.app') ||
-      origin.endsWith('.railway.app') ||
-      process.env.NODE_ENV !== 'production'
-    ) {
-      callback(null, true);
-    } else {
-      // In production, also safely allow same-site or reflect origin
-      callback(null, true);
+    // 1. Allow non-browser agents, CLI tests, Postman, curl
+    if (!origin) {
+      return callback(null, true);
     }
+
+    // 2. Exact match in configured allowlist
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    // 3. Local development loopback on any port
+    if (/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+      return callback(null, true);
+    }
+
+    // 4. Official Careerly OnRender cloud hosting domain
+    if (origin === 'https://opportunity-finder-gsxr.onrender.com' || origin.endsWith('.onrender.com')) {
+      return callback(null, true);
+    }
+
+    // 5. Reject all unauthorized third-party / attacker origins
+    return callback(null, false);
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -131,7 +181,7 @@ app.use('/api/v1/user', userRouter);
 app.use('/api/v1/opportunities', opportunitiesRouter);
 app.use('/api/v1/search', searchLimiter, searchRouter);
 app.use('/api/v1/applications', applicationsRouter);
-app.use('/api/v1/admin/security', securityRouter);
+app.use('/api/v1/admin', adminLimiter, adminRouter);
 app.use('/api/v3/search', searchLimiter, searchRouter);
 app.use('/api/v3', searchLimiter, searchRouter);
 
@@ -293,15 +343,7 @@ app.post('/api/v1/verify-link', async (req, res) => {
   }
 });
 
-// Scraper Ops Ingestion Pipeline (Admin Only)
-app.post('/api/v1/admin/scrape', authenticateToken, requireAdmin, async (req, res) => {
-  try {
-    const results = await runScraperPipeline();
-    res.json({ status: 'success', message: 'Scraper pipeline executed successfully', results });
-  } catch (err) {
-    res.status(500).json({ error: 'Scraper execution error: ' + err.message });
-  }
-});
+
 
 // Sources Registry
 app.get('/api/v1/sources', (req, res) => {

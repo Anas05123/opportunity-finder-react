@@ -1,5 +1,6 @@
 import React from 'react';
-import { Scale, Check, X, Building2, MapPin, Coins, Clock, ExternalLink } from 'lucide-react';
+import { Scale, Check, X, Building2, MapPin, Coins, Clock, ExternalLink, CheckCircle2 } from 'lucide-react';
+import { sanitizeUrl } from '../utils/sanitizeUrl.js';
 
 export default function ComparisonModal({ opportunities, onClose, onSave, savedIds = [] }) {
   if (!opportunities || opportunities.length === 0) return null;
@@ -11,7 +12,7 @@ export default function ComparisonModal({ opportunities, onClose, onSave, savedI
 
         <div style={{ marginBottom: '1.75rem' }}>
           <h2 style={{ fontSize: '1.45rem', display: 'flex', alignItems: 'center', gap: '0.6rem', color: 'var(--text-headings)' }}>
-            <Scale size={24} color="var(--accent-primary)" /> Opportunity Side-by-Side Comparison (Section 60)
+            <Scale size={24} color="var(--accent-primary)" /> Opportunity Side-by-Side Comparison
           </h2>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem' }}>Compare funding levels, monthly stipends, IELTS requirements, and host institutions directly.</p>
         </div>
@@ -46,31 +47,41 @@ export default function ComparisonModal({ opportunities, onClose, onSave, savedI
                 ))}
               </tr>
               <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                <td style={{ padding: '0.85rem', color: 'var(--text-tertiary)', fontWeight: '700' }}>Funding & Monthly Stipend</td>
+                <td style={{ padding: '0.85rem', color: 'var(--text-tertiary)', fontWeight: '700' }}>Match Score</td>
                 {opportunities.map(op => (
-                  <td key={op.id} style={{ padding: '0.85rem', color: 'var(--accent-emerald)', fontWeight: '800' }}>
-                    <Coins size={14} style={{ display: 'inline', marginRight: '0.35rem' }} /> {op.stipend_text || 'Fully Funded'}
+                  <td key={op.id} style={{ padding: '0.85rem' }}>
+                    <span className="badge badge-emerald">{op.match_score || 85}% Match</span>
                   </td>
                 ))}
               </tr>
               <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                <td style={{ padding: '0.85rem', color: 'var(--text-tertiary)', fontWeight: '700' }}>Academic Level</td>
+                <td style={{ padding: '0.85rem', color: 'var(--text-tertiary)', fontWeight: '700' }}>Category</td>
                 {opportunities.map(op => (
-                  <td key={op.id} style={{ padding: '0.85rem', textTransform: 'capitalize', color: 'var(--text-primary)' }}>
-                    {op.degree_level === 'undergrad' ? "Bachelor's / Undergrad" : op.degree_level}
+                  <td key={op.id} style={{ padding: '0.85rem', textTransform: 'capitalize' }}>
+                    {op.category || op.opportunity_type}
                   </td>
                 ))}
               </tr>
               <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                <td style={{ padding: '0.85rem', color: 'var(--text-tertiary)', fontWeight: '700' }}>IELTS Test Requirement</td>
+                <td style={{ padding: '0.85rem', color: 'var(--text-tertiary)', fontWeight: '700' }}>Compensation</td>
                 {opportunities.map(op => (
-                  <td key={op.id} style={{ padding: '0.85rem', color: op.no_ielts ? 'var(--accent-emerald)' : 'var(--accent-amber)', fontWeight: '700' }}>
-                    {op.no_ielts ? '✓ No IELTS Required' : 'IELTS Required'}
+                  <td key={op.id} style={{ padding: '0.85rem', color: 'var(--accent-emerald)', fontWeight: '700' }}>
+                    <Coins size={14} style={{ display: 'inline', marginRight: '0.35rem' }} /> {op.stipend || op.stipend_text || 'Competitive'}
                   </td>
                 ))}
               </tr>
               <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                <td style={{ padding: '0.85rem', color: 'var(--text-tertiary)', fontWeight: '700' }}>Application Deadline</td>
+                <td style={{ padding: '0.85rem', color: 'var(--text-tertiary)', fontWeight: '700' }}>English Waiver</td>
+                {opportunities.map(op => (
+                  <td key={op.id} style={{ padding: '0.85rem' }}>
+                    {op.english_waiver_available || op.no_ielts ? (
+                      <span style={{ color: 'var(--accent-emerald)', fontWeight: '700' }}><CheckCircle2 size={15} style={{ display: 'inline' }} /> Available</span>
+                    ) : 'Standard'}
+                  </td>
+                ))}
+              </tr>
+              <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                <td style={{ padding: '0.85rem', color: 'var(--text-tertiary)', fontWeight: '700' }}>Deadline</td>
                 {opportunities.map(op => (
                   <td key={op.id} style={{ padding: '0.85rem', color: 'var(--accent-amber)', fontWeight: '700' }}>
                     <Clock size={14} style={{ display: 'inline', marginRight: '0.35rem' }} /> {op.deadline_utc}
@@ -81,7 +92,7 @@ export default function ComparisonModal({ opportunities, onClose, onSave, savedI
                 <td style={{ padding: '0.85rem', color: 'var(--text-tertiary)', fontWeight: '700' }}>Official Apply Link</td>
                 {opportunities.map(op => (
                   <td key={op.id} style={{ padding: '0.85rem' }}>
-                    <a href={op.official_apply_url} target="_blank" rel="noreferrer" className="btn btn-primary" style={{ padding: '0.45rem 0.9rem', fontSize: '0.8rem' }}>
+                    <a href={sanitizeUrl(op.official_apply_url || op.application_url || op.source_url)} target="_blank" rel="noopener noreferrer" className="btn btn-primary" style={{ padding: '0.45rem 0.9rem', fontSize: '0.8rem' }}>
                       Apply Now <ExternalLink size={13} />
                     </a>
                   </td>

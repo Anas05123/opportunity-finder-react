@@ -146,6 +146,10 @@ export default function PersonalizedDashboard({
       }}>
         <div 
           onClick={() => onNavigateTab('explore')}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigateTab('explore'); } }}
+          role="button"
+          tabIndex={0}
+          aria-label="Navigate to Top High-Match Opportunities"
           style={{ background: 'var(--card)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-xl)', padding: '1.25rem', cursor: 'pointer', transition: 'all 0.2s', boxShadow: 'var(--shadow-sm)' }}
           className="hover-card-elevate"
         >
@@ -161,6 +165,10 @@ export default function PersonalizedDashboard({
 
         <div 
           onClick={() => onNavigateTab('tracker')}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigateTab('tracker'); } }}
+          role="button"
+          tabIndex={0}
+          aria-label="Navigate to Application CRM Board"
           style={{ background: 'var(--card)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-xl)', padding: '1.25rem', cursor: 'pointer', transition: 'all 0.2s', boxShadow: 'var(--shadow-sm)' }}
           className="hover-card-elevate"
         >
@@ -176,6 +184,10 @@ export default function PersonalizedDashboard({
 
         <div 
           onClick={() => onNavigateTab('cv_studio')}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigateTab('cv_studio'); } }}
+          role="button"
+          tabIndex={0}
+          aria-label="Navigate to AI CV Studio & ATS"
           style={{ background: 'var(--card)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-xl)', padding: '1.25rem', cursor: 'pointer', transition: 'all 0.2s', boxShadow: 'var(--shadow-sm)' }}
           className="hover-card-elevate"
         >
@@ -191,6 +203,10 @@ export default function PersonalizedDashboard({
 
         <div 
           onClick={() => onNavigateTab('interview')}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigateTab('interview'); } }}
+          role="button"
+          tabIndex={0}
+          aria-label="Navigate to AI Interview Coach"
           style={{ background: 'var(--card)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-xl)', padding: '1.25rem', cursor: 'pointer', transition: 'all 0.2s', boxShadow: 'var(--shadow-sm)' }}
           className="hover-card-elevate"
         >

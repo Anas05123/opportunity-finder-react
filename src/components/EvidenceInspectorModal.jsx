@@ -1,5 +1,9 @@
 import React from 'react';
-import { X, ShieldCheck, FileText, CheckCircle2, Clock, ExternalLink, Link2, Database, AlertCircle } from 'lucide-react';
+import { 
+  X, ShieldCheck, Database, ExternalLink, CheckCircle2, Clock, 
+  FileText, Link2, AlertTriangle, Layers 
+} from 'lucide-react';
+import { sanitizeUrl } from '../utils/sanitizeUrl.js';
 import FormattedMarkdown from '../utils/FormattedMarkdown.jsx';
 
 export default function EvidenceInspectorModal({ opportunity, evidenceList = [], onClose }) {
@@ -56,7 +60,7 @@ export default function EvidenceInspectorModal({ opportunity, evidenceList = [],
             </div>
             <div style={{ marginTop: '0.5rem', fontSize: '0.82rem', wordBreak: 'break-all' }}>
               <a 
-                href={opportunity.application_url || opportunity.source_url} 
+                href={sanitizeUrl(opportunity.application_url || opportunity.source_url)} 
                 target="_blank" 
                 rel="noreferrer noopener"
                 style={{ color: 'var(--accent-blue)', display: 'inline-flex', alignItems: 'center', gap: '0.25rem', textDecoration: 'none' }}

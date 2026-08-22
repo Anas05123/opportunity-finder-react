@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  X, Building2, MapPin, Coins, Clock, CheckCircle2, 
-  ExternalLink, Bookmark, Zap, Mail, ShieldCheck, 
-  Check, FileText, Globe, Sparkles
+  X, Bookmark, ExternalLink, Calendar, MapPin, Building2, 
+  Coins, CheckCircle2, ShieldCheck, Zap, Mail, ArrowUpRight, Award, Compass, RefreshCw, FileText, Globe, Sparkles
 } from 'lucide-react';
 import { resolveSafeJobUrl, resolveLinkedInSearchUrl, resolveGoogleJobsUrl } from '../utils/urlResolver.js';
 import FormattedMarkdown from '../utils/FormattedMarkdown.jsx';
 import { cleanStipendText, cleanHtmlText } from '../utils/formatUtils.js';
+import { sanitizeUrl } from '../utils/sanitizeUrl.js';
 import { API_BASE_URL } from '../config/api.js';
 
 export default function OpportunityDrawer({ 
@@ -33,7 +33,13 @@ export default function OpportunityDrawer({
       if (e.key === 'Escape') onClose();
     };
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = prevOverflow;
+    };
   }, [onClose]);
 
   const safePortalUrl = resolveSafeJobUrl(opportunity);
@@ -42,7 +48,11 @@ export default function OpportunityDrawer({
   const handleVerify = async () => {
     setIsOfficial(true);
     try {
-      await fetch(`${API_BASE_URL}/admin/opportunities/${opportunity.id}/verify`, { method: 'POST' });
+      const token = localStorage.getItem('careerly_token');
+      await fetch(`${API_BASE_URL}/admin/opportunities/${opportunity.id}/verify`, { 
+        method: 'POST',
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
       if (onVerifiedUpdate) onVerifiedUpdate(opportunity.id);
       if (triggerToast) triggerToast('✓ Approved as Official Verified Source!');
     } catch (e) {}
@@ -276,7 +286,7 @@ export default function OpportunityDrawer({
                 </div>
                 <div style={{ marginTop: '0.5rem' }}>
                   <a
-                    href={opportunity.application_url || opportunity.source_url}
+                    href={sanitizeUrl(opportunity.application_url || opportunity.source_url)}
                     target="_blank"
                     rel="noreferrer noopener"
                     className="btn btn-outline"
@@ -330,7 +340,7 @@ export default function OpportunityDrawer({
           </div>
 
           <a 
-            href={opportunity.application_url || opportunity.source_url}
+            href={sanitizeUrl(opportunity.application_url || opportunity.source_url)}
             target="_blank"
             rel="noreferrer noopener"
             className="btn btn-emerald"

@@ -49,8 +49,17 @@ async function runFinalVerification() {
       full_name: 'Tenant User A',
       major: 'Computer Science'
     });
-    const tokenA = resA.data.token;
-    const userAId = resA.data.user.id;
+    let tokenA = resA.data.token;
+    let userAId = resA.data.user?.id;
+    if (resA.data.status === 'verification_required') {
+      const pendingA = db.prepare('SELECT verification_code FROM pending_registrations WHERE email = ?').get(userAEmail);
+      const verifyResA = await axios.post(`${BASE_URL}/auth/verify-email`, {
+        email: userAEmail,
+        code: pendingA?.verification_code
+      });
+      tokenA = verifyResA.data.token;
+      userAId = verifyResA.data.user.id;
+    }
 
     // 2. Create User B
     const resB = await axios.post(`${BASE_URL}/auth/signup`, {
@@ -59,8 +68,17 @@ async function runFinalVerification() {
       full_name: 'Tenant User B',
       major: 'Biotechnology'
     });
-    const tokenB = resB.data.token;
-    const userBId = resB.data.user.id;
+    let tokenB = resB.data.token;
+    let userBId = resB.data.user?.id;
+    if (resB.data.status === 'verification_required') {
+      const pendingB = db.prepare('SELECT verification_code FROM pending_registrations WHERE email = ?').get(userBEmail);
+      const verifyResB = await axios.post(`${BASE_URL}/auth/verify-email`, {
+        email: userBEmail,
+        code: pendingB?.verification_code
+      });
+      tokenB = verifyResB.data.token;
+      userBId = verifyResB.data.user.id;
+    }
 
     // 3. User A creates application and saves an opportunity
     let realOppId = 'daad-001';

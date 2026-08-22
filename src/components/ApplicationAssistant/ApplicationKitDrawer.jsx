@@ -4,6 +4,7 @@ import {
   Sparkles, ExternalLink, ShieldCheck, Mail, Send, Building2, MapPin, RefreshCw, BookOpen
 } from 'lucide-react';
 import { resolveSafeJobUrl, resolveLinkedInSearchUrl, resolveGoogleJobsUrl } from '../../utils/urlResolver.js';
+import { safeOpenUrl } from '../../utils/sanitizeUrl.js';
 import { API_BASE_URL } from '../../config/api.js';
 
 export default function ApplicationKitDrawer({ opportunity, userProfile, onClose, onApplied, triggerToast }) {
@@ -19,9 +20,13 @@ export default function ApplicationKitDrawer({ opportunity, userProfile, onClose
     async function fetchKit() {
       setIsLoadingKit(true);
       try {
+        const token = localStorage.getItem('careerly_token');
         const res = await fetch(`${API_BASE_URL}/opportunities/${opportunity.id}/prepare-application`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {})
+          },
           body: JSON.stringify({ userProfile })
         });
         const data = await res.json();
@@ -51,7 +56,7 @@ export default function ApplicationKitDrawer({ opportunity, userProfile, onClose
     }
     if (onApplied) onApplied(opportunity.id, 'preparing');
     const portalUrl = resolveSafeJobUrl(opportunity);
-    window.open(portalUrl, '_blank');
+    safeOpenUrl(portalUrl, '_blank');
     if (triggerToast) triggerToast('Cover letter copied! Verified portal opened.');
   };
 
@@ -60,7 +65,7 @@ export default function ApplicationKitDrawer({ opportunity, userProfile, onClose
     const recipient = opportunity.contact_email || 'careers@' + (opportunity.organization || 'company').toLowerCase().replace(/[^a-z]/g, '') + '.com';
     const subject = encodeURIComponent(`Application Submission: ${opportunity.title} - ${userProfile?.name || 'Anas'}`);
     const body = encodeURIComponent(kit?.custom_cover_letter || 'Please find attached my application dossier.');
-    window.open(`mailto:${recipient}?subject=${subject}&body=${body}`, '_blank');
+    safeOpenUrl(`mailto:${recipient}?subject=${subject}&body=${body}`, '_blank');
     if (triggerToast) triggerToast(`Opened email client pre-filled to ${recipient}!`);
   };
 
@@ -69,7 +74,13 @@ export default function ApplicationKitDrawer({ opportunity, userProfile, onClose
       if (e.key === 'Escape') onClose();
     };
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = prevOverflow;
+    };
   }, [onClose]);
 
   return (

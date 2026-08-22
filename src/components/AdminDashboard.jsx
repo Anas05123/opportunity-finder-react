@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import SecurityCenter from './Admin/SecurityCenter.jsx';
 import { API_BASE_URL } from '../config/api.js';
+import { sanitizeUrl } from '../utils/sanitizeUrl.js';
 
 export default function AdminDashboard({ triggerToast }) {
   const [adminSection, setAdminSection] = useState('security'); // 'security' | 'sources'
@@ -28,13 +29,21 @@ export default function AdminDashboard({ triggerToast }) {
     scrape_frequency_minutes: 240
   });
 
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem('careerly_token');
+    return {
+      'Content-Type': 'application/json',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+    };
+  };
+
   const fetchAdminData = async () => {
     setIsLoading(true);
     try {
       const [sourcesRes, statsRes, oppsRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/sources`),
-        fetch(`${API_BASE_URL}/stats`),
-        fetch(`${API_BASE_URL}/opportunities`)
+        fetch(`${API_BASE_URL}/sources`, { headers: getAuthHeaders() }),
+        fetch(`${API_BASE_URL}/stats`, { headers: getAuthHeaders() }),
+        fetch(`${API_BASE_URL}/opportunities`, { headers: getAuthHeaders() })
       ]);
 
       if (sourcesRes.ok) {
@@ -63,10 +72,15 @@ export default function AdminDashboard({ triggerToast }) {
   const triggerSourceScrape = async () => {
     triggerToast('⚡ Triggering full automated scraping pipeline...');
     try {
-      const res = await fetch(`${API_BASE_URL}/admin/scrape`, { method: 'POST' });
+      const res = await fetch(`${API_BASE_URL}/admin/scrape`, { 
+        method: 'POST',
+        headers: getAuthHeaders()
+      });
       if (res.ok) {
         triggerToast('Scraping pipeline completed successfully!');
         fetchAdminData();
+      } else {
+        triggerToast('Failed to trigger scraper (Access denied or server busy).');
       }
     } catch (err) {
       triggerToast('Scrape execution error.');
@@ -78,7 +92,10 @@ export default function AdminDashboard({ triggerToast }) {
     triggerToast('✓ Opportunity officially approved & verified (Trust: 98/100)!');
 
     try {
-      await fetch(`${API_BASE_URL}/admin/opportunities/${id}/verify`, { method: 'POST' });
+      await fetch(`${API_BASE_URL}/admin/opportunities/${id}/verify`, { 
+        method: 'POST',
+        headers: getAuthHeaders()
+      });
       fetchAdminData();
     } catch (err) {
       triggerToast('Verification error.');
@@ -90,7 +107,10 @@ export default function AdminDashboard({ triggerToast }) {
     triggerToast('Opportunity archived.');
 
     try {
-      await fetch(`${API_BASE_URL}/admin/opportunities/${id}`, { method: 'DELETE' });
+      await fetch(`${API_BASE_URL}/admin/opportunities/${id}`, { 
+        method: 'DELETE',
+        headers: getAuthHeaders()
+      });
       fetchAdminData();
     } catch (err) {
       triggerToast('Archive error.');
@@ -102,7 +122,7 @@ export default function AdminDashboard({ triggerToast }) {
     try {
       const res = await fetch(`${API_BASE_URL}/admin/sources`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify(newSource)
       });
       if (res.ok) {
@@ -267,7 +287,7 @@ export default function AdminDashboard({ triggerToast }) {
                       <button className="btn btn-outline" style={{ padding: '0.3rem 0.65rem', fontSize: '0.75rem' }} onClick={triggerSourceScrape}>
                         Scrape Now
                       </button>
-                      <a href={src.base_url} target="_blank" rel="noreferrer" className="btn btn-outline" style={{ padding: '0.3rem 0.5rem', fontSize: '0.75rem', color: 'var(--accent-primary)' }}>
+                      <a href={sanitizeUrl(src.base_url)} target="_blank" rel="noopener noreferrer" className="btn btn-outline" style={{ padding: '0.3rem 0.5rem', fontSize: '0.75rem', color: 'var(--accent-primary)' }}>
                         <ExternalLink size={13} />
                       </a>
                     </div>

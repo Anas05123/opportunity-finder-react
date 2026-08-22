@@ -54,9 +54,13 @@ export default function InterviewCoach({ userProfile, triggerToast }) {
     setIsGrading(true);
 
     try {
+      const token = localStorage.getItem('careerly_token');
       const res = await fetch(`${API_BASE_URL}/ai/interview-coach`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
         body: JSON.stringify({
           company: selectedTarget.name,
           role: selectedTarget.role,
@@ -108,6 +112,16 @@ export default function InterviewCoach({ userProfile, triggerToast }) {
           <div
             key={comp.id}
             onClick={() => { setSelectedTarget(comp); setFeedback(null); }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                setSelectedTarget(comp);
+                setFeedback(null);
+              }
+            }}
+            role="button"
+            tabIndex={0}
+            aria-label={`Select target company ${comp.name}`}
             style={{
               background: selectedTarget.id === comp.id ? 'var(--bg-surface)' : 'var(--bg-surface-elevated)',
               border: `1.5px solid ${selectedTarget.id === comp.id ? 'var(--primary)' : 'var(--border-default)'}`,

@@ -157,9 +157,13 @@ ${major}`);
     setDeliveryDetails(null);
 
     try {
+      const token = localStorage.getItem('careerly_token');
       const res = await fetch(`${API_BASE_URL}/email/send`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
         body: JSON.stringify({
           to: targetEmail,
           subject: emailSubject,

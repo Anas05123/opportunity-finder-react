@@ -5,7 +5,7 @@ import db from '../db/sqliteClient.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { calculateDeterministicMatchScore } from '../services/matchingEngine.js';
 import { generateVerifiedJobUrl } from '../services/linkVerifier.js';
-import { sanitizeStipendField, decodeHtmlEntities } from '../services/textSanitizer.js';
+import { sanitizeStipendField, decodeHtmlEntities, sanitizeInputString, sanitizeSafeUrl, sanitizeObject } from '../services/textSanitizer.js';
 
 const router = express.Router();
 
@@ -49,12 +49,18 @@ router.get('/profile', authenticateToken, (req, res) => {
 // 2. PUT /api/v1/user/profile
 router.put('/profile', authenticateToken, (req, res) => {
   try {
-    const p = req.body;
-    const skillsJson = JSON.stringify(p.skills || []);
-    const interestsJson = JSON.stringify(p.interests || []);
-    const languagesJson = JSON.stringify(p.languages || []);
-    const certificationsJson = JSON.stringify(p.certifications || []);
+    const rawP = req.body || {};
+    const p = sanitizeObject(rawP);
+
+    const skillsJson = JSON.stringify(Array.isArray(p.skills) ? p.skills.map(s => sanitizeInputString(s)) : []);
+    const interestsJson = JSON.stringify(Array.isArray(p.interests) ? p.interests.map(i => sanitizeInputString(i)) : []);
+    const languagesJson = JSON.stringify(Array.isArray(p.languages) ? p.languages.map(l => sanitizeInputString(l)) : []);
+    const certificationsJson = JSON.stringify(Array.isArray(p.certifications) ? p.certifications.map(c => sanitizeInputString(c)) : []);
     const completion = calculateProfileCompletion(p);
+
+    const safePortfolioUrl = sanitizeSafeUrl(p.portfolio_url, null);
+    const safeLinkedinUrl = sanitizeSafeUrl(p.linkedin_url, null);
+    const safeGithubUrl = sanitizeSafeUrl(p.github_url, null);
 
     db.prepare(`
       UPDATE career_profiles 
@@ -65,24 +71,24 @@ router.put('/profile', authenticateToken, (req, res) => {
           no_ielts_preference = ?, profile_completion = ?, updated_at = CURRENT_TIMESTAMP
       WHERE user_id = ?
     `).run(
-      p.full_name || req.user.email.split('@')[0],
-      p.headline || null,
-      p.phone || null,
-      p.degree_level || 'undergrad',
-      p.degree_title || 'Bachelor of Science (BSc)',
-      p.field_of_study || 'Computer Science',
-      p.university || null,
-      p.graduation_date || null,
+      sanitizeInputString(p.full_name) || req.user.email.split('@')[0],
+      sanitizeInputString(p.headline) || null,
+      sanitizeInputString(p.phone) || null,
+      sanitizeInputString(p.degree_level) || 'undergrad',
+      sanitizeInputString(p.degree_title) || 'Bachelor of Science (BSc)',
+      sanitizeInputString(p.field_of_study) || 'Computer Science',
+      sanitizeInputString(p.university) || null,
+      sanitizeInputString(p.graduation_date) || null,
       p.gpa !== undefined ? Number(p.gpa) : 3.5,
       p.experience_years !== undefined ? Number(p.experience_years) : 0,
       skillsJson,
       interestsJson,
       languagesJson,
       certificationsJson,
-      p.portfolio_url || null,
-      p.linkedin_url || null,
-      p.github_url || null,
-      p.resume_text || null,
+      safePortfolioUrl,
+      safeLinkedinUrl,
+      safeGithubUrl,
+      sanitizeInputString(p.resume_text) || null,
       p.no_ielts_preference !== undefined ? (p.no_ielts_preference ? 1 : 0) : 1,
       completion,
       req.user.id
@@ -312,9 +318,10 @@ router.put('/account/password', authenticateToken, (req, res) => {
     }
 
     const newHash = bcrypt.hashSync(newPassword, 10);
-    db.prepare('UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(newHash, req.user.id);
+    const nextTokenVersion = (user.token_version || 1) + 1;
+    db.prepare('UPDATE users SET password_hash = ?, token_version = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(newHash, nextTokenVersion, req.user.id);
 
-    res.json({ status: 'success', message: 'Password updated successfully!' });
+    res.json({ status: 'success', message: 'Password updated successfully! All other sessions have been invalidated.' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -327,6 +334,94 @@ router.delete('/account', authenticateToken, (req, res) => {
     res.json({ status: 'success', message: 'User account and all associated data permanently deleted.' });
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+// 12. PUT /api/v1/user/onboarding - Complete 4-Step SaaS Onboarding
+router.put('/onboarding', authenticateToken, (req, res) => {
+  try {
+    const { education, targetRoles, skills, experience_years, preferences } = req.body;
+
+    const edu = education || {};
+    const pref = preferences || {};
+    const skillsArray = Array.isArray(skills) ? skills : [];
+    const targetRolesArray = Array.isArray(targetRoles) ? targetRoles : [];
+    const locationsArray = Array.isArray(pref.target_locations) && pref.target_locations.length > 0 ? pref.target_locations : ['Worldwide', 'Remote'];
+    const oppTypesArray = Array.isArray(pref.opportunity_types) && pref.opportunity_types.length > 0 ? pref.opportunity_types : ['job', 'internship'];
+
+    // 1. Update Career Profile
+    db.prepare(`
+      UPDATE career_profiles
+      SET full_name = COALESCE(?, full_name),
+          degree_level = COALESCE(?, degree_level),
+          degree_title = COALESCE(?, degree_title),
+          field_of_study = COALESCE(?, field_of_study),
+          university = COALESCE(?, university),
+          graduation_date = COALESCE(?, graduation_date),
+          gpa = COALESCE(?, gpa),
+          experience_years = COALESCE(?, experience_years),
+          skills = ?,
+          no_ielts_preference = ?,
+          profile_completion = 90,
+          updated_at = CURRENT_TIMESTAMP
+      WHERE user_id = ?
+    `).run(
+      edu.full_name || null,
+      edu.degree_level || 'undergrad',
+      edu.degree_title || 'Bachelor of Science (BSc)',
+      edu.field_of_study || 'Computer Science',
+      edu.university || null,
+      edu.graduation_date || null,
+      edu.gpa ? Number(edu.gpa) : 3.5,
+      experience_years !== undefined ? Number(experience_years) : 0,
+      JSON.stringify(skillsArray),
+      pref.no_ielts_preference !== undefined ? (pref.no_ielts_preference ? 1 : 0) : 1,
+      req.user.id
+    );
+
+    // 2. Update Search Profile
+    db.prepare(`
+      UPDATE search_profiles
+      SET target_roles = ?,
+          opportunity_types = ?,
+          required_locations = ?,
+          work_modality = ?,
+          updated_at = CURRENT_TIMESTAMP
+      WHERE user_id = ?
+    `).run(
+      JSON.stringify(targetRolesArray),
+      JSON.stringify(oppTypesArray),
+      JSON.stringify(locationsArray),
+      pref.work_modality || 'all',
+      req.user.id
+    );
+
+    // 3. Mark user onboarding completed
+    db.prepare('UPDATE users SET onboarding_completed = 1, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(req.user.id);
+
+    const updatedCareer = db.prepare('SELECT * FROM career_profiles WHERE user_id = ?').get(req.user.id);
+    const updatedSearch = db.prepare('SELECT * FROM search_profiles WHERE user_id = ?').get(req.user.id);
+
+    res.json({
+      status: 'success',
+      message: 'Onboarding completed successfully!',
+      careerProfile: updatedCareer ? {
+        ...updatedCareer,
+        skills: JSON.parse(updatedCareer.skills || '[]'),
+        interests: JSON.parse(updatedCareer.interests || '[]'),
+        languages: JSON.parse(updatedCareer.languages || '[]'),
+        certifications: JSON.parse(updatedCareer.certifications || '[]')
+      } : null,
+      searchProfile: updatedSearch ? {
+        ...updatedSearch,
+        target_roles: JSON.parse(updatedSearch.target_roles || '[]'),
+        opportunity_types: JSON.parse(updatedSearch.opportunity_types || '[]'),
+        required_locations: JSON.parse(updatedSearch.required_locations || '[]')
+      } : null
+    });
+  } catch (err) {
+    console.error('[Onboarding Error]:', err.message);
+    res.status(500).json({ error: 'Failed to complete onboarding: ' + err.message });
   }
 });
 

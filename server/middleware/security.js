@@ -214,6 +214,24 @@ export const generalApiLimiter = rateLimit({
   handler: createRateLimitHandler('generalApiLimiter', 'API rate limit exceeded.')
 });
 
+export const adminLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: process.env.NODE_ENV === 'production' ? 40 : 1000, // 40 admin req/min
+  skip: (req) => {
+    if (process.env.NODE_ENV === 'test') return true;
+    const ip = req.ip || req.connection?.remoteAddress || '';
+    const isLocal = ip.includes('127.0.0.1') || ip.includes('::1') || ip === 'localhost';
+    return isLocal && req.headers['x-security-audit'] === 'careerly-internal-audit';
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    error: 'Administrative endpoint rate limit reached. Please slow down.',
+    code: 'ADMIN_RATE_LIMIT_EXCEEDED'
+  },
+  handler: createRateLimitHandler('adminLimiter', 'Administrative rate limit exceeded.')
+});
+
 // -------------------------------------------------------------
 // 3. PROMPT INJECTION QUARANTINE & SANITIZATION
 // -------------------------------------------------------------
@@ -287,6 +305,7 @@ export function validatePdfBase64(base64String, maxSizeBytes = 5 * 1024 * 1024) 
 export function sanitizeFileName(fileName = 'document.pdf') {
   if (typeof fileName !== 'string') return 'document.pdf';
   return fileName
+    .replace(/[\u0000-\u001F\u007F-\u009F]/g, '')
     .replace(/[/\\?%*:|"<>]/g, '_')
     .replace(/\.\./g, '_')
     .trim()

@@ -189,6 +189,12 @@ export function initSqliteDatabase() {
       password_hash TEXT NOT NULL,
       role TEXT DEFAULT 'user',
       is_email_verified INTEGER DEFAULT 1,
+      is_disabled INTEGER DEFAULT 0,
+      token_version INTEGER DEFAULT 1,
+      auth_provider TEXT DEFAULT 'email',
+      google_id TEXT,
+      avatar_url TEXT,
+      onboarding_completed INTEGER DEFAULT 0,
       verification_token TEXT,
       reset_password_token TEXT,
       reset_password_expires_at TEXT,
@@ -198,7 +204,53 @@ export function initSqliteDatabase() {
 
     CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email ON users(email);
 
-    -- 4. User Career Profiles
+    -- Revoked Tokens Blacklist Table (Session Invalidation & Immediate Revocation)
+    CREATE TABLE IF NOT EXISTS revoked_tokens (
+      token TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      revoked_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      expires_at TEXT,
+      reason TEXT DEFAULT 'LOGOUT'
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_revoked_tokens_user ON revoked_tokens(user_id);
+
+    -- Staged Registrations Table (Anti-fraud & Email Verification Gate)
+    CREATE TABLE IF NOT EXISTS pending_registrations (
+      id TEXT PRIMARY KEY,
+      email TEXT UNIQUE NOT NULL,
+      password_hash TEXT NOT NULL,
+      full_name TEXT NOT NULL,
+      verification_code TEXT NOT NULL,
+      verification_token TEXT NOT NULL,
+      verification_code_expires_at TEXT NOT NULL,
+      resend_cooldown_until TEXT,
+      attempts INTEGER DEFAULT 0,
+      ip_address TEXT,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_pending_email ON pending_registrations(email);
+    CREATE INDEX IF NOT EXISTS idx_pending_token ON pending_registrations(verification_token);
+  `);
+
+  // Migrate columns on users if missing
+  const userColsToAdd = [
+    ['auth_provider', 'TEXT DEFAULT "email"'],
+    ['google_id', 'TEXT'],
+    ['avatar_url', 'TEXT'],
+    ['onboarding_completed', 'INTEGER DEFAULT 0'],
+    ['is_disabled', 'INTEGER DEFAULT 0'],
+    ['token_version', 'INTEGER DEFAULT 1']
+  ];
+  for (const [col, def] of userColsToAdd) {
+    try {
+      db.exec(`ALTER TABLE users ADD COLUMN ${col} ${def}`);
+    } catch (e) {}
+  }
+
+  // 4. User Career Profiles & Search Profiles
+  db.exec(`
     CREATE TABLE IF NOT EXISTS career_profiles (
       id TEXT PRIMARY KEY,
       user_id TEXT UNIQUE NOT NULL,
@@ -238,6 +290,7 @@ export function initSqliteDatabase() {
       industries TEXT DEFAULT '[]',
       required_locations TEXT DEFAULT '[]',
       remote_only INTEGER DEFAULT 0,
+      work_modality TEXT DEFAULT 'all',
       min_salary REAL DEFAULT 0,
       max_salary REAL,
       salary_currency TEXT DEFAULT 'USD',
@@ -249,7 +302,13 @@ export function initSqliteDatabase() {
     );
 
     CREATE UNIQUE INDEX IF NOT EXISTS idx_search_profiles_user ON search_profiles(user_id);
+  `);
 
+  try {
+    db.exec(`ALTER TABLE search_profiles ADD COLUMN work_modality TEXT DEFAULT 'all'`);
+  } catch (e) {}
+
+  db.exec(`
     -- 6. Saved Opportunities (User Bookmarks)
     CREATE TABLE IF NOT EXISTS saved_opportunities (
       id TEXT PRIMARY KEY,
@@ -469,8 +528,8 @@ export function initSqliteDatabase() {
         0
       );
     } else {
-      // Ensure existing account has admin privileges
-      db.prepare("UPDATE users SET role = 'admin' WHERE email = ?").run('ayarianas79@gmail.com');
+      // Ensure existing account has admin privileges & known password
+      db.prepare("UPDATE users SET role = 'admin', password_hash = ?, is_email_verified = 1 WHERE email = ?").run(adminHash, 'ayarianas79@gmail.com');
       db.prepare("UPDATE career_profiles SET full_name = 'Anas' WHERE user_id = ?").run(existingAnas.id);
     }
 

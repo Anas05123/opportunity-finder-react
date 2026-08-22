@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import db from '../db/sqliteClient.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { recordSecurityEvent, getSafeClientIp } from '../services/security/securityEvents.js';
+import { sanitizeInputString } from '../services/textSanitizer.js';
 
 const router = express.Router();
 
@@ -41,6 +42,12 @@ router.post('/', authenticateToken, (req, res) => {
       return res.status(400).json({ error: 'opportunity_id is required' });
     }
 
+    const cleanStage = sanitizeInputString(stage || 'saved');
+    const cleanNotes = notes !== undefined ? sanitizeInputString(notes) : undefined;
+    const cleanCoverLetter = cover_letter !== undefined ? sanitizeInputString(cover_letter) : undefined;
+    const cleanBullets = custom_cv_bullets !== undefined ? sanitizeInputString(custom_cv_bullets) : undefined;
+    const cleanInterviewDate = interview_date !== undefined ? sanitizeInputString(interview_date) : undefined;
+
     const existing = db.prepare('SELECT * FROM applications WHERE user_id = ? AND opportunity_id = ?').get(req.user.id, opportunity_id);
     const appId = existing ? existing.id : `app-${crypto.randomUUID().slice(0, 8)}`;
 
@@ -50,11 +57,11 @@ router.post('/', authenticateToken, (req, res) => {
         SET stage = ?, notes = ?, cover_letter = ?, custom_cv_bullets = ?, interview_date = ?, updated_at = CURRENT_TIMESTAMP
         WHERE id = ? AND user_id = ?
       `).run(
-        stage || existing.stage,
-        notes !== undefined ? notes : existing.notes,
-        cover_letter !== undefined ? cover_letter : existing.cover_letter,
-        custom_cv_bullets !== undefined ? custom_cv_bullets : existing.custom_cv_bullets,
-        interview_date !== undefined ? interview_date : existing.interview_date,
+        cleanStage || existing.stage,
+        cleanNotes !== undefined ? cleanNotes : existing.notes,
+        cleanCoverLetter !== undefined ? cleanCoverLetter : existing.cover_letter,
+        cleanBullets !== undefined ? cleanBullets : existing.custom_cv_bullets,
+        cleanInterviewDate !== undefined ? cleanInterviewDate : existing.interview_date,
         appId,
         req.user.id
       );
@@ -66,11 +73,11 @@ router.post('/', authenticateToken, (req, res) => {
         appId,
         req.user.id,
         opportunity_id,
-        stage || 'saved',
-        notes || '',
-        cover_letter || '',
-        custom_cv_bullets || '',
-        interview_date || null
+        cleanStage || 'saved',
+        cleanNotes || '',
+        cleanCoverLetter || '',
+        cleanBullets || '',
+        cleanInterviewDate || null
       );
     }
 

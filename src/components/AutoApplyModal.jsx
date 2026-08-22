@@ -4,6 +4,7 @@ import {
   Sparkles, Check, Building2, MapPin, Coins, RefreshCw, X, ShieldCheck, ArrowRight, Phone, Mail, User, Globe, Search, Edit3
 } from 'lucide-react';
 import { resolveSafeJobUrl, resolveLinkedInSearchUrl, resolveGoogleJobsUrl } from '../utils/urlResolver.js';
+import { safeOpenUrl } from '../utils/sanitizeUrl.js';
 import { API_BASE_URL } from '../config/api.js';
 
 export default function AutoApplyModal({ opportunity, userProfile, onClose, onApplied, triggerToast }) {
@@ -131,13 +132,13 @@ Email: ${payload.email}`;
     handleCopyPayload();
     if (onApplied) onApplied(opportunity.id, 'preparing');
     const safeUrl = resolveSafeJobUrl(opportunity);
-    window.open(safeUrl, '_blank');
+    safeOpenUrl(safeUrl, '_blank');
     triggerToast('Verified live portal opened with clipboard pre-filled!');
   };
 
   const handleLinkedInLiveSearch = () => {
     const liveLinkedInUrl = resolveLinkedInSearchUrl(opportunity);
-    window.open(liveLinkedInUrl, '_blank');
+    safeOpenUrl(liveLinkedInUrl, '_blank');
     triggerToast('Opening live LinkedIn job postings in new tab...');
   };
 
@@ -404,7 +405,7 @@ Email: ${payload.email}`;
                 <button className="btn btn-outline" onClick={handleLinkedInLiveSearch} title="Search live LinkedIn job postings for this role">
                   <Globe size={14} /> Live LinkedIn
                 </button>
-                <button className="btn btn-outline" onClick={() => window.open(resolveGoogleJobsUrl(opportunity), '_blank')} title="Search all Malaysian and global boards on Google">
+                <button className="btn btn-outline" onClick={() => safeOpenUrl(resolveGoogleJobsUrl(opportunity), '_blank')} title="Search all Malaysian and global boards on Google">
                   <Search size={14} /> Google Jobs
                 </button>
                 <button className="btn btn-outline" onClick={handlePortalQuickApply} title="Launch official verified company portal">
