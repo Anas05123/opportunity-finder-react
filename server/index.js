@@ -153,8 +153,8 @@ app.use(cors({
       return callback(null, true);
     }
 
-    // 4. Official Careerly OnRender cloud hosting domain
-    if (origin === 'https://opportunity-finder-gsxr.onrender.com' || origin.endsWith('.onrender.com')) {
+    // 4. Official Careerly OnRender / Cloud hosting domains
+    if (origin === 'https://opportunity-finder-gsxr.onrender.com' || origin.endsWith('.onrender.com') || origin.endsWith('.vercel.app') || origin.endsWith('.netlify.app')) {
       return callback(null, true);
     }
 

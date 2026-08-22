@@ -26,3 +26,7 @@ services:
         value: nmaanvradoafeuqt
       - key: VITE_GOOGLE_CLIENT_ID
         value: 483326712949-d6d0p5rg49a32bu80i443293kk916u8p.apps.googleusercontent.com
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: VITE_GEMINI_API_KEY
+        sync: false
