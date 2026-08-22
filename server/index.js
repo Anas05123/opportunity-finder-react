@@ -185,6 +185,18 @@ app.use('/api/v1/admin', adminLimiter, adminRouter);
 app.use('/api/v3/search', searchLimiter, searchRouter);
 app.use('/api/v3', searchLimiter, searchRouter);
 
+// Health check endpoint for cloud monitoring & status verification
+app.get('/api/v1/health', (req, res) => {
+  res.json({
+    status: 'healthy',
+    service: 'Careerly Hardened SaaS API',
+    timestamp: new Date().toISOString(),
+    ai_configured: !!(process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY),
+    uptime_seconds: Math.floor(process.uptime())
+  });
+});
+app.get('/health', (req, res) => res.json({ status: 'healthy' }));
+
 // -------------------------------------------------------------
 // 4. AI CAREER SUITE ENDPOINTS (RATE LIMITED & HARDENED)
 // -------------------------------------------------------------
