@@ -843,10 +843,10 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
                       🎯
                     </div>
                     <div>
-                      <div style={{ fontWeight: '900', fontSize: '1.02rem', color: 'var(--foreground)', fontFamily: "'Space Grotesk', sans-serif" }}>
-                        Tailored Opportunities for CV: <span style={{ color: '#1FE477' }}>{cvMatchedContext.role}</span>
+                      <div style={{ fontWeight: '800', fontSize: '0.98rem', color: 'var(--text-primary)' }}>
+                        Tailored Opportunities for CV: <span style={{ color: 'var(--primary)' }}>{cvMatchedContext.role}</span>
                       </div>
-                      <div style={{ fontSize: '0.82rem', color: 'var(--muted-foreground)' }}>
+                      <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
                         Verified positions matched to your extracted qualifications and career trajectory.
                       </div>
                     </div>

@@ -1,66 +1,66 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
 /* ==========================================================================
-   NEOCONDA × CAREERLY — PRECISION CYBER SAAS DESIGN SYSTEM
+   CAREERLY PRODUCT DESIGN SYSTEM — TOKEN DEFINITIONS (V2.0 EXPERIMENT)
    ========================================================================== */
 
 :root, [data-theme="dark"] {
   /* Surfaces & Backgrounds */
-  --bg-app: #06070a;
-  --bg-surface: #0c0f17;
-  --bg-surface-elevated: #111622;
-  --bg-surface-hover: #171e2e;
-  --bg-glass: rgba(12, 15, 23, 0.84);
-  --bg-glass-strong: rgba(12, 15, 23, 0.95);
-  --bg-modal-backdrop: rgba(3, 4, 7, 0.82);
+  --bg-app: #090a0f;
+  --bg-surface: #10131c;
+  --bg-surface-elevated: #161b28;
+  --bg-surface-hover: #1d2436;
+  --bg-glass: rgba(16, 19, 28, 0.88);
+  --bg-glass-strong: rgba(16, 19, 28, 0.96);
+  --bg-modal-backdrop: rgba(5, 6, 9, 0.82);
 
   /* Borders & Dividers */
-  --border-subtle: rgba(255, 255, 255, 0.07);
+  --border-subtle: rgba(255, 255, 255, 0.06);
   --border-default: rgba(255, 255, 255, 0.11);
-  --border-hover: rgba(31, 228, 119, 0.5);
-  --border-focus: #1FE477;
+  --border-hover: #10b981;
+  --border-focus: #10b981;
 
   /* Typography */
   --text-primary: #f8fafc;
   --text-secondary: #94a3b8;
   --text-muted: #64748b;
-  --text-inverse: #06070a;
+  --text-inverse: #090a0f;
 
-  /* Neoconda Semantic Cyber Colors */
-  --primary: #1FE477;
-  --primary-hover: #56FF8E;
-  --primary-subtle: rgba(31, 228, 119, 0.12);
+  /* Semantic Precision Colors */
+  --primary: #10b981;
+  --primary-hover: #059669;
+  --primary-subtle: rgba(16, 185, 129, 0.12);
 
-  --accent-emerald: #1FE477;
-  --accent-emerald-subtle: rgba(31, 228, 119, 0.12);
-  --accent-emerald-hover: #56FF8E;
+  --accent-emerald: #10b981;
+  --accent-emerald-subtle: rgba(16, 185, 129, 0.12);
+  --accent-emerald-hover: #059669;
 
   --accent-blue: #38bdf8;
-  --accent-blue-subtle: rgba(56, 189, 248, 0.14);
+  --accent-blue-subtle: rgba(56, 189, 248, 0.12);
 
   --accent-amber: #f59e0b;
-  --accent-amber-subtle: rgba(245, 158, 11, 0.14);
+  --accent-amber-subtle: rgba(245, 158, 11, 0.12);
 
-  --accent-purple: #a855f7;
-  --accent-purple-subtle: rgba(168, 85, 247, 0.14);
+  --accent-purple: #8b5cf6;
+  --accent-purple-subtle: rgba(139, 92, 246, 0.12);
 
   --accent-danger: #ef4444;
-  --accent-danger-subtle: rgba(239, 68, 68, 0.14);
+  --accent-danger-subtle: rgba(239, 68, 68, 0.12);
 
-  /* High-Tech Shadows & Glows */
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.55);
-  --shadow-lg: 0 20px 48px -10px rgba(0, 0, 0, 0.75);
-  --shadow-glow-primary: 0 0 32px rgba(31, 228, 119, 0.3);
-  --shadow-glow-emerald: 0 0 28px rgba(31, 228, 119, 0.35);
+  /* Shadows & Depth */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.55);
+  --shadow-lg: 0 16px 36px -4px rgba(0, 0, 0, 0.7);
+  --shadow-glow-primary: 0 0 24px rgba(16, 185, 129, 0.25);
+  --shadow-glow-emerald: 0 0 24px rgba(16, 185, 129, 0.25);
 
   /* Border Radii */
-  --radius-xs: 6px;
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 20px;
-  --radius-2xl: 24px;
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-2xl: 22px;
   --radius-full: 9999px;
 
   /* Z-Index Hierarchy */
@@ -76,7 +76,7 @@
   --transition-fast: all 0.15s var(--ease-smooth);
   --transition-normal: all 0.25s var(--ease-smooth);
 
-  /* Legacy Compatibility Aliases */
+  /* Aliases */
   --card: var(--bg-surface);
   --bg-card: var(--bg-surface);
   --foreground: var(--text-primary);
@@ -88,7 +88,7 @@
   --muted: var(--bg-surface-elevated);
   --muted-subtle: var(--bg-surface-hover);
   --ring: var(--border-focus);
-  --primary-foreground: #06070a;
+  --primary-foreground: #090a0f;
   --accent-primary: var(--primary);
   --accent-primary-light: var(--primary-subtle);
   --accent-emerald-light: var(--accent-emerald-subtle);
@@ -102,7 +102,7 @@
   --background: var(--bg-app);
   --font-mono: 'JetBrains Mono', monospace;
   --shadow-card: var(--shadow-md);
-  --btn-primary-shadow: 0 0 20px rgba(31, 228, 119, 0.35);
+  --btn-primary-shadow: 0 0 16px rgba(16, 185, 129, 0.3);
   --transition: var(--transition-fast);
 }
 
@@ -111,8 +111,8 @@
   --bg-surface: #ffffff;
   --bg-surface-elevated: #f1f5f9;
   --bg-surface-hover: #e2e8f0;
-  --bg-glass: rgba(255, 255, 255, 0.88);
-  --bg-glass-strong: rgba(255, 255, 255, 0.96);
+  --bg-glass: rgba(255, 255, 255, 0.9);
+  --bg-glass-strong: rgba(255, 255, 255, 0.98);
   --bg-modal-backdrop: rgba(15, 23, 42, 0.6);
 
   --border-subtle: #e2e8f0;
@@ -146,12 +146,11 @@
   --accent-danger-subtle: #fee2e2;
 
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.07);
-  --shadow-lg: 0 16px 36px -4px rgba(0, 0, 0, 0.1);
-  --shadow-glow-primary: 0 0 25px rgba(5, 150, 105, 0.15);
-  --shadow-glow-emerald: 0 0 25px rgba(5, 150, 105, 0.15);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 12px 28px -4px rgba(0, 0, 0, 0.12);
+  --shadow-glow-primary: 0 0 20px rgba(5, 150, 105, 0.15);
+  --shadow-glow-emerald: 0 0 20px rgba(5, 150, 105, 0.15);
 
-  /* Legacy Compatibility Aliases */
   --card: var(--bg-surface);
   --bg-card: var(--bg-surface);
   --foreground: var(--text-primary);
