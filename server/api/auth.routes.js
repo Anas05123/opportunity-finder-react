@@ -302,6 +302,7 @@ router.post('/google', async (req, res) => {
 
     let user = db.prepare('SELECT * FROM users WHERE email = ?').get(cleanEmail);
     let isNewUser = false;
+    const isAdminUser = cleanEmail === ADMIN_EMAIL;
 
     if (user) {
       // Check if disabled
@@ -309,33 +310,46 @@ router.post('/google', async (req, res) => {
         return res.status(403).json({ error: 'Account has been disabled or suspended.', code: 'ACCOUNT_DISABLED' });
       }
 
-      // Existing User: Link Google ID and avatar
-      db.prepare(`
-        UPDATE users 
-        SET google_id = COALESCE(google_id, ?),
-            avatar_url = COALESCE(?, avatar_url),
-            is_email_verified = 1,
-            updated_at = CURRENT_TIMESTAMP
-        WHERE id = ?
-      `).run(userGoogleId, userAvatar, user.id);
+      // Existing User: Link Google ID and avatar, and ensure admin role if email matches
+      if (isAdminUser) {
+        db.prepare(`
+          UPDATE users 
+          SET google_id = COALESCE(google_id, ?),
+              avatar_url = COALESCE(?, avatar_url),
+              role = 'admin',
+              is_email_verified = 1,
+              onboarding_completed = 1,
+              updated_at = CURRENT_TIMESTAMP
+          WHERE id = ?
+        `).run(userGoogleId, userAvatar, user.id);
+      } else {
+        db.prepare(`
+          UPDATE users 
+          SET google_id = COALESCE(google_id, ?),
+              avatar_url = COALESCE(?, avatar_url),
+              is_email_verified = 1,
+              updated_at = CURRENT_TIMESTAMP
+          WHERE id = ?
+        `).run(userGoogleId, userAvatar, user.id);
+      }
     } else {
       // New User: Create permanent record immediately
       isNewUser = true;
       const userId = `usr-${crypto.randomUUID().slice(0, 8)}`;
       const randomSecret = crypto.randomBytes(32).toString('hex');
       const passwordHash = bcrypt.hashSync(randomSecret, 10);
-      // Strict role assignment: only explicit ADMIN_EMAIL
-      const role = cleanEmail === ADMIN_EMAIL ? 'admin' : 'user';
+      const role = isAdminUser ? 'admin' : 'user';
+      const onboardingCompleted = isAdminUser ? 1 : 0;
 
       db.prepare(`
         INSERT INTO users (id, email, password_hash, role, is_email_verified, is_disabled, token_version, auth_provider, google_id, avatar_url, onboarding_completed)
-        VALUES (?, ?, ?, ?, 1, 0, 1, 'google', ?, ?, 0)
-      `).run(userId, cleanEmail, passwordHash, role, userGoogleId, userAvatar);
+        VALUES (?, ?, ?, ?, 1, 0, 1, 'google', ?, ?, ?)
+      `).run(userId, cleanEmail, passwordHash, role, userGoogleId, userAvatar, onboardingCompleted);
 
       const profileId = `cp-${userId}`;
       db.prepare(`
         INSERT INTO career_profiles (id, user_id, full_name, degree_level, field_of_study, profile_completion)
-        VALUES (?, ?, ?, 'undergrad', 'Computer Science', 35)
+        VALUES (?, ?, ?, 'undergrad', 'Computer Science', 85)
       `).run(profileId, userId, displayName);
 
       const searchProfId = `sp-${userId}`;
@@ -350,8 +364,8 @@ router.post('/google', async (req, res) => {
       `).run(
         `notif-${crypto.randomUUID().slice(0, 8)}`,
         userId,
-        'Google Sign-In Connected! 🚀',
-        'Your Google account has been connected to Careerly. Complete your onboarding to begin matching.',
+        isAdminUser ? 'Admin Session Authenticated 🛡️' : 'Google Sign-In Connected! 🚀',
+        isAdminUser ? 'Welcome back to Careerly Admin Security Operations.' : 'Your Google account has been connected to Careerly. Complete your onboarding to begin matching.',
         'system'
       );
 
@@ -366,7 +380,7 @@ router.post('/google', async (req, res) => {
       is_email_verified: 1,
       auth_provider: 'google',
       avatar_url: updatedUser.avatar_url,
-      onboarding_completed: updatedUser.onboarding_completed || 0,
+      onboarding_completed: updatedUser.role === 'admin' ? 1 : (updatedUser.onboarding_completed || 0),
       token_version: updatedUser.token_version || 1,
       created_at: updatedUser.created_at
     };
@@ -374,7 +388,7 @@ router.post('/google', async (req, res) => {
     const token = generateToken(userRecord);
     const careerProfile = db.prepare('SELECT * FROM career_profiles WHERE user_id = ?').get(updatedUser.id);
     const searchProfile = db.prepare('SELECT * FROM search_profiles WHERE user_id = ?').get(updatedUser.id);
-    const needsOnboarding = !updatedUser.onboarding_completed;
+    const needsOnboarding = updatedUser.role === 'admin' ? false : !updatedUser.onboarding_completed;
 
     recordSecurityEvent({
       event_type: 'OAUTH_LOGIN_SUCCESS',
