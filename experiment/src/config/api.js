@@ -8,27 +8,22 @@
  */
 
 export const getApiBase = () => {
-  // If explicitly configured in environment
+  // 1. Explicitly configured in environment (e.g. Vercel/Netlify pointing to backend)
   if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL) {
     return import.meta.env.VITE_API_URL.replace(/\/$/, '');
   }
 
-  // In browser environment
+  // 2. In browser environment
   if (typeof window !== 'undefined') {
     const { protocol, hostname, port } = window.location;
     
-    // When served directly by the production backend or reverse proxy on same port
-    if (port === '5000' || (!port && (protocol === 'https:' || protocol === 'http:'))) {
-      return '';
-    }
-
-    // When accessed via Vite dev server (e.g. port 3100 or 5173), prefer relative path if proxy is active,
-    // or fallback to same hostname on backend port 5000
-    if (port === '3100' || port === '5173' || port === '4173' || port === '3000') {
+    // When running locally on dev server on ANY port (3100, 5173, 5174, 3000, etc.)
+    if (hostname === 'localhost' || hostname === '127.0.0.1' || /^192\.168\./.test(hostname) || /^10\./.test(hostname)) {
+      if (port === '5000') return '';
       return `${protocol}//${hostname}:5000`;
     }
 
-    // Default to relative path for cloud deployments (e.g. *.onrender.com)
+    // When deployed online on Render / Cloud service (Express serves frontend & API together on same origin)
     return '';
   }
 
