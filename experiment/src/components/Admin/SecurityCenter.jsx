@@ -491,7 +491,17 @@ export default function SecurityCenter({ triggerToast }) {
       </div>
 
       {/* SUB-TAB NAVIGATION BAR */}
-      <div style={{ display: 'flex', gap: '0.5rem', borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem', overflowX: 'auto' }}>
+      <div 
+        className="no-scrollbar"
+        style={{ 
+          display: 'flex', 
+          gap: '0.45rem', 
+          borderBottom: '1px solid var(--border-default)', 
+          paddingBottom: '0.75rem', 
+          overflowX: 'auto',
+          WebkitOverflowScrolling: 'touch'
+        }}
+      >
         {[
           { id: 'overview', label: 'Overview & Actions', icon: Activity },
           { id: 'categories', label: '14 Security Categories', icon: Layers },
@@ -509,22 +519,24 @@ export default function SecurityCenter({ triggerToast }) {
               key={tab.id}
               onClick={() => setActiveSecTab(tab.id)}
               style={{
-                display: 'flex',
+                display: 'inline-flex',
                 alignItems: 'center',
                 gap: '0.45rem',
-                padding: '0.65rem 1.05rem',
-                borderRadius: 'var(--radius-md)',
+                padding: '0.55rem 0.95rem',
+                borderRadius: 'var(--radius-full)',
                 fontSize: '0.84rem',
                 fontWeight: isActive ? '800' : '600',
-                background: isActive ? 'var(--accent-primary)' : 'transparent',
-                color: isActive ? '#fff' : 'var(--text-secondary)',
-                border: 'none',
+                background: isActive ? 'var(--primary)' : 'var(--bg-surface-elevated)',
+                color: isActive ? '#06070a' : 'var(--text-secondary)',
+                border: isActive ? '1px solid var(--primary)' : '1px solid var(--border-default)',
                 cursor: 'pointer',
-                transition: 'all 0.15s ease',
-                whiteSpace: 'nowrap'
+                transition: 'all 0.15s cubic-bezier(0.16, 1, 0.3, 1)',
+                whiteSpace: 'nowrap',
+                boxShadow: isActive ? 'var(--shadow-sm)' : 'none',
+                flexShrink: 0
               }}
             >
-              <Icon size={16} />
+              <Icon size={15} color={isActive ? '#06070a' : 'currentColor'} />
               <span>{tab.label}</span>
             </button>
           );
