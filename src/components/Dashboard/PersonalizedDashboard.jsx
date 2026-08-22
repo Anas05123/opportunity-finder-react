@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Sparkles, ArrowRight, CheckCircle2, TrendingUp, Bookmark, 
-  Briefcase, Award, Zap, FileText, Target, Clock, ShieldCheck, ChevronRight
+  Briefcase, Award, Zap, FileText, Target, Clock, ShieldCheck, ChevronRight,
+  Calendar, Layers, Filter
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { API_BASE_URL } from '../../config/api.js';
@@ -73,194 +74,224 @@ export default function PersonalizedDashboard({
     fetchDashboardData();
   }, [token]);
 
-  const firstName = careerProfile?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'Scholar';
-  const profileCompletion = careerProfile?.profile_completion || 65;
+  const firstName = careerProfile?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'Candidate';
+  const profileCompletion = careerProfile?.profile_completion || 70;
 
   return (
-    <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '1.5rem 1.5rem 3rem' }}>
+    <div style={{ maxWidth: '1360px', margin: '0 auto' }}>
       
-      {/* 1. WELCOME HERO & PROFILE GAUGE */}
+      {/* 1. TOP OVERVIEW BANNER */}
       <div style={{
-        background: 'linear-gradient(135deg, var(--card) 0%, var(--primary-subtle) 100%)',
+        background: 'var(--bg-surface)',
         border: '1px solid var(--border-default)',
-        borderRadius: 'var(--radius-2xl)',
-        padding: '2rem 2.25rem',
-        marginBottom: '2rem',
+        borderRadius: 'var(--radius-lg)',
+        padding: '1.5rem 1.75rem',
+        marginBottom: '1.5rem',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
         flexWrap: 'wrap',
-        gap: '1.5rem',
-        boxShadow: 'var(--shadow-md)'
+        gap: '1.25rem',
+        boxShadow: 'var(--shadow-sm)'
       }}>
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
-            <span style={{ fontSize: '0.75rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--primary)' }}>
-              ● Live 24/7 Match Workspace
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginBottom: '0.25rem' }}>
+            <span style={{ 
+              fontSize: '0.72rem', 
+              fontWeight: '800', 
+              textTransform: 'uppercase', 
+              letterSpacing: '0.06em', 
+              color: 'var(--primary)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.3rem'
+            }}>
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--primary)' }} />
+              Live Workspace Active
             </span>
           </div>
-          <h1 className="type-h1" style={{ fontSize: 'clamp(1.75rem, 3.5vw, 2.35rem)', fontWeight: '900' }}>
-            Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'}, {firstName} 👋
+
+          <h1 className="type-h1" style={{ fontSize: '1.5rem', fontWeight: '800', letterSpacing: '-0.02em', margin: 0 }}>
+            Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'}, {firstName}
           </h1>
-          <p className="type-body" style={{ marginTop: '0.35rem', color: 'var(--muted-foreground)', fontSize: '0.95rem' }}>
-            {careerProfile?.degree_title || 'Bachelor Degree'} in <strong>{careerProfile?.field_of_study || 'Computer Science'}</strong> (GPA: {careerProfile?.gpa || '3.50'}) • Calibrated for global matches
+          <p className="type-body" style={{ marginTop: '0.25rem', fontSize: '0.86rem' }}>
+            {careerProfile?.degree_title || 'Bachelor Candidate'} in <strong>{careerProfile?.field_of_study || 'Computer Science'}</strong> • {recommendations.length} opportunities calibrated to your target profile
           </p>
         </div>
 
-        {/* Profile Strength Gauge */}
-        <div style={{
-          background: 'var(--bg-glass-strong)',
-          border: '1px solid var(--border-default)',
-          borderRadius: 'var(--radius-xl)',
-          padding: '1rem 1.5rem',
-          minWidth: '240px',
-          boxShadow: 'var(--shadow-sm)'
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-            <span style={{ fontSize: '0.82rem', fontWeight: '700', color: 'var(--foreground)' }}>Profile Strength</span>
-            <span style={{ fontSize: '0.88rem', fontWeight: '800', color: 'var(--primary)' }}>{profileCompletion}%</span>
-          </div>
-          <div style={{ width: '100%', height: '8px', background: 'var(--border-default)', borderRadius: 'var(--radius-full)', overflow: 'hidden' }}>
-            <div 
-              style={{ 
-                width: `${profileCompletion}%`, 
-                height: '100%', 
-                background: profileCompletion >= 80 ? 'linear-gradient(90deg, #10b981 0%, #059669 100%)' : 'linear-gradient(90deg, var(--primary) 0%, var(--primary-hover) 100%)',
-                borderRadius: 'var(--radius-full)',
-                transition: 'width 0.6s cubic-bezier(0.16, 1, 0.3, 1)'
-              }} 
-            />
-          </div>
-          <div style={{ fontSize: '0.74rem', color: 'var(--muted-foreground)', marginTop: '0.45rem' }}>
-            {profileCompletion < 80 ? 'Add target certifications to reach 95%+ precision.' : '✓ Optimized for maximum match confidence.'}
-          </div>
+        {/* Action Controls */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+          <button 
+            className="btn btn-outline"
+            onClick={() => onNavigateTab('tracker')}
+          >
+            <Briefcase size={15} />
+            <span>Applications ({stats.appliedCount})</span>
+          </button>
+          
+          <button 
+            className="btn btn-primary"
+            onClick={() => onNavigateTab('explore')}
+          >
+            <Sparkles size={15} />
+            <span>Discover Roles</span>
+          </button>
         </div>
       </div>
 
-      {/* 2. STATS & QUICK LAUNCHERS */}
+      {/* 2. STATS TILES (4 COLUMNS) */}
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-        gap: '1.25rem',
-        marginBottom: '2.5rem'
+        gap: '1rem',
+        marginBottom: '2rem'
       }}>
+        {/* Tile 1: Top Matches */}
         <div 
           onClick={() => onNavigateTab('explore')}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigateTab('explore'); } }}
           role="button"
           tabIndex={0}
           aria-label="Navigate to Top High-Match Opportunities"
-          style={{ background: 'var(--card)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-xl)', padding: '1.25rem', cursor: 'pointer', transition: 'all 0.2s', boxShadow: 'var(--shadow-sm)' }}
-          className="hover-card-elevate"
+          className="bento-card"
+          style={{ cursor: 'pointer', outline: 'none' }}
         >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-            <div style={{ width: '38px', height: '38px', borderRadius: 'var(--radius-lg)', background: 'var(--primary-subtle)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Sparkles size={20} />
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+            <div style={{ width: '34px', height: '34px', borderRadius: 'var(--radius-md)', background: 'var(--primary-subtle)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Sparkles size={18} />
             </div>
-            <span style={{ fontSize: '1.6rem', fontWeight: '900', color: 'var(--foreground)' }}>{recommendations.length}</span>
+            <span style={{ fontSize: '1.45rem', fontWeight: '800', color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>
+              {recommendations.length}
+            </span>
           </div>
-          <div style={{ fontWeight: '700', fontSize: '0.92rem', color: 'var(--foreground)' }}>Top High-Match Roles</div>
-          <div style={{ fontSize: '0.78rem', color: 'var(--muted-foreground)', marginTop: '0.15rem' }}>85%+ deterministic alignment</div>
+          <div style={{ fontWeight: '700', fontSize: '0.88rem', color: 'var(--text-primary)' }}>Top High-Match Roles</div>
+          <div style={{ fontSize: '0.76rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>85%+ deterministic alignment</div>
         </div>
 
+        {/* Tile 2: Applications CRM */}
         <div 
           onClick={() => onNavigateTab('tracker')}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigateTab('tracker'); } }}
           role="button"
           tabIndex={0}
           aria-label="Navigate to Application CRM Board"
-          style={{ background: 'var(--card)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-xl)', padding: '1.25rem', cursor: 'pointer', transition: 'all 0.2s', boxShadow: 'var(--shadow-sm)' }}
-          className="hover-card-elevate"
+          className="bento-card"
+          style={{ cursor: 'pointer', outline: 'none' }}
         >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-            <div style={{ width: '38px', height: '38px', borderRadius: 'var(--radius-lg)', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Briefcase size={20} />
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+            <div style={{ width: '34px', height: '34px', borderRadius: 'var(--radius-md)', background: 'var(--accent-blue-subtle)', color: 'var(--accent-blue)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Briefcase size={18} />
             </div>
-            <span style={{ fontSize: '1.6rem', fontWeight: '900', color: '#10b981' }}>{stats.appliedCount || 0}</span>
+            <span style={{ fontSize: '1.45rem', fontWeight: '800', color: 'var(--accent-blue)', fontFamily: 'var(--font-mono)' }}>
+              {stats.appliedCount || 0}
+            </span>
           </div>
-          <div style={{ fontWeight: '700', fontSize: '0.92rem', color: 'var(--foreground)' }}>Application CRM Board</div>
-          <div style={{ fontSize: '0.78rem', color: 'var(--muted-foreground)', marginTop: '0.15rem' }}>Active pipelines & interviews</div>
+          <div style={{ fontWeight: '700', fontSize: '0.88rem', color: 'var(--text-primary)' }}>Application Pipeline</div>
+          <div style={{ fontSize: '0.76rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>Active pipelines & interviews</div>
         </div>
 
+        {/* Tile 3: AI CV Studio */}
         <div 
           onClick={() => onNavigateTab('cv_studio')}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigateTab('cv_studio'); } }}
           role="button"
           tabIndex={0}
           aria-label="Navigate to AI CV Studio & ATS"
-          style={{ background: 'var(--card)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-xl)', padding: '1.25rem', cursor: 'pointer', transition: 'all 0.2s', boxShadow: 'var(--shadow-sm)' }}
-          className="hover-card-elevate"
+          className="bento-card"
+          style={{ cursor: 'pointer', outline: 'none' }}
         >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-            <div style={{ width: '38px', height: '38px', borderRadius: 'var(--radius-lg)', background: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <FileText size={20} />
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+            <div style={{ width: '34px', height: '34px', borderRadius: 'var(--radius-md)', background: 'var(--accent-purple-subtle)', color: 'var(--accent-purple)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <FileText size={18} />
             </div>
-            <ChevronRight size={18} color="var(--muted-foreground)" />
+            <ChevronRight size={16} color="var(--text-muted)" />
           </div>
-          <div style={{ fontWeight: '700', fontSize: '0.92rem', color: 'var(--foreground)' }}>AI CV Studio & ATS</div>
-          <div style={{ fontSize: '0.78rem', color: 'var(--muted-foreground)', marginTop: '0.15rem' }}>Score & optimize resume bullets</div>
+          <div style={{ fontWeight: '700', fontSize: '0.88rem', color: 'var(--text-primary)' }}>AI CV Studio & ATS</div>
+          <div style={{ fontSize: '0.76rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>Score & optimize resume bullets</div>
         </div>
 
+        {/* Tile 4: Mock Interview Coach */}
         <div 
           onClick={() => onNavigateTab('interview')}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigateTab('interview'); } }}
           role="button"
           tabIndex={0}
           aria-label="Navigate to AI Interview Coach"
-          style={{ background: 'var(--card)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-xl)', padding: '1.25rem', cursor: 'pointer', transition: 'all 0.2s', boxShadow: 'var(--shadow-sm)' }}
-          className="hover-card-elevate"
+          className="bento-card"
+          style={{ cursor: 'pointer', outline: 'none' }}
         >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-            <div style={{ width: '38px', height: '38px', borderRadius: 'var(--radius-lg)', background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Target size={20} />
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+            <div style={{ width: '34px', height: '34px', borderRadius: 'var(--radius-md)', background: 'var(--accent-amber-subtle)', color: 'var(--accent-amber)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Target size={18} />
             </div>
-            <ChevronRight size={18} color="var(--muted-foreground)" />
+            <ChevronRight size={16} color="var(--text-muted)" />
           </div>
-          <div style={{ fontWeight: '700', fontSize: '0.92rem', color: 'var(--foreground)' }}>Interview Coach</div>
-          <div style={{ fontSize: '0.78rem', color: 'var(--muted-foreground)', marginTop: '0.15rem' }}>STAR method behavioral practice</div>
+          <div style={{ fontWeight: '700', fontSize: '0.88rem', color: 'var(--text-primary)' }}>Mock Interview Coach</div>
+          <div style={{ fontSize: '0.76rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>STAR method behavioral practice</div>
         </div>
       </div>
 
-      {/* 3. PERSONALIZED TOP MATCHES FEED */}
-      <div style={{ marginBottom: '1.75rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
+      {/* 3. PRIORITIZED RECOMMENDATIONS FEED */}
+      <div style={{ marginBottom: '1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
         <div>
-          <h2 className="type-h2" style={{ fontSize: '1.45rem' }}>
-            Recommended For Your Discipline
+          <h2 className="type-h2" style={{ fontSize: '1.15rem', fontWeight: '800' }}>
+            Calibrated Opportunities
           </h2>
-          <p className="type-body" style={{ fontSize: '0.85rem', color: 'var(--muted-foreground)' }}>
-            Scored by 7-factor mathematical relevance to your major: <strong>{careerProfile?.field_of_study || 'Computer Science'}</strong>
+          <p className="type-body" style={{ fontSize: '0.82rem' }}>
+            Ranked deterministically for your academic credentials and visa preferences
           </p>
         </div>
 
-        <button
+        <button 
+          className="btn btn-ghost" 
           onClick={() => onNavigateTab('explore')}
-          className="action-btn-secondary"
-          style={{ fontSize: '0.86rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}
+          style={{ fontSize: '0.82rem', fontWeight: '700', color: 'var(--primary)' }}
         >
-          <span>View All 3,413+ Opportunities</span>
-          <ArrowRight size={15} />
+          <span>View All Opportunities</span>
+          <ArrowRight size={14} />
         </button>
       </div>
 
+      {/* Recommendations Grid */}
       {recommendations.length > 0 ? (
-        <div className="responsive-grid-3col">
-          {recommendations.slice(0, 6).map((opp, idx) => (
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+          gap: '1.25rem'
+        }}>
+          {recommendations.slice(0, 6).map((op, idx) => (
             <OpportunityCard
-              key={opp.id || idx}
-              opportunity={opp}
+              key={op.id || idx}
+              opportunity={op}
               index={idx}
               onSelectOp={onSelectOpportunity}
               onPrepareApplication={onPrepareKit}
               onToggleSave={onSaveOpportunity}
-              isSaved={isSaved(opp.id)}
+              isSaved={isSaved ? isSaved(op.id) : false}
             />
           ))}
         </div>
       ) : (
-        <div style={{ textAlign: 'center', padding: '3rem', background: 'var(--card)', borderRadius: 'var(--radius-2xl)', border: '1px solid var(--border-default)' }}>
-          <Sparkles size={32} color="var(--primary)" style={{ marginBottom: '0.75rem' }} />
-          <h3 className="type-h3">Calibrating your recommendations...</h3>
-          <p className="type-body" style={{ marginTop: '0.35rem' }}>Explore the catalog or complete your career profile to populate this feed.</p>
+        <div style={{
+          background: 'var(--bg-surface)',
+          border: '1px solid var(--border-default)',
+          borderRadius: 'var(--radius-lg)',
+          padding: '3rem 1.5rem',
+          textAlign: 'center'
+        }}>
+          <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'var(--primary-subtle)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
+            <Sparkles size={20} />
+          </div>
+          <h3 className="type-h3" style={{ fontSize: '1rem', fontWeight: '700', marginBottom: '0.35rem' }}>
+            Analyzing Global Listings
+          </h3>
+          <p className="type-body" style={{ maxWidth: '420px', margin: '0 auto 1.25rem', fontSize: '0.84rem' }}>
+            We're searching 3,400+ verified portals to find roles matching your academic focus.
+          </p>
+          <button className="btn btn-primary" onClick={() => onNavigateTab('explore')}>
+            <span>Explore All Listings</span>
+            <ArrowRight size={14} />
+          </button>
         </div>
       )}
 

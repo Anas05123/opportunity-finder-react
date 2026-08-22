@@ -439,17 +439,17 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
             {/* Sidebar Navigation Sections */}
             <div className="sidebar-content">
               
-              {/* CORE WORKSPACE */}
+              {/* WORKSPACE */}
               <div>
-                <div className="sidebar-section-title">Core Workspace</div>
+                <div className="sidebar-section-title">Workspace</div>
                 <div className="sidebar-nav-list">
                   <button 
                     className={`sidebar-nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
                     onClick={() => { navigate('/dashboard'); setMobileMenuOpen(false); }}
                   >
                     <div className="sidebar-nav-item-left">
-                      <Sparkles size={16} />
-                      <span>Dashboard</span>
+                      <Sparkles size={17} />
+                      <span>Overview</span>
                     </div>
                   </button>
 
@@ -458,8 +458,8 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
                     onClick={() => { navigate('/opportunities'); setMobileMenuOpen(false); }}
                   >
                     <div className="sidebar-nav-item-left">
-                      <Compass size={16} />
-                      <span>Discover & Match</span>
+                      <Compass size={17} />
+                      <span>Opportunities</span>
                     </div>
                   </button>
 
@@ -468,7 +468,7 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
                     onClick={() => { navigate('/saved'); setMobileMenuOpen(false); }}
                   >
                     <div className="sidebar-nav-item-left">
-                      <Bookmark size={16} />
+                      <Bookmark size={17} />
                       <span>Saved</span>
                     </div>
                     {savedOppsList.length > 0 && (
@@ -481,27 +481,37 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
                     onClick={() => { navigate('/applications'); setMobileMenuOpen(false); }}
                   >
                     <div className="sidebar-nav-item-left">
-                      <CheckSquare size={16} />
-                      <span>CRM Board</span>
+                      <CheckSquare size={17} />
+                      <span>Applications</span>
                     </div>
                     {applicationsList.length > 0 && (
                       <span className="sidebar-badge">{applicationsList.length}</span>
                     )}
+                  </button>
+
+                  <button 
+                    className={`sidebar-nav-item ${activeTab === 'calendar' ? 'active' : ''}`}
+                    onClick={() => { navigate('/calendar'); setMobileMenuOpen(false); }}
+                  >
+                    <div className="sidebar-nav-item-left">
+                      <Calendar size={17} />
+                      <span>Deadlines</span>
+                    </div>
                   </button>
                 </div>
               </div>
 
               {/* CAREER TOOLS */}
               <div>
-                <div className="sidebar-section-title">Career Suite</div>
+                <div className="sidebar-section-title">Career Tools</div>
                 <div className="sidebar-nav-list">
                   <button 
                     className={`sidebar-nav-item ${activeTab === 'cv_studio' ? 'active' : ''}`}
                     onClick={() => { navigate('/cv-studio'); setMobileMenuOpen(false); }}
                   >
                     <div className="sidebar-nav-item-left">
-                      <FileText size={16} />
-                      <span>AI CV Studio</span>
+                      <FileText size={17} />
+                      <span>CV Studio & ATS</span>
                     </div>
                   </button>
 
@@ -510,34 +520,24 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
                     onClick={() => { navigate('/interview'); setMobileMenuOpen(false); }}
                   >
                     <div className="sidebar-nav-item-left">
-                      <Mic size={16} />
+                      <Mic size={17} />
                       <span>Interview Coach</span>
-                    </div>
-                  </button>
-
-                  <button 
-                    className={`sidebar-nav-item ${activeTab === 'calendar' ? 'active' : ''}`}
-                    onClick={() => { navigate('/calendar'); setMobileMenuOpen(false); }}
-                  >
-                    <div className="sidebar-nav-item-left">
-                      <Calendar size={16} />
-                      <span>Deadlines</span>
                     </div>
                   </button>
                 </div>
               </div>
 
-              {/* SETTINGS & ADMINISTRATION */}
+              {/* ACCOUNT & SECURITY */}
               <div>
-                <div className="sidebar-section-title">Preferences & Ops</div>
+                <div className="sidebar-section-title">Account</div>
                 <div className="sidebar-nav-list">
                   <button 
                     className={`sidebar-nav-item ${activeTab === 'settings' ? 'active' : ''}`}
                     onClick={() => { navigate('/settings'); setMobileMenuOpen(false); }}
                   >
                     <div className="sidebar-nav-item-left">
-                      <Settings size={16} />
-                      <span>Account Settings</span>
+                      <Settings size={17} />
+                      <span>Profile & Settings</span>
                     </div>
                   </button>
 
@@ -547,8 +547,8 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
                       onClick={() => { navigate('/admin/security'); setMobileMenuOpen(false); }}
                     >
                       <div className="sidebar-nav-item-left">
-                        <ShieldCheck size={16} color="var(--primary)" />
-                        <span>Admin Operations</span>
+                        <ShieldCheck size={17} color="var(--primary)" />
+                        <span>Security Operations</span>
                       </div>
                     </button>
                   )}
@@ -616,13 +616,13 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
             <header className="brainwave-navbar">
               <Link to="/" style={{ textDecoration: 'none' }}>
                 <div className="sidebar-brand" style={{ cursor: 'pointer' }}>
-                  <div className="sidebar-logo" style={{ boxShadow: '0 0 15px rgba(31, 228, 119, 0.4)' }}>
+                  <div className="sidebar-logo">
                     <img src="/careerly-logo.png" alt="Careerly Logo" />
                   </div>
-                  <div className="sidebar-brand-name" style={{ fontSize: '1.15rem', fontWeight: '800', letterSpacing: '-0.02em', color: '#ffffff', fontFamily: "'Space Grotesk', sans-serif" }}>
+                  <div className="sidebar-brand-name" style={{ fontSize: '1.15rem', fontWeight: '800', letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>
                     Careerly
-                    <span style={{ fontSize: '0.68rem', color: '#06070a', marginLeft: '0.4rem', fontWeight: '800', padding: '0.15rem 0.45rem', borderRadius: '4px', background: '#1FE477', boxShadow: '0 0 10px rgba(31, 228, 119, 0.4)' }}>
-                      CYBER 2.0
+                    <span className="sidebar-plan-tag" style={{ marginLeft: '0.4rem' }}>
+                      INTELLIGENCE
                     </span>
                   </div>
                 </div>
@@ -1073,27 +1073,41 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
               </div>
             )}
 
-            <div className="kanban-board-scroll">
-              {['saved', 'preparing', 'applied', 'interview', 'offer', 'rejected'].map(st => {
+            <div className="crm-board">
+              {[
+                { key: 'saved', label: 'Saved', color: '#94a3b8' },
+                { key: 'preparing', label: 'Preparing', color: 'var(--accent-purple)' },
+                { key: 'applied', label: 'Applied', color: 'var(--accent-blue)' },
+                { key: 'interview', label: 'Interview', color: 'var(--accent-amber)' },
+                { key: 'offer', label: 'Offer', color: 'var(--accent-emerald)' },
+                { key: 'rejected', label: 'Archived', color: 'var(--accent-danger)' }
+              ].map(({ key: st, label, color }) => {
                 const colApps = applicationsList.filter(a => a.stage === st || (st === 'saved' && !a.stage));
                 return (
-                  <div key={st} className="kanban-col">
-                    <div className="kanban-col-header">
-                      <span className="col-title" style={{ textTransform: 'capitalize' }}>{st}</span>
-                      <span className="col-count">{colApps.length}</span>
+                  <div key={st} className="crm-column">
+                    <div className="crm-col-header">
+                      <div className="crm-col-title">
+                        <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: color }} />
+                        <span>{label}</span>
+                      </div>
+                      <span className="crm-col-count">{colApps.length}</span>
                     </div>
 
-                    <div className="kanban-col-body">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
                       {colApps.map(app => (
-                        <div key={app.id} className="kanban-card">
-                          <div style={{ fontWeight: '800', color: 'var(--foreground)', fontSize: '0.92rem', marginBottom: '0.25rem' }}>{app.title}</div>
-                          <div style={{ fontSize: '0.8rem', color: 'var(--muted-foreground)' }}>{app.organization || app.company}</div>
+                        <div key={app.id} className="crm-card">
+                          <div style={{ fontWeight: '700', color: 'var(--text-primary)', fontSize: '0.88rem', marginBottom: '0.2rem', lineHeight: '1.3' }}>
+                            {app.title}
+                          </div>
+                          <div style={{ fontSize: '0.76rem', color: 'var(--text-muted)', marginBottom: '0.65rem' }}>
+                            {app.organization || app.company || 'Enterprise'}
+                          </div>
                           
-                          <div style={{ marginTop: '0.65rem', display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
+                          <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap', marginBottom: '0.65rem' }}>
                             {st !== 'applied' && (
                               <button 
-                                className="action-btn-secondary"
-                                style={{ fontSize: '0.72rem', height: '28px', padding: '0 0.5rem' }}
+                                className="btn btn-outline"
+                                style={{ fontSize: '0.72rem', height: '26px', padding: '0 0.5rem' }}
                                 onClick={() => handleUpdateAppStage(app.opportunity_id || app.id, 'applied')}
                               >
                                 → Applied
@@ -1101,26 +1115,35 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
                             )}
                             {st !== 'interview' && (
                               <button 
-                                className="action-btn-secondary"
-                                style={{ fontSize: '0.72rem', height: '28px', padding: '0 0.5rem' }}
+                                className="btn btn-outline"
+                                style={{ fontSize: '0.72rem', height: '26px', padding: '0 0.5rem' }}
                                 onClick={() => handleUpdateAppStage(app.opportunity_id || app.id, 'interview')}
                               >
                                 → Interview
                               </button>
                             )}
+                            {st !== 'offer' && (
+                              <button 
+                                className="btn btn-outline"
+                                style={{ fontSize: '0.72rem', height: '26px', padding: '0 0.5rem' }}
+                                onClick={() => handleUpdateAppStage(app.opportunity_id || app.id, 'offer')}
+                              >
+                                → Offer
+                              </button>
+                            )}
                           </div>
 
-                          <div style={{ display: 'flex', gap: '0.45rem', marginTop: '0.75rem' }}>
+                          <div style={{ display: 'flex', gap: '0.45rem', paddingTop: '0.5rem', borderTop: '1px solid var(--border-subtle)' }}>
                             <button 
                               className="btn btn-emerald"
-                              style={{ fontSize: '0.75rem', padding: '0.3rem 0.65rem' }}
+                              style={{ fontSize: '0.75rem', height: '28px', padding: '0 0.65rem', flex: 1 }}
                               onClick={() => setPrepareAppOp(app)}
                             >
                               <Zap size={12} /> Prep Kit
                             </button>
                             <button 
                               className="btn btn-outline"
-                              style={{ fontSize: '0.75rem', padding: '0.3rem 0.65rem' }}
+                              style={{ fontSize: '0.75rem', height: '28px', padding: '0 0.65rem' }}
                               onClick={() => { setDrawerOp(app); navigate(`/opportunities/${app.opportunity_id || app.id}`); }}
                             >
                               Details
@@ -1172,20 +1195,20 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
               opportunities.slice(0, 15).map(op => {
                 const isRolling = !op.deadline_utc || op.deadline_utc.toLowerCase().includes('open') || op.deadline_utc.toLowerCase().includes('rolling');
                 return (
-                  <div key={op.id} style={{ background: 'var(--card)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-xl)', padding: '1.35rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', boxShadow: 'var(--shadow-sm)' }}>
+                  <div key={op.id} className="bento-card" style={{ marginBottom: '0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
                     <div>
-                      <div style={{ fontSize: '0.8rem', color: isRolling ? 'var(--accent-emerald)' : 'var(--primary)', fontWeight: '800', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                        <Calendar size={14} /> {isRolling ? 'Rolling / Open Intake' : `Cut-off: ${op.deadline_utc}`}
+                      <div style={{ fontSize: '0.76rem', color: isRolling ? 'var(--accent-emerald)' : 'var(--accent-amber)', fontWeight: '700', marginBottom: '0.2rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                        <Clock size={13} /> {isRolling ? 'Rolling Intake / Open Submissions' : `Submission Deadline: ${op.deadline_utc}`}
                       </div>
-                      <div style={{ fontWeight: '800', fontSize: '1.05rem', color: 'var(--foreground)' }}>{op.title}</div>
-                      <div style={{ fontSize: '0.82rem', color: 'var(--muted-foreground)', marginTop: '0.15rem' }}>{op.organization || op.company} • {op.location_country || 'Global'}</div>
+                      <div style={{ fontWeight: '700', fontSize: '0.96rem', color: 'var(--text-primary)' }}>{op.title}</div>
+                      <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>{op.organization || op.company || 'Enterprise'} • {op.location_country || 'Global'}</div>
                     </div>
 
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
-                      <button className="btn btn-emerald" style={{ fontSize: '0.82rem', padding: '0.45rem 0.95rem' }} onClick={() => setPrepareAppOp(op)}>
-                        <Zap size={14} /> Prepare Kit
+                      <button className="btn btn-emerald" style={{ fontSize: '0.78rem', height: '32px' }} onClick={() => setPrepareAppOp(op)}>
+                        <Zap size={13} /> Prepare Kit
                       </button>
-                      <button className="btn btn-outline" style={{ fontSize: '0.82rem', padding: '0.45rem 0.85rem' }} onClick={() => { setDrawerOp(op); navigate(`/opportunities/${op.id}`); }}>
+                      <button className="btn btn-outline" style={{ fontSize: '0.78rem', height: '32px' }} onClick={() => { setDrawerOp(op); navigate(`/opportunities/${op.id}`); }}>
                         Inspect
                       </button>
                     </div>
