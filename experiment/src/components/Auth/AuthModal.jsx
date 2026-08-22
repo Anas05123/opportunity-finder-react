@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
 
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '739484793461-jo717a4j2lhvd311pevhspofqi5uh8et.apps.googleusercontent.com';
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '483326712949-d6d0p5rg49a32bu80i443293kk916u8p.apps.googleusercontent.com';
 
 export default function AuthModal({ isOpen, onClose, initialMode = 'login', triggerToast }) {
   if (!isOpen) return null;

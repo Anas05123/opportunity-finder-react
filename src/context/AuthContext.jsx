@@ -4,7 +4,7 @@ import { supabase } from '../config/supabase.js';
 
 const AuthContext = createContext(null);
 
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '739484793461-jo717a4j2lhvd311pevhspofqi5uh8et.apps.googleusercontent.com';
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '483326712949-d6d0p5rg49a32bu80i443293kk916u8p.apps.googleusercontent.com';
 
 export function AuthProvider({ children }) {
   const [token, setToken] = useState(() => localStorage.getItem('careerly_token') || null);
