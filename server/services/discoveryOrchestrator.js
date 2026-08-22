@@ -1,4 +1,11 @@
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import db from '../db/sqliteClient.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const jsonDbPath = path.join(__dirname, '..', '..', 'opportunities_db.json');
 import { expandSearchProfile } from './queryExpander.js';
 import { fetchGreenhouseBoardJobs } from './adapters/greenhouseAdapter.js';
 import { fetchLeverPostings } from './adapters/leverAdapter.js';
@@ -234,6 +241,58 @@ export async function discoverOpportunities({
     } catch (dbErr) {
       // Ignore
     }
+  }
+
+  // Non-blocking sync to opportunities_db.json for newly discovered opportunities
+  if (identityValidated.length > 0) {
+    setTimeout(() => {
+      try {
+        if (fs.existsSync(jsonDbPath)) {
+          const fileContent = JSON.parse(fs.readFileSync(jsonDbPath, 'utf-8'));
+          if (Array.isArray(fileContent.opportunities)) {
+            const existingIds = new Set(fileContent.opportunities.map(o => o.id));
+            let added = 0;
+            for (const opp of identityValidated) {
+              if (!existingIds.has(opp.id)) {
+                fileContent.opportunities.push({
+                  id: opp.id,
+                  title: opp.title,
+                  company: opp.company_name || opp.company,
+                  organization: opp.company_name || opp.company,
+                  opportunity_type: opp.opportunity_type || 'job',
+                  type: opp.opportunity_type || 'job',
+                  category: opp.category || 'General',
+                  location_country: opp.location_country || 'Malaysia',
+                  location_city: opp.location_city || 'Kuala Lumpur',
+                  is_remote: opp.is_remote ? 1 : 0,
+                  work_mode: opp.work_modality || 'onsite',
+                  salary_min: opp.salary_min ?? null,
+                  salary_max: opp.salary_max ?? null,
+                  salary_currency: opp.salary_currency || null,
+                  stipend_text: opp.stipend_text || null,
+                  description: opp.description_text || '',
+                  official_apply_url: opp.application_url || opp.source_url || '',
+                  official_program_url: opp.job_page_url || opp.source_url || '',
+                  source_name: opp.source_name || 'Official ATS',
+                  source_url: opp.source_url || '',
+                  trust_score: opp.trust_score || 95,
+                  confidence_score: opp.confidence_score || 95.0,
+                  verification_status: 'VERIFIED_ACTIVE',
+                  last_verified_at: now
+                });
+                existingIds.add(opp.id);
+                added++;
+              }
+            }
+            if (added > 0) {
+              fs.writeFileSync(jsonDbPath, JSON.stringify(fileContent, null, 2), 'utf-8');
+            }
+          }
+        }
+      } catch (syncErr) {
+        // Non-blocking
+      }
+    }, 100);
   }
 
   // Retrieve full candidate pool from SQLite (Live Discovered + Cached)

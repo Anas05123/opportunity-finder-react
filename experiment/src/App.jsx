@@ -3,61 +3,51 @@ import {
   BrowserRouter as Router 
 } from 'react-router-dom';
 
-import AuraSidebar from './components/Aura/AuraSidebar';
-import AuraHeader from './components/Aura/AuraHeader';
-import SpotlightHero from './components/Aura/SpotlightHero';
-import BentoCard from './components/Aura/BentoCard';
-import AuraDrawer from './components/Aura/AuraDrawer';
-import AuraKanban from './components/Aura/AuraKanban';
-import AuraTable from './components/Aura/AuraTable';
-import AuraAiModal from './components/Aura/AuraAiModal';
-import AuraSecurity from './components/Aura/AuraSecurity';
-
+import Sidebar from './components/Index/Sidebar';
+import Topbar from './components/Index/Topbar';
+import OpportunityList from './components/Index/OpportunityList';
+import OpportunityDetail from './components/Index/OpportunityDetail';
+import PipelineView from './components/Index/PipelineView';
+import TableView from './components/Index/TableView';
+import CvAuditorModal from './components/Index/CvAuditorModal';
+import SecurityDashboard from './components/Index/SecurityDashboard';
 import UserProfileModal from './components/UserProfileModal';
-import { API_BASE_URL } from './config/api';
 
-import { 
-  RefreshCw, 
-  Search, 
-  Sparkles, 
-  Clock, 
-  Calendar,
-  Layers,
-  ArrowRight
-} from 'lucide-react';
+import { API_BASE_URL } from './config/api';
+import { Clock } from 'lucide-react';
 
 export default function App() {
   return (
     <Router>
-      <AuraAppRoot />
+      <CareerlyIndexRoot />
     </Router>
   );
 }
 
-function AuraAppRoot() {
-  // Navigation & View State
-  const [activeTab, setActiveTab] = useState('explore'); // 'explore' | 'saved' | 'applications' | 'calendar' | 'security'
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'table' | 'kanban'
+function CareerlyIndexRoot() {
+  // Navigation
+  const [activeTab, setActiveTab] = useState('directory'); // 'directory' | 'saved' | 'pipeline' | 'deadlines' | 'security'
+  const [viewMode, setViewMode] = useState('split'); // 'split' | 'table' | 'pipeline'
 
-  // Data State
+  // Data
   const [opportunities, setOpportunities] = useState([]);
   const [selectedOpportunity, setSelectedOpportunity] = useState(null);
   const [savedOpportunityIds, setSavedOpportunityIds] = useState([]);
   const [applications, setApplications] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Search & Filter State
+  // Filters
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [noIeltsOnly, setNoIeltsOnly] = useState(false);
 
-  // Modals & User State
-  const [isAiLabOpen, setIsAiLabOpen] = useState(false);
+  // Modals & User
+  const [isCvAuditorOpen, setIsCvAuditorOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
 
-  // Load User & Token from Storage
+  // Load User & Token from storage
   useEffect(() => {
     const storedToken = localStorage.getItem('careerly_token') || sessionStorage.getItem('careerly_token');
     const storedUser = localStorage.getItem('careerly_user');
@@ -69,7 +59,7 @@ function AuraAppRoot() {
     }
   }, []);
 
-  // Fetch Opportunities from backend API
+  // Fetch opportunities
   useEffect(() => {
     const fetchOpportunities = async () => {
       setIsLoading(true);
@@ -78,8 +68,11 @@ function AuraAppRoot() {
         const data = await res.json();
         const opps = Array.isArray(data) ? data : (data.opportunities || []);
         setOpportunities(opps);
+        if (opps.length > 0 && !selectedOpportunity) {
+          setSelectedOpportunity(opps[0]);
+        }
       } catch (err) {
-        console.error('[Aura] Failed to fetch opportunities:', err);
+        console.error('[Careerly Index] Failed to fetch opportunities:', err);
       } finally {
         setIsLoading(false);
       }
@@ -88,13 +81,12 @@ function AuraAppRoot() {
     fetchOpportunities();
   }, []);
 
-  // Fetch Saved & Applications if authenticated
+  // Fetch saved & applications
   useEffect(() => {
     if (!token) return;
 
     const fetchUserData = async () => {
       try {
-        // Saved
         const savedRes = await fetch(`${API_BASE_URL}/user/saved`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -104,7 +96,6 @@ function AuraAppRoot() {
           setSavedOpportunityIds(items.map(s => s.opportunity_id || s.id));
         }
 
-        // Applications
         const appRes = await fetch(`${API_BASE_URL}/applications`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -114,14 +105,14 @@ function AuraAppRoot() {
           setApplications(apps);
         }
       } catch (e) {
-        console.warn('[Aura] User data sync notice:', e.message);
+        console.warn('[Careerly Index] User sync notice:', e.message);
       }
     };
 
     fetchUserData();
   }, [token]);
 
-  // Toggle Bookmark
+  // Toggle Save
   const handleToggleSave = async (oppId) => {
     const isCurrentlySaved = savedOpportunityIds.includes(oppId);
     if (isCurrentlySaved) {
@@ -140,7 +131,7 @@ function AuraAppRoot() {
     }
   };
 
-  // Update CRM Application Stage
+  // Update CRM Stage
   const handleUpdateStage = async (oppId, newStage) => {
     setApplications(prev => {
       const existing = prev.find(a => (a.opportunity_id || a.id) === oppId);
@@ -174,14 +165,18 @@ function AuraAppRoot() {
       result = result.filter(o => savedOpportunityIds.includes(o.id));
     }
 
-    if (selectedCategory === 'internships') {
+    if (categoryFilter === 'internships') {
       result = result.filter(o => (o.opportunity_type || '').toLowerCase().includes('intern') || (o.title || '').toLowerCase().includes('intern'));
-    } else if (selectedCategory === 'scholarships') {
+    } else if (categoryFilter === 'scholarships') {
       result = result.filter(o => (o.opportunity_type || '').toLowerCase().includes('scholar') || (o.title || '').toLowerCase().includes('scholar'));
-    } else if (selectedCategory === 'fellowships') {
+    } else if (categoryFilter === 'fellowships') {
       result = result.filter(o => (o.opportunity_type || '').toLowerCase().includes('fellow') || (o.title || '').toLowerCase().includes('fellow') || (o.opportunity_type || '').toLowerCase().includes('grant'));
-    } else if (selectedCategory === 'remote') {
+    } else if (categoryFilter === 'remote') {
       result = result.filter(o => o.is_remote === 1 || (o.location_country || '').toLowerCase().includes('remote') || (o.location_country || '').toLowerCase().includes('world'));
+    }
+
+    if (noIeltsOnly) {
+      result = result.filter(o => o.no_ielts === 1);
     }
 
     if (searchQuery.trim()) {
@@ -195,10 +190,7 @@ function AuraAppRoot() {
     }
 
     return result;
-  }, [opportunities, activeTab, selectedCategory, searchQuery, savedOpportunityIds]);
-
-  const spotlightOpportunity = filteredOpportunities.length > 0 ? filteredOpportunities[0] : null;
-  const standardOpportunities = filteredOpportunities.length > 0 ? filteredOpportunities.slice(1) : [];
+  }, [opportunities, activeTab, categoryFilter, noIeltsOnly, searchQuery, savedOpportunityIds]);
 
   const handleLogout = () => {
     localStorage.removeItem('careerly_token');
@@ -209,154 +201,126 @@ function AuraAppRoot() {
   };
 
   return (
-    <div style={{ display: 'flex', width: '100vw', height: '100vh', overflow: 'hidden', position: 'relative' }}>
+    <div className="app-container">
       
-      {/* 1. Global Navigation Dock */}
-      <AuraSidebar
+      {/* 1. Utilitarian Sidebar */}
+      <Sidebar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
-        isCollapsed={isSidebarCollapsed}
-        setIsCollapsed={setIsSidebarCollapsed}
         savedCount={savedOpportunityIds.length}
         appliedCount={applications.length}
         user={user}
         onOpenProfile={() => setIsProfileOpen(true)}
-        onOpenAiLab={() => setIsAiLabOpen(true)}
+        onOpenCvAuditor={() => setIsCvAuditorOpen(true)}
         onLogout={handleLogout}
       />
 
-      {/* 2. Main Workspace Canvas */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden', position: 'relative' }}>
+      {/* 2. Main Workbench Area */}
+      <div className="app-main">
         
-        {/* Top Floating Omnibar */}
-        <AuraHeader
+        {/* Top Filter Bar */}
+        <Topbar
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
-          selectedCategory={selectedCategory}
-          setSelectedCategory={setSelectedCategory}
+          categoryFilter={categoryFilter}
+          setCategoryFilter={setCategoryFilter}
+          noIeltsOnly={noIeltsOnly}
+          setNoIeltsOnly={setNoIeltsOnly}
           viewMode={viewMode}
           setViewMode={setViewMode}
-          totalResults={filteredOpportunities.length}
-          onOpenAiLab={() => setIsAiLabOpen(true)}
+          totalCount={filteredOpportunities.length}
         />
 
-        {/* Content Body */}
-        <div style={{ flex: 1, overflowY: 'auto', position: 'relative' }} className="custom-scroll">
-          
-          {/* VIEW: SECURITY OPERATIONS */}
-          {activeTab === 'security' ? (
-            <div style={{ padding: '2rem', height: '100%' }}>
-              <AuraSecurity />
-            </div>
-          ) : activeTab === 'calendar' ? (
-            /* VIEW: DEADLINES TIMELINE */
-            <div style={{ padding: '2rem', maxWidth: '1100px', margin: '0 auto' }}>
-              <div className="aura-card" style={{ padding: '2rem' }}>
-                <h2 style={{ fontSize: '1.35rem', fontWeight: '900', color: '#fff', marginBottom: '0.45rem' }}>Upcoming Application Roadmaps</h2>
-                <p style={{ color: 'var(--aura-text-secondary)', fontSize: '0.86rem', marginBottom: '1.75rem' }}>Chronological roadmap of official opportunity cutoffs.</p>
+        {/* Dynamic View Canvas */}
+        {activeTab === 'security' ? (
+          <SecurityDashboard />
+        ) : activeTab === 'deadlines' ? (
+          /* Deadlines View */
+          <div className="custom-scroll" style={{ padding: '24px', overflowY: 'auto', maxWidth: '1000px', margin: '0 auto' }}>
+            <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-sm)', padding: '20px' }}>
+              <h2 style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '4px' }}>Upcoming Cutoff Schedule</h2>
+              <p style={{ fontSize: '12px', color: 'var(--text-tertiary)', marginBottom: '16px' }}>Chronological schedule of official application deadlines.</p>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-                  {filteredOpportunities.slice(0, 15).map(opp => (
-                    <div
-                      key={opp.id}
-                      onClick={() => setSelectedOpportunity(opp)}
-                      className="aura-card"
-                      style={{ padding: '1.15rem 1.35rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
-                    >
-                      <div>
-                        <div style={{ fontWeight: '800', color: '#fff', fontSize: '0.96rem' }}>{opp.title}</div>
-                        <div style={{ fontSize: '0.78rem', color: 'var(--aura-text-secondary)' }}>{opp.company || opp.organization}</div>
-                      </div>
-                      <span className="aura-chip aura-chip-amber">
-                        {opp.deadline_raw || opp.deadline_utc || 'Rolling Admissions'}
-                      </span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {filteredOpportunities.slice(0, 20).map(opp => (
+                  <div
+                    key={opp.id}
+                    onClick={() => { setSelectedOpportunity(opp); setActiveTab('directory'); setViewMode('split'); }}
+                    style={{ padding: '12px 16px', background: 'var(--bg-surface-elevated)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-xs)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
+                  >
+                    <div>
+                      <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)' }}>{opp.title}</div>
+                      <div style={{ fontSize: '11.5px', color: 'var(--text-secondary)' }}>{opp.company || opp.organization}</div>
                     </div>
-                  ))}
-                </div>
+                    <span className="tag tag-amber">
+                      <Clock size={11} />
+                      <span>{opp.deadline_raw || opp.deadline_utc || 'Rolling'}</span>
+                    </span>
+                  </div>
+                ))}
               </div>
             </div>
-          ) : viewMode === 'kanban' || activeTab === 'applications' ? (
-            /* VIEW: KANBAN CRM PIPELINE */
-            <div style={{ padding: '1.5rem 2rem', height: '100%' }}>
-              <AuraKanban
-                applications={applications}
-                opportunities={opportunities}
-                onSelectOpportunity={(opp) => setSelectedOpportunity(opp)}
-                onUpdateStage={handleUpdateStage}
+          </div>
+        ) : viewMode === 'pipeline' || activeTab === 'pipeline' ? (
+          /* Kanban View */
+          <PipelineView
+            applications={applications}
+            opportunities={opportunities}
+            onSelectOpportunity={(opp) => {
+              setSelectedOpportunity(opp);
+              setViewMode('split');
+            }}
+            onUpdateStage={handleUpdateStage}
+          />
+        ) : viewMode === 'table' ? (
+          /* Spreadsheet Table View */
+          <div className="custom-scroll" style={{ height: 'calc(100vh - 56px)', overflowY: 'auto' }}>
+            <TableView
+              opportunities={filteredOpportunities}
+              onSelect={(opp) => {
+                setSelectedOpportunity(opp);
+                setViewMode('split');
+              }}
+              savedIds={savedOpportunityIds}
+              onToggleSave={handleToggleSave}
+            />
+          </div>
+        ) : (
+          /* Master-Detail Split Workbench */
+          <div className="app-workbench">
+            
+            {/* Left Master List */}
+            <div className="app-list-pane custom-scroll">
+              <OpportunityList
+                opportunities={filteredOpportunities}
+                selectedId={selectedOpportunity?.id}
+                onSelect={(opp) => setSelectedOpportunity(opp)}
+                savedIds={savedOpportunityIds}
+                onToggleSave={handleToggleSave}
               />
             </div>
-          ) : (
-            /* VIEW: BENTO STREAM & DATA TABLE */
-            <div style={{ padding: '2rem', maxWidth: '1440px', margin: '0 auto' }}>
-              
-              {isLoading ? (
-                <div style={{ textAlign: 'center', padding: '8rem 0', color: 'var(--aura-text-secondary)' }}>
-                  <RefreshCw size={40} className="spin-slow" color="var(--aura-primary)" style={{ margin: '0 auto 1.25rem' }} />
-                  <h3 style={{ color: '#fff', fontSize: '1.15rem', fontWeight: '800' }}>Calibrating Global Intelligence Stream...</h3>
-                  <p style={{ fontSize: '0.84rem', marginTop: '0.35rem' }}>Syncing verified opportunity records from official corporate portals.</p>
-                </div>
-              ) : viewMode === 'table' ? (
-                <AuraTable
-                  opportunities={filteredOpportunities}
-                  onSelect={(opp) => setSelectedOpportunity(opp)}
-                  savedIds={savedOpportunityIds}
-                  onToggleSave={handleToggleSave}
-                />
-              ) : filteredOpportunities.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '6rem 1rem', color: 'var(--aura-text-tertiary)' }}>
-                  <Search size={40} style={{ margin: '0 auto 1rem', opacity: 0.5 }} />
-                  <h3 style={{ color: '#fff', fontSize: '1.1rem', fontWeight: '800' }}>No Matching Opportunities Found</h3>
-                  <p style={{ fontSize: '0.86rem', marginTop: '0.35rem' }}>Try clearing filters or broadening your search query.</p>
-                </div>
-              ) : (
-                <>
-                  {/* Spotlight Top Match Hero Bento Card */}
-                  {spotlightOpportunity && (
-                    <SpotlightHero
-                      opportunity={spotlightOpportunity}
-                      onSelect={(opp) => setSelectedOpportunity(opp)}
-                      isSaved={savedOpportunityIds.includes(spotlightOpportunity.id)}
-                      onToggleSave={handleToggleSave}
-                    />
-                  )}
 
-                  {/* Asymmetric Bento Stream Grid */}
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.25rem' }}>
-                    {standardOpportunities.map(opp => (
-                      <BentoCard
-                        key={opp.id}
-                        opportunity={opp}
-                        onSelect={(opp) => setSelectedOpportunity(opp)}
-                        isSaved={savedOpportunityIds.includes(opp.id)}
-                        onToggleSave={handleToggleSave}
-                      />
-                    ))}
-                  </div>
-                </>
-              )}
-
+            {/* Right Rich Dossier Inspector */}
+            <div className="app-detail-pane">
+              <OpportunityDetail
+                opportunity={selectedOpportunity}
+                isSaved={selectedOpportunity ? savedOpportunityIds.includes(selectedOpportunity.id) : false}
+                onToggleSave={handleToggleSave}
+                onUpdateStage={handleUpdateStage}
+                currentStage={selectedOpportunity ? applications.find(a => (a.opportunity_id || a.id) === selectedOpportunity.id)?.stage : null}
+                onOpenCvAuditor={() => setIsCvAuditorOpen(true)}
+              />
             </div>
-          )}
 
-        </div>
+          </div>
+        )}
+
       </div>
 
-      {/* Slide-over Deep Intelligence Drawer */}
-      <AuraDrawer
-        opportunity={selectedOpportunity}
-        onClose={() => setSelectedOpportunity(null)}
-        isSaved={selectedOpportunity ? savedOpportunityIds.includes(selectedOpportunity.id) : false}
-        onToggleSave={handleToggleSave}
-        onUpdateStage={handleUpdateStage}
-        currentStage={selectedOpportunity ? applications.find(a => (a.opportunity_id || a.id) === selectedOpportunity.id)?.stage : null}
-        onOpenAiLab={() => setIsAiLabOpen(true)}
-      />
-
-      {/* AI Career Lab Modal */}
-      <AuraAiModal
-        isOpen={isAiLabOpen}
-        onClose={() => setIsAiLabOpen(false)}
-        userProfile={user}
+      {/* CV ATS Compliance Auditor Modal */}
+      <CvAuditorModal
+        isOpen={isCvAuditorOpen}
+        onClose={() => setIsCvAuditorOpen(false)}
       />
 
       {/* User Profile Modal */}

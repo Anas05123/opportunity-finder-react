@@ -1,71 +1,107 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 /* ==========================================================================
-   CAREERLY AURA OS — WORLD-CLASS DESIGN SYSTEM
-   Inspirations: Raycast × Linear × VisionOS × Stripe
+   CAREERLY INDEX — PROFESSIONAL DESIGN SYSTEM
+   Principles: Disciplined, High-Density, Intentional, Zero-Fluff
+   Palette: Deep Slate & International Blue (No purple gradients, no neon halos)
    ========================================================================== */
 
 :root {
-  /* Canvas & Atmosphere */
-  --aura-bg: #07090e;
-  --aura-surface: rgba(14, 18, 28, 0.72);
-  --aura-surface-elevated: rgba(22, 28, 44, 0.85);
-  --aura-surface-solid: #0d111b;
-  --aura-surface-hover: rgba(30, 38, 58, 0.95);
+  /* Canvas & Backgrounds (Dark Mode Default) */
+  --bg-app: #0b0f17;
+  --bg-sidebar: #0e131f;
+  --bg-surface: #131927;
+  --bg-surface-elevated: #182032;
+  --bg-surface-subtle: #1e273d;
+  --bg-surface-hover: #242f49;
   
-  /* Hairline Glass Borders */
-  --aura-border: rgba(255, 255, 255, 0.08);
-  --aura-border-hover: rgba(255, 255, 255, 0.18);
-  --aura-border-active: rgba(99, 102, 241, 0.5);
-  --aura-glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  /* Borders (Hairline 1px, Crisp) */
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-default: rgba(255, 255, 255, 0.10);
+  --border-hover: rgba(255, 255, 255, 0.20);
+  --border-focus: #3b82f6;
 
-  /* Luminous Gradients & Accents */
-  --aura-primary: #6366f1;
-  --aura-primary-hover: #4f46e5;
-  --aura-violet: #8b5cf6;
-  --aura-pink: #ec4899;
-  --aura-amber: #f59e0b;
-  --aura-emerald: #10b981;
-  --aura-cyan: #06b6d4;
+  /* Primary Brand Accent (Functional International Blue) */
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --primary-subtle: rgba(37, 99, 235, 0.12);
+  --primary-border: rgba(37, 99, 235, 0.35);
 
-  --aura-grad-iris: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
-  --aura-grad-emerald: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
-  --aura-grad-sunset: linear-gradient(135deg, #f59e0b 0%, #ec4899 100%);
-  --aura-grad-card: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%);
+  /* Status Tokens (Semantic) */
+  --success: #10b981;
+  --success-subtle: rgba(16, 185, 129, 0.12);
+  --success-border: rgba(16, 185, 129, 0.30);
+  
+  --warning: #f59e0b;
+  --warning-subtle: rgba(245, 158, 11, 0.12);
+  --warning-border: rgba(245, 158, 11, 0.30);
 
-  /* Typography */
-  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-mono: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
+  --danger: #ef4444;
+  --danger-subtle: rgba(239, 68, 68, 0.12);
+  --danger-border: rgba(239, 68, 68, 0.30);
 
-  --aura-text-primary: #f8fafc;
-  --aura-text-secondary: #94a3b8;
-  --aura-text-tertiary: #64748b;
-  --aura-text-muted: #475569;
+  /* Typography Colors */
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-tertiary: #64748b;
+  --text-disabled: #475569;
 
-  /* Radius Scales */
-  --aura-radius-sm: 8px;
-  --aura-radius-md: 12px;
-  --aura-radius-lg: 18px;
-  --aura-radius-xl: 24px;
-  --aura-radius-full: 9999px;
+  /* Fonts */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', Consolas, monospace;
 
-  /* Depth & Shadows */
-  --aura-shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.4);
-  --aura-shadow-md: 0 8px 28px rgba(0, 0, 0, 0.5);
-  --aura-shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.6);
-  --aura-glow-primary: 0 0 32px rgba(99, 102, 241, 0.28);
-  --aura-glow-emerald: 0 0 32px rgba(16, 185, 129, 0.28);
-  --aura-glow-pink: 0 0 32px rgba(236, 72, 153, 0.28);
+  /* Standardized Border Radiuses (Strict) */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-full: 9999px;
 
-  /* Physics Transitions */
-  --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
-  --trans-fast: 0.15s var(--ease-spring);
-  --trans-base: 0.25s var(--ease-spring);
-  --trans-smooth: 0.4s var(--ease-spring);
+  /* Elevation (Flat & Subtle, Zero Neon) */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 24px rgba(0, 0, 0, 0.5);
+
+  /* Strict Spacing Scale (8pt grid) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+
+  /* Micro-Interactions (Subtle 150ms) */
+  --transition-fast: 0.15s ease-out;
+  --transition-base: 0.2s ease-out;
+}
+
+/* Light Theme Variables */
+[data-theme="light"] {
+  --bg-app: #f8fafc;
+  --bg-sidebar: #ffffff;
+  --bg-surface: #ffffff;
+  --bg-surface-elevated: #f1f5f9;
+  --bg-surface-subtle: #e2e8f0;
+  --bg-surface-hover: #cbd5e1;
+
+  --border-subtle: #f1f5f9;
+  --border-default: #e2e8f0;
+  --border-hover: #cbd5e1;
+  --border-focus: #2563eb;
+
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-tertiary: #94a3b8;
+  --text-disabled: #cbd5e1;
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 /* ==========================================================================
-   RESET & AMBIENT CANVAS
+   BASE HTML RESETS & BODY
    ========================================================================== */
 
 * {
@@ -73,33 +109,21 @@
   padding: 0;
   box-sizing: border-box;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
 html, body {
   width: 100%;
-  min-height: 100vh;
-  background-color: var(--aura-bg);
-  color: var(--aura-text-primary);
+  height: 100%;
+  background-color: var(--bg-app);
+  color: var(--text-primary);
   font-family: var(--font-sans);
-  font-size: 15px;
+  font-size: 14px;
   line-height: 1.5;
-  overflow-x: hidden;
-}
-
-/* Atmospheric Aurora Spheres in Background */
-body {
-  background-image: 
-    radial-gradient(circle at 15% 10%, rgba(99, 102, 241, 0.12) 0%, transparent 45%),
-    radial-gradient(circle at 85% 25%, rgba(236, 72, 153, 0.08) 0%, transparent 40%),
-    radial-gradient(circle at 50% 90%, rgba(16, 185, 129, 0.06) 0%, transparent 50%),
-    radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-  background-size: 100% 100%, 100% 100%, 100% 100%, 32px 32px;
-  background-attachment: fixed;
+  overflow: hidden;
 }
 
 /* ==========================================================================
-   SCROLLBAR & UTILITY CLASSES
+   SCROLLBAR & UTILITIES
    ========================================================================== */
 
 .no-scrollbar {
@@ -112,282 +136,213 @@ body {
 
 .custom-scroll {
   scrollbar-width: thin;
-  scrollbar-color: var(--aura-border) transparent;
+  scrollbar-color: var(--border-default) transparent;
 }
 .custom-scroll::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 .custom-scroll::-webkit-scrollbar-track {
   background: transparent;
 }
 .custom-scroll::-webkit-scrollbar-thumb {
-  background: var(--aura-border-hover);
-  border-radius: var(--aura-radius-full);
+  background: var(--border-default);
+  border-radius: var(--radius-full);
 }
 .custom-scroll::-webkit-scrollbar-thumb:hover {
-  background: var(--aura-text-tertiary);
+  background: var(--text-tertiary);
 }
 
 /* ==========================================================================
-   AURA GLASS COMPONENTS & CARDS
+   STANDARDIZED BUTTONS & INPUTS (Strict Design Language)
    ========================================================================== */
 
-.aura-glass {
-  background: var(--aura-surface);
-  backdrop-filter: blur(28px);
-  -webkit-backdrop-filter: blur(28px);
-  border: 1px solid var(--aura-border);
-  box-shadow: var(--aura-shadow-sm), var(--aura-glass-highlight);
-}
-
-.aura-card {
-  background: var(--aura-surface);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid var(--aura-border);
-  border-radius: var(--aura-radius-lg);
-  padding: 1.35rem;
-  box-shadow: var(--aura-shadow-sm), var(--aura-glass-highlight);
-  transition: all var(--trans-base);
-  position: relative;
-  overflow: hidden;
-}
-
-.aura-card:hover {
-  background: var(--aura-surface-elevated);
-  border-color: var(--aura-border-hover);
-  transform: translateY(-3px);
-  box-shadow: var(--aura-shadow-md);
-}
-
-.aura-card.spotlight {
-  background: linear-gradient(135deg, rgba(22, 28, 44, 0.95) 0%, rgba(14, 18, 28, 0.9) 100%);
-  border: 1px solid rgba(99, 102, 241, 0.3);
-  box-shadow: var(--aura-shadow-md), var(--aura-glow-primary);
-}
-
-/* ==========================================================================
-   AURA BUTTON PRIMITIVES
-   ========================================================================== */
-
-.aura-btn {
+.btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 6px;
   font-family: var(--font-sans);
-  font-size: 0.88rem;
-  font-weight: 700;
-  padding: 0.62rem 1.15rem;
-  border-radius: var(--aura-radius-md);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
   border: 1px solid transparent;
   cursor: pointer;
-  transition: all var(--trans-fast);
+  transition: all var(--transition-fast);
   white-space: nowrap;
   user-select: none;
   text-decoration: none;
 }
 
-.aura-btn-primary {
-  background: var(--aura-primary);
+.btn-primary {
+  background: var(--primary);
   color: #ffffff;
-  border-color: var(--aura-primary);
-  box-shadow: var(--aura-shadow-sm);
+  border-color: var(--primary);
 }
-.aura-btn-primary:hover {
-  background: var(--aura-primary-hover);
-  border-color: var(--aura-primary-hover);
-  transform: translateY(-1px);
-  box-shadow: var(--aura-glow-primary);
+.btn-primary:hover {
+  background: var(--primary-hover);
+  border-color: var(--primary-hover);
 }
 
-.aura-btn-ai {
-  background: var(--aura-grad-iris);
-  color: #ffffff;
-  border: none;
-  box-shadow: var(--aura-shadow-sm);
-  position: relative;
-  overflow: hidden;
+.btn-secondary {
+  background: var(--bg-surface-elevated);
+  color: var(--text-primary);
+  border-color: var(--border-default);
 }
-.aura-btn-ai:hover {
-  transform: translateY(-1px);
-  box-shadow: var(--aura-glow-pink);
-  filter: brightness(1.08);
+.btn-secondary:hover {
+  background: var(--bg-surface-subtle);
+  border-color: var(--border-hover);
 }
 
-.aura-btn-secondary {
-  background: var(--aura-surface-elevated);
-  color: var(--aura-text-primary);
-  border-color: var(--aura-border);
-}
-.aura-btn-secondary:hover {
-  background: var(--aura-surface-hover);
-  border-color: var(--aura-border-hover);
-  color: #ffffff;
-  transform: translateY(-1px);
-}
-
-.aura-btn-ghost {
+.btn-ghost {
   background: transparent;
-  color: var(--aura-text-secondary);
+  color: var(--text-secondary);
 }
-.aura-btn-ghost:hover {
-  background: var(--aura-surface-elevated);
-  color: var(--aura-text-primary);
+.btn-ghost:hover {
+  background: var(--bg-surface-elevated);
+  color: var(--text-primary);
 }
 
-.aura-btn-icon {
-  width: 36px;
-  height: 36px;
+.btn-icon {
+  width: 32px;
+  height: 32px;
   padding: 0;
-  border-radius: var(--aura-radius-sm);
+  border-radius: var(--radius-sm);
   display: inline-flex;
   align-items: center;
   justify-content: center;
 }
 
+.input-field {
+  width: 100%;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+.input-field:focus {
+  border-color: var(--border-focus);
+}
+.input-field::placeholder {
+  color: var(--text-tertiary);
+}
+
 /* ==========================================================================
-   AURA BADGES & CHIPS
+   STANDARDIZED BADGES & TAGS
    ========================================================================== */
 
-.aura-chip {
+.tag {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  padding: 0.28rem 0.65rem;
-  border-radius: var(--aura-radius-full);
-  font-size: 0.76rem;
-  font-weight: 700;
-  border: 1px solid transparent;
-}
-
-.aura-chip-iris {
-  background: rgba(99, 102, 241, 0.12);
-  color: #818cf8;
-  border-color: rgba(99, 102, 241, 0.25);
-}
-
-.aura-chip-emerald {
-  background: rgba(16, 185, 129, 0.12);
-  color: #34d399;
-  border-color: rgba(16, 185, 129, 0.25);
-}
-
-.aura-chip-amber {
-  background: rgba(245, 158, 11, 0.12);
-  color: #fbbf24;
-  border-color: rgba(245, 158, 11, 0.25);
-}
-
-.aura-chip-pink {
-  background: rgba(236, 72, 153, 0.12);
-  color: #f472b6;
-  border-color: rgba(236, 72, 153, 0.25);
-}
-
-.aura-chip-muted {
-  background: var(--aura-surface-elevated);
-  color: var(--aura-text-secondary);
-  border-color: var(--aura-border);
-}
-
-/* ==========================================================================
-   OMNIBAR & SEARCH ISLAND
-   ========================================================================== */
-
-.aura-omnibar {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  background: var(--aura-surface-elevated);
-  border: 1px solid var(--aura-border);
-  border-radius: var(--aura-radius-full);
-  padding: 0.55rem 1.15rem;
-  width: 100%;
-  max-width: 580px;
-  backdrop-filter: blur(20px);
-  box-shadow: var(--aura-shadow-sm);
-  transition: all var(--trans-fast);
-}
-
-.aura-omnibar:focus-within {
-  border-color: var(--aura-primary);
-  background: var(--aura-surface-hover);
-  box-shadow: var(--aura-glow-primary);
-}
-
-.aura-omnibar input {
-  background: transparent;
-  border: none;
-  outline: none;
-  color: var(--aura-text-primary);
-  font-family: var(--font-sans);
-  font-size: 0.92rem;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: var(--radius-xs);
+  font-size: 11.5px;
   font-weight: 500;
-  width: 100%;
+  border: 1px solid transparent;
+  line-height: 1.4;
 }
 
-.aura-omnibar input::placeholder {
-  color: var(--aura-text-tertiary);
+.tag-blue {
+  background: var(--primary-subtle);
+  color: #60a5fa;
+  border-color: var(--primary-border);
+}
+
+.tag-green {
+  background: var(--success-subtle);
+  color: #34d399;
+  border-color: var(--success-border);
+}
+
+.tag-amber {
+  background: var(--warning-subtle);
+  color: #fbbf24;
+  border-color: var(--warning-border);
+}
+
+.tag-neutral {
+  background: var(--bg-surface-elevated);
+  color: var(--text-secondary);
+  border-color: var(--border-default);
 }
 
 /* ==========================================================================
-   DRAWER SLIDEOVER (PEEK STUDIO)
+   LAYOUT STRUCTURE: MASTER-DETAIL SPLIT WORKBENCH
    ========================================================================== */
 
-.aura-drawer-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(5, 7, 11, 0.65);
-  backdrop-filter: blur(12px);
-  z-index: 90;
+.app-container {
   display: flex;
-  justify-content: flex-end;
-  animation: fadeIn 0.2s ease;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--bg-app);
 }
 
-.aura-drawer-panel {
-  width: 100%;
-  max-width: 560px;
+.app-sidebar {
+  width: 240px;
   height: 100vh;
-  background: var(--aura-surface-solid);
-  border-left: 1px solid var(--aura-border);
-  box-shadow: var(--aura-shadow-lg);
+  background: var(--bg-sidebar);
+  border-right: 1px solid var(--border-default);
   display: flex;
   flex-direction: column;
-  animation: slideLeft 0.28s var(--ease-spring);
-  z-index: 100;
+  flex-shrink: 0;
+  z-index: 30;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+.app-main {
+  flex: 1;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
-@keyframes slideLeft {
-  from { transform: translateX(100%); }
-  to { transform: translateX(0); }
+.app-topbar {
+  height: 56px;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-default);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  flex-shrink: 0;
+  z-index: 20;
 }
 
-/* ==========================================================================
-   ANIMATIONS & KEYFRAMES
-   ========================================================================== */
-
-@keyframes pulseGlow {
-  0%, 100% { opacity: 0.4; transform: scale(1); }
-  50% { opacity: 0.8; transform: scale(1.05); }
+.app-workbench {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 480px 1fr;
+  height: calc(100vh - 56px);
+  overflow: hidden;
 }
 
-.animate-glow {
-  animation: pulseGlow 3s ease-in-out infinite;
+.app-list-pane {
+  height: 100%;
+  overflow-y: auto;
+  border-right: 1px solid var(--border-default);
+  background: var(--bg-app);
 }
 
-@keyframes spinSlow {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+.app-detail-pane {
+  height: 100%;
+  overflow-y: auto;
+  background: var(--bg-surface);
 }
 
-.spin-slow {
-  animation: spinSlow 3s linear infinite;
+/* Responsive collapse on smaller viewports */
+@media (max-width: 1024px) {
+  .app-workbench {
+    grid-template-columns: 1fr;
+  }
+  .app-workbench.has-detail .app-list-pane {
+    display: none;
+  }
 }

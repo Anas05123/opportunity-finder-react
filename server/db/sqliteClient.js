@@ -542,49 +542,93 @@ export function initSqliteDatabase() {
   if (oppCount === 0 && fs.existsSync(jsonDbPath)) {
     try {
       const data = JSON.parse(fs.readFileSync(jsonDbPath, 'utf-8'));
-      if (Array.isArray(data.opportunities)) {
+      if (Array.isArray(data.opportunities) && data.opportunities.length > 0) {
         const insertStmt = db.prepare(`
           INSERT OR REPLACE INTO opportunities (
-            id, title, company, organization, opportunity_type, degree_level, field_of_study,
-            location_country, location_city, stipend_text, deadline_utc, deadline_raw,
-            no_ielts, description, benefits_summary, eligibility_summary, official_apply_url,
-            official_program_url, contact_email, source_name, source_url, trust_score, verification_status, last_verified_at
+            id, title, company, organization, opportunity_type, category, degree_level, field_of_study,
+            location_country, location_city, location_raw, is_remote, work_mode, funding_level, is_paid,
+            salary_min, salary_max, salary_currency, salary_period, stipend_text, tuition_covered,
+            housing_covered, travel_covered, no_ielts, skills_required, skills_preferred, education_requirements,
+            experience_requirements, experience_years_required, visa_requirements, start_date, duration,
+            deadline_utc, deadline_raw, description, responsibilities, requirements, benefits_summary,
+            eligibility_summary, job_page_url, official_apply_url, official_program_url, application_url_type,
+            contact_email, source_name, source_url, source_tier, source_authority_level, trust_score,
+            confidence_score, verification_level, verification_status, last_verified_at, status
           ) VALUES (
+            ?, ?, ?, ?, ?, ?, ?, ?,
             ?, ?, ?, ?, ?, ?, ?,
+            ?, ?, ?, ?, ?, ?,
+            ?, ?, ?, ?, ?, ?,
             ?, ?, ?, ?, ?,
+            ?, ?, ?, ?, ?, ?,
             ?, ?, ?, ?, ?,
-            ?, ?, ?, ?, ?, ?, ?
+            ?, ?, ?, ?, ?, ?,
+            ?, ?, ?, ?, ?
           )
         `);
 
-        for (const o of data.opportunities) {
-          insertStmt.run(
-            o.id,
-            o.title || 'Opportunity',
-            o.organization || 'Company',
-            o.organization || 'Company',
-            o.type || 'internship',
-            o.degree_level || 'undergrad',
-            o.field_of_study || 'general',
-            o.location_country || 'Malaysia',
-            o.location_city || 'Kuala Lumpur',
-            o.stipend_text || 'Competitive Stipend',
-            o.deadline_utc || '2026-12-31',
-            o.deadline_raw || o.deadline_utc || '2026-12-31',
-            o.no_ielts ?? 1,
-            o.description || '',
-            o.benefits_summary || '',
-            o.eligibility_summary || '',
-            o.official_apply_url || '',
-            o.official_program_url || '',
-            o.contact_email || 'careers@' + (o.organization || 'company').toLowerCase().replace(/[^a-z]/g, '') + '.com',
-            o.source_name || 'Official Corporate Portal',
-            o.official_program_url || o.official_apply_url || '',
-            o.trust_score || 98,
-            o.verification_status || 'official_verified',
-            new Date().toISOString()
-          );
-        }
+        const seedAll = db.transaction((opps) => {
+          for (const o of opps) {
+            insertStmt.run(
+              o.id,
+              o.title || 'Opportunity',
+              o.company || o.organization || 'Company',
+              o.organization || o.company || 'Company',
+              o.opportunity_type || o.type || 'internship',
+              o.category || 'General',
+              o.degree_level || 'undergrad',
+              o.field_of_study || 'general',
+              o.location_country || 'Malaysia',
+              o.location_city || 'Kuala Lumpur',
+              o.location_raw || null,
+              o.is_remote ? 1 : 0,
+              o.work_mode || (o.is_remote ? 'remote' : 'onsite'),
+              o.funding_level || 'paid_salary',
+              o.is_paid !== undefined ? o.is_paid : 1,
+              o.salary_min ?? null,
+              o.salary_max ?? null,
+              o.salary_currency || 'MYR',
+              o.salary_period || 'monthly',
+              o.stipend_text || 'Competitive Stipend',
+              o.tuition_covered ? 1 : 0,
+              o.housing_covered ? 1 : 0,
+              o.travel_covered ? 1 : 0,
+              o.no_ielts ?? 1,
+              typeof o.skills_required === 'object' ? JSON.stringify(o.skills_required) : (o.skills_required || null),
+              typeof o.skills_preferred === 'object' ? JSON.stringify(o.skills_preferred) : (o.skills_preferred || null),
+              o.education_requirements || null,
+              o.experience_requirements || null,
+              o.experience_years_required || 0,
+              o.visa_requirements || null,
+              o.start_date || null,
+              o.duration || null,
+              o.deadline_utc || '2026-12-31',
+              o.deadline_raw || o.deadline_utc || '2026-12-31',
+              o.description || '',
+              typeof o.responsibilities === 'object' ? JSON.stringify(o.responsibilities) : (o.responsibilities || null),
+              typeof o.requirements === 'object' ? JSON.stringify(o.requirements) : (o.requirements || null),
+              o.benefits_summary || '',
+              o.eligibility_summary || '',
+              o.job_page_url || o.official_program_url || null,
+              o.official_apply_url || '',
+              o.official_program_url || o.official_apply_url || '',
+              o.application_url_type || 'EXACT_JOB_APPLICATION',
+              o.contact_email || 'careers@' + (o.organization || o.company || 'company').toLowerCase().replace(/[^a-z]/g, '') + '.com',
+              o.source_name || 'Official Corporate Portal',
+              o.source_url || o.official_program_url || o.official_apply_url || '',
+              o.source_tier || 1,
+              o.source_authority_level || 1,
+              o.trust_score || 98,
+              o.confidence_score || 95.0,
+              o.verification_level || 5,
+              o.verification_status || 'VERIFIED_ACTIVE',
+              o.last_verified_at || new Date().toISOString(),
+              o.status || 'active'
+            );
+          }
+        });
+
+        seedAll(data.opportunities);
         console.log(`[SQLite DB] Seeded ${data.opportunities.length} master opportunities into SQLite.`);
       }
     } catch (e) {
