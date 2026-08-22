@@ -257,29 +257,43 @@ export default function SecurityCenter({ triggerToast }) {
     }
   }, [getAuthHeaders]);
 
-  // Initial Load All Data
-  const loadAllSecurityData = useCallback(async () => {
+  // Load Core Overview and Active Tab Data on Demand
+  const loadActiveTabData = useCallback(async () => {
     setIsLoading(true);
-    await Promise.all([
-      fetchCoreStatus(),
-      fetchCategories(),
-      fetchEventStats(),
-      fetchEvents(eventsPage),
-      fetchAudits(auditsPage),
-      fetchChecks(checksPage),
-      fetchSupplyChain(),
-      fetchHealth(),
-      fetchAlerts(alertsPage),
-      fetchAlertStats()
-    ]);
-    setIsLoading(false);
-  }, [fetchCoreStatus, fetchCategories, fetchEventStats, fetchEvents, fetchAudits, fetchChecks, fetchSupplyChain, fetchHealth, fetchAlerts, fetchAlertStats, eventsPage, auditsPage, checksPage, alertsPage]);
+    try {
+      const coreTasks = [fetchCoreStatus(), fetchCategories()];
+      if (activeSecTab === 'overview') {
+        coreTasks.push(fetchHealth(), fetchEventStats());
+      } else if (activeSecTab === 'events') {
+        coreTasks.push(fetchEvents(eventsPage), fetchEventStats());
+      } else if (activeSecTab === 'audits') {
+        coreTasks.push(fetchAudits(auditsPage));
+      } else if (activeSecTab === 'checks') {
+        coreTasks.push(fetchChecks(checksPage));
+      } else if (activeSecTab === 'supply-chain') {
+        coreTasks.push(fetchSupplyChain());
+      } else if (activeSecTab === 'health') {
+        coreTasks.push(fetchHealth());
+      } else if (activeSecTab === 'alerts') {
+        coreTasks.push(fetchAlerts(alertsPage), fetchAlertStats());
+      }
+      await Promise.allSettled(coreTasks);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [
+    activeSecTab, fetchCoreStatus, fetchCategories, fetchHealth, fetchEventStats, 
+    fetchEvents, fetchAudits, fetchChecks, fetchSupplyChain, fetchAlerts, fetchAlertStats,
+    eventsPage, auditsPage, checksPage, alertsPage
+  ]);
+
+  const loadAllSecurityData = loadActiveTabData;
 
   useEffect(() => {
     if (isAdmin) {
-      loadAllSecurityData();
+      loadActiveTabData();
     }
-  }, [isAdmin, loadAllSecurityData]);
+  }, [isAdmin, loadActiveTabData]);
 
   // Trigger Security Actions
   const runSecurityAction = async (actionType, endpoint, successMsg) => {
