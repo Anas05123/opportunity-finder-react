@@ -5,6 +5,7 @@ import {
   Copy, CheckCheck, ExternalLink, Sparkles, Clock, ArrowUpRight
 } from 'lucide-react';
 
+import MatchRing from '../ui/MatchRing';
 import { cleanStipendText, cleanHtmlText } from '../../utils/formatUtils.js';
 import { sanitizeUrl } from '../../utils/sanitizeUrl.js';
 
@@ -27,11 +28,6 @@ export default function OpportunityCard({
   const cleanCompany = cleanHtmlText(opportunity.organization || opportunity.company || opportunity.company_name || 'Enterprise Employer');
 
   const score = opportunity.match_score || 92;
-  const isHighMatch = score >= 90;
-  const isGoodMatch = score >= 80;
-
-  const matchColor = isHighMatch ? 'var(--accent-emerald, #10b981)' : isGoodMatch ? 'var(--primary, #6366f1)' : '#f59e0b';
-  const matchBg = isHighMatch ? 'rgba(16, 185, 129, 0.1)' : isGoodMatch ? 'rgba(99, 102, 241, 0.1)' : 'rgba(245, 158, 11, 0.1)';
 
   const getInitials = (name) => {
     if (!name) return 'OP';
@@ -53,7 +49,15 @@ export default function OpportunityCard({
 
   return (
     <div 
-      className="saas-card-item"
+      className="card-editorial"
+      style={{
+        padding: '20px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '12px',
+        cursor: 'pointer',
+        position: 'relative'
+      }}
       onClick={() => onSelectOp && onSelectOp(opportunity)}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
@@ -67,41 +71,80 @@ export default function OpportunityCard({
     >
       
       {/* Top Header: Organization & Actions */}
-      <div className="saas-card-header">
-        <div className="saas-card-org">
-          <div className="saas-card-avatar">
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', overflow: 'hidden' }}>
+          <div style={{
+            width: '36px',
+            height: '36px',
+            borderRadius: 'var(--radius-sm)',
+            background: 'var(--color-primary-ice)',
+            color: 'var(--color-primary)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontWeight: '700',
+            fontSize: '13px',
+            fontFamily: 'var(--careerly-font-display)',
+            flexShrink: 0,
+            border: '1px solid var(--color-primary-soft)'
+          }}>
             {getInitials(cleanCompany)}
           </div>
-          <div className="saas-card-org-meta">
-            <span className="saas-card-company">{cleanCompany}</span>
-            <span className="saas-card-location">
-              <MapPin size={11} />
-              {opportunity.location_city || opportunity.location_country || 'Worldwide'}
+          <div style={{ overflow: 'hidden' }}>
+            <span style={{ fontSize: '13px', fontWeight: '700', color: 'var(--color-text-main)', display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {cleanCompany}
+            </span>
+            <span style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center', gap: '3px' }}>
+              <MapPin size={10} />
+              <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {opportunity.location_city || opportunity.location_country || 'Worldwide'}
+              </span>
             </span>
           </div>
         </div>
 
-        <div className="saas-card-top-actions" onClick={(e) => e.stopPropagation()}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }} onClick={(e) => e.stopPropagation()}>
           <button 
-            className="saas-card-icon-btn"
+            style={{
+              width: '28px',
+              height: '28px',
+              borderRadius: 'var(--radius-xs)',
+              background: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+              color: 'var(--color-text-tertiary)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
             onClick={handleCopyLink}
             aria-label={copied ? 'Link Copied' : 'Copy Apply URL'}
             title={copied ? 'Link Copied to Clipboard!' : 'Copy Direct Application URL'}
           >
-            {copied ? <CheckCheck size={13} color="var(--accent-emerald, #10b981)" /> : <Copy size={13} />}
+            {copied ? <CheckCheck size={13} color="var(--color-success)" /> : <Copy size={13} />}
           </button>
 
           {onToggleSave && (
             <button 
-              className={`saas-card-icon-btn ${isSaved ? 'is-saved' : ''}`}
+              style={{
+                width: '28px',
+                height: '28px',
+                borderRadius: 'var(--radius-xs)',
+                background: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                color: isSaved ? 'var(--color-primary)' : 'var(--color-text-tertiary)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
               onClick={() => onToggleSave(opportunity.id || opportunity.opportunity_id)}
               aria-label={isSaved ? 'Remove from Saved' : 'Save Opportunity'}
               title={isSaved ? 'Remove from Saved' : 'Save Opportunity'}
             >
               <Bookmark 
-                size={13} 
-                fill={isSaved ? 'var(--primary)' : 'none'} 
-                color={isSaved ? 'var(--primary)' : 'currentColor'} 
+                size={14} 
+                fill={isSaved ? 'currentColor' : 'none'} 
               />
             </button>
           )}
@@ -109,58 +152,62 @@ export default function OpportunityCard({
       </div>
 
       {/* Role Title */}
-      <h3 className="saas-card-title" title={cleanTitle}>
+      <h3 style={{ fontSize: '15px', fontWeight: '700', color: 'var(--color-text-main)', lineHeight: 1.35, minHeight: '40px' }} title={cleanTitle}>
         {cleanTitle}
       </h3>
 
       {/* Tags Row */}
-      <div className="saas-card-tags">
-        <span className="saas-tag">
+      <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
+        <span className="tag-badge tag-badge-blue">
           {opportunity.opportunity_type || opportunity.type || 'Opportunity'}
         </span>
 
         {hasStipend && (
-          <span className="saas-tag saas-tag-stipend">
-            <Coins size={11} />
-            {displayStipend}
+          <span className="tag-badge tag-badge-amber">
+            <Coins size={10} />
+            <span style={{ maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {displayStipend}
+            </span>
           </span>
         )}
 
-        {opportunity.no_ielts ? (
-          <span className="saas-tag saas-tag-waiver">
+        {opportunity.no_ielts === 1 && (
+          <span className="tag-badge tag-badge-emerald">
             English Waiver
           </span>
-        ) : null}
+        )}
       </div>
 
-      {/* Key Match Alignment Reason */}
-      <div className="saas-card-match-preview">
-        <div className="saas-match-score-pill" style={{ background: matchBg, color: matchColor }}>
-          <span className="saas-match-dot" style={{ background: matchColor }} />
-          <span>{score}% Match</span>
+      {/* Card Footer: Match Score Ring & Action CTA */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '12px', borderTop: '1px solid var(--color-paper-border)', marginTop: 'auto' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <MatchRing score={score} size={36} />
+          <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)', fontWeight: '600' }}>
+            Match Fit
+          </span>
         </div>
-        <span className="saas-match-reason-text">
-          {opportunity.discipline || opportunity.field_of_study || 'Aligned with target profile'}
-        </span>
-      </div>
 
-      {/* Card Footer Actions */}
-      <div className="saas-card-footer" onClick={(e) => e.stopPropagation()}>
-        <button 
-          className="saas-btn-details"
-          onClick={() => onSelectOp && onSelectOp(opportunity)}
-        >
-          <span>View Details</span>
-          <ArrowUpRight size={13} />
-        </button>
+        <div style={{ display: 'flex', gap: '6px' }} onClick={(e) => e.stopPropagation()}>
+          <button 
+            className="btn-secondary-white"
+            style={{ padding: '5px 10px', fontSize: '11.5px', borderRadius: 'var(--radius-xs)' }}
+            onClick={() => onSelectOp && onSelectOp(opportunity)}
+          >
+            <span>Inspect</span>
+            <ArrowUpRight size={12} />
+          </button>
 
-        <button 
-          className="saas-btn-prep"
-          onClick={() => onPrepareApplication && onPrepareApplication(opportunity)}
-        >
-          <Zap size={13} />
-          <span>Prep Kit</span>
-        </button>
+          {onPrepareApplication && (
+            <button 
+              className="btn-primary-blue"
+              style={{ padding: '5px 12px', fontSize: '11.5px', borderRadius: 'var(--radius-xs)' }}
+              onClick={() => onPrepareApplication(opportunity)}
+            >
+              <Zap size={12} />
+              <span>Prep Kit</span>
+            </button>
+          )}
+        </div>
       </div>
 
     </div>
