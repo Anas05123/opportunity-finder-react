@@ -26,29 +26,52 @@ class ErrorBoundary extends Component {
           alignItems: 'center',
           justifyContent: 'center',
           minHeight: '100vh',
-          background: 'var(--bg-main, #0b0f19)',
-          color: 'var(--text-primary, #f8fafc)',
+          background: '#0b0f19',
+          color: '#f8fafc',
           padding: '2rem',
           textAlign: 'center',
           fontFamily: 'Inter, system-ui, -apple-system, sans-serif'
         }}>
           <div style={{
-            background: 'var(--bg-card, #131b2e)',
-            border: '1px solid var(--border, #1e293b)',
+            background: '#131b2e',
+            border: '1px solid #1e293b',
             borderRadius: '1rem',
             padding: '2.5rem',
-            maxWidth: '520px',
+            maxWidth: '680px',
             boxShadow: '0 20px 25px -5px rgba(0,0,0,0.5)'
           }}>
             <h2 style={{ fontSize: '1.5rem', fontWeight: '800', marginBottom: '0.75rem', color: '#38bdf8' }}>
               Careerly Platform
             </h2>
-            <p style={{ color: '#94a3b8', fontSize: '0.9rem', marginBottom: '1.5rem', lineHeight: '1.5' }}>
-              The application encountered a client rendering state issue. Click below to reload and reset session state.
+            <p style={{ color: '#94a3b8', fontSize: '0.9rem', marginBottom: '1rem', lineHeight: '1.5' }}>
+              The application encountered a client rendering state issue.
             </p>
+            {this.state.error && (
+              <div style={{
+                background: '#070a12',
+                border: '1px solid #334155',
+                borderRadius: '0.5rem',
+                padding: '1rem',
+                color: '#f87171',
+                fontSize: '0.8rem',
+                fontFamily: 'monospace',
+                textAlign: 'left',
+                marginBottom: '1.5rem',
+                overflowX: 'auto',
+                maxHeight: '200px'
+              }}>
+                <div><strong>{this.state.error.name}:</strong> {this.state.error.message}</div>
+                {this.state.error.stack && (
+                  <pre style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: '#cbd5e1', whiteSpace: 'pre-wrap' }}>
+                    {this.state.error.stack}
+                  </pre>
+                )}
+              </div>
+            )}
             <button
               onClick={() => {
-                localStorage.removeItem('opp_theme');
+                localStorage.clear();
+                sessionStorage.clear();
                 window.location.reload();
               }}
               style={{
@@ -62,7 +85,7 @@ class ErrorBoundary extends Component {
                 cursor: 'pointer'
               }}
             >
-              Reload Application
+              Reset Cache & Reload Application
             </button>
           </div>
         </div>
