@@ -1,7 +1,4 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { 
-  BrowserRouter as Router 
-} from 'react-router-dom';
 
 import Sidebar from './components/Index/Sidebar';
 import Topbar from './components/Index/Topbar';
@@ -17,14 +14,6 @@ import { API_BASE_URL } from './config/api';
 import { Clock } from 'lucide-react';
 
 export default function App() {
-  return (
-    <Router>
-      <CareerlyIndexRoot />
-    </Router>
-  );
-}
-
-function CareerlyIndexRoot() {
   // Navigation
   const [activeTab, setActiveTab] = useState('directory'); // 'directory' | 'saved' | 'pipeline' | 'deadlines' | 'security'
   const [viewMode, setViewMode] = useState('split'); // 'split' | 'table' | 'pipeline'
