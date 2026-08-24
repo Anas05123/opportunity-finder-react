@@ -27,9 +27,12 @@ export default function AuthScreen({ triggerToast }) {
   const [mode, setMode] = useState(() => getModeFromPath(location.pathname));
 
   useEffect(() => {
-    setMode(getModeFromPath(location.pathname));
-    setErrorMsg('');
-    setSuccessMsg('');
+    const derived = getModeFromPath(location.pathname);
+    if (derived !== mode) {
+      setMode(derived);
+      setErrorMsg('');
+      setSuccessMsg('');
+    }
   }, [location.pathname]);
 
   // If already authenticated, redirect immediately
@@ -90,7 +93,6 @@ export default function AuthScreen({ triggerToast }) {
             }
           });
 
-          // Render official button invisibly or as fallback
           window.google.accounts.id.renderButton(googleButtonRef.current, {
             theme: 'outline',
             size: 'large',
@@ -178,12 +180,16 @@ export default function AuthScreen({ triggerToast }) {
     }
   };
 
+  // Smooth switch mode without reload or route flashing
   const switchMode = (newMode) => {
+    if (newMode === mode) return;
     setMode(newMode);
     setErrorMsg('');
     setSuccessMsg('');
-    navigate(newMode === 'signup' ? '/register' : '/login');
+    window.history.replaceState(null, '', newMode === 'signup' ? '/register' : '/login');
   };
+
+  const isAuthMode = mode === 'login' || mode === 'signup';
 
   return (
     <div className="min-h-screen bg-background flex" style={{ fontFamily: 'var(--font-sans)' }}>
@@ -260,15 +266,16 @@ export default function AuthScreen({ triggerToast }) {
             <span className="text-foreground text-[18px] font-bold">Careerly</span>
           </div>
 
-          <div className="mb-8">
-            <h1 className="font-display text-[28px] sm:text-[32px] font-bold text-foreground mb-2 leading-tight">
+          {/* Heading with smooth crossfade */}
+          <div className="mb-8 min-h-[74px]">
+            <h1 className="font-display text-[28px] sm:text-[32px] font-bold text-foreground mb-2 leading-tight transition-all duration-200">
               {mode === 'login' && 'Welcome back'}
               {mode === 'signup' && 'Create your account'}
               {mode === 'verify' && 'Verify your email'}
               {mode === 'forgot' && 'Reset your password'}
               {mode === 'reset' && 'Set new password'}
             </h1>
-            <p className="text-[14px] text-muted-foreground leading-normal">
+            <p className="text-[14px] text-muted-foreground leading-normal transition-all duration-200">
               {mode === 'login' && 'Sign in to access your calibrated career intelligence.'}
               {mode === 'signup' && 'Start discovering 50,000+ verified opportunities tailored for you.'}
               {mode === 'verify' && `We sent a 6-digit code to ${email}.`}
@@ -277,15 +284,22 @@ export default function AuthScreen({ triggerToast }) {
             </p>
           </div>
 
-          {/* Mode Switcher Pill */}
-          {(mode === 'login' || mode === 'signup') && (
-            <div className="flex bg-secondary/80 rounded-xl p-1.5 mb-6 border border-border/40">
+          {/* Mode Switcher Pill with smooth sliding indicator */}
+          {isAuthMode && (
+            <div className="relative flex bg-secondary/80 rounded-xl p-1.5 mb-6 border border-border/40 select-none">
+              {/* Animated active background pill */}
+              <div 
+                className={`absolute top-1.5 bottom-1.5 w-[calc(50%-6px)] bg-card rounded-lg shadow-xs transition-transform duration-300 ease-out ${
+                  mode === 'signup' ? 'translate-x-[calc(100%+6px)]' : 'translate-x-0'
+                }`} 
+              />
+
               <button 
                 type="button"
                 onClick={() => switchMode('login')}
-                className={`flex-1 py-2.5 rounded-lg text-[14px] font-semibold transition-all ${
+                className={`relative z-10 flex-1 py-2.5 rounded-lg text-[14px] font-semibold transition-colors duration-200 text-center ${
                   mode === 'login' 
-                    ? 'bg-card text-foreground shadow-xs' 
+                    ? 'text-foreground' 
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
@@ -294,9 +308,9 @@ export default function AuthScreen({ triggerToast }) {
               <button 
                 type="button"
                 onClick={() => switchMode('signup')}
-                className={`flex-1 py-2.5 rounded-lg text-[14px] font-semibold transition-all ${
+                className={`relative z-10 flex-1 py-2.5 rounded-lg text-[14px] font-semibold transition-colors duration-200 text-center ${
                   mode === 'signup' 
-                    ? 'bg-card text-foreground shadow-xs' 
+                    ? 'text-foreground' 
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
@@ -306,7 +320,7 @@ export default function AuthScreen({ triggerToast }) {
           )}
 
           {/* Google SSO Button */}
-          {(mode === 'login' || mode === 'signup') && (
+          {isAuthMode && (
             <>
               <button
                 type="button"
@@ -333,28 +347,31 @@ export default function AuthScreen({ triggerToast }) {
             </>
           )}
 
-          {/* Form Fields */}
+          {/* Form Fields with Smooth Expansions */}
           <form onSubmit={handleSubmit} className="space-y-4">
-            {mode === 'signup' && (
-              <div>
-                <label className="text-[12px] font-bold text-foreground uppercase tracking-wider block mb-1.5">
-                  Full Name
-                </label>
-                <div className="relative">
-                  <User size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                  <input 
-                    type="text" 
-                    required
-                    value={fullName} 
-                    onChange={e => setFullName(e.target.value)} 
-                    placeholder="Alex Kim"
-                    className="w-full bg-card border border-border rounded-xl py-3 pl-10 pr-3.5 text-[14px] text-foreground placeholder-muted-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all shadow-xs" 
-                  />
-                </div>
+            
+            {/* Full Name field (smooth accordion transition) */}
+            <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
+              mode === 'signup' ? 'max-h-24 opacity-100' : 'max-h-0 opacity-0 pointer-events-none'
+            }`}>
+              <label className="text-[12px] font-bold text-foreground uppercase tracking-wider block mb-1.5">
+                Full Name
+              </label>
+              <div className="relative">
+                <User size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <input 
+                  type="text" 
+                  required={mode === 'signup'}
+                  value={fullName} 
+                  onChange={e => setFullName(e.target.value)} 
+                  placeholder="Alex Kim"
+                  className="w-full bg-card border border-border rounded-xl py-3 pl-10 pr-3.5 text-[14px] text-foreground placeholder-muted-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all shadow-xs" 
+                />
               </div>
-            )}
+            </div>
 
-            {(mode === 'login' || mode === 'signup' || mode === 'forgot') && (
+            {/* Email Address */}
+            {(isAuthMode || mode === 'forgot') && (
               <div>
                 <label className="text-[12px] font-bold text-foreground uppercase tracking-wider block mb-1.5">
                   Email Address
@@ -373,7 +390,8 @@ export default function AuthScreen({ triggerToast }) {
               </div>
             )}
 
-            {(mode === 'login' || mode === 'signup' || mode === 'reset') && (
+            {/* Password */}
+            {(isAuthMode || mode === 'reset') && (
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <label className="text-[12px] font-bold text-foreground uppercase tracking-wider">
@@ -406,28 +424,29 @@ export default function AuthScreen({ triggerToast }) {
               </div>
             )}
 
-            {mode === 'signup' && (
-              <div>
-                <label className="text-[12px] font-bold text-foreground uppercase tracking-wider block mb-1.5">
-                  Confirm Password
-                </label>
-                <div className="relative">
-                  <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                  <input 
-                    type="password" 
-                    required
-                    value={confirmPassword} 
-                    onChange={e => setConfirmPassword(e.target.value)} 
-                    placeholder="••••••••"
-                    className="w-full bg-card border border-border rounded-xl py-3 pl-10 pr-3.5 text-[14px] text-foreground placeholder-muted-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all shadow-xs" 
-                  />
-                </div>
+            {/* Confirm Password field (smooth accordion transition) */}
+            <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
+              mode === 'signup' ? 'max-h-24 opacity-100' : 'max-h-0 opacity-0 pointer-events-none'
+            }`}>
+              <label className="text-[12px] font-bold text-foreground uppercase tracking-wider block mb-1.5">
+                Confirm Password
+              </label>
+              <div className="relative">
+                <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <input 
+                  type="password" 
+                  required={mode === 'signup'}
+                  value={confirmPassword} 
+                  onChange={e => setConfirmPassword(e.target.value)} 
+                  placeholder="••••••••"
+                  className="w-full bg-card border border-border rounded-xl py-3 pl-10 pr-3.5 text-[14px] text-foreground placeholder-muted-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all shadow-xs" 
+                />
               </div>
-            )}
+            </div>
 
             {/* Error Message */}
             {errorMsg && (
-              <div className="flex items-center gap-2.5 p-3.5 bg-red-500/10 border border-red-500/30 rounded-xl text-red-700 dark:text-red-400 text-[13px]">
+              <div className="flex items-center gap-2.5 p-3.5 bg-red-500/10 border border-red-500/30 rounded-xl text-red-700 dark:text-red-400 text-[13px] animate-fadeIn">
                 <AlertCircle size={16} className="flex-shrink-0 text-red-500" />
                 <span>{errorMsg}</span>
               </div>
@@ -435,7 +454,7 @@ export default function AuthScreen({ triggerToast }) {
 
             {/* Success Message */}
             {successMsg && (
-              <div className="flex items-center gap-2.5 p-3.5 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-700 dark:text-emerald-400 text-[13px]">
+              <div className="flex items-center gap-2.5 p-3.5 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-700 dark:text-emerald-400 text-[13px] animate-fadeIn">
                 <CheckCircle2 size={16} className="flex-shrink-0 text-emerald-500" />
                 <span>{successMsg}</span>
               </div>
@@ -465,23 +484,25 @@ export default function AuthScreen({ triggerToast }) {
           </form>
 
           {mode === 'signup' && (
-            <p className="text-center text-[12px] text-muted-foreground mt-4 leading-relaxed">
+            <p className="text-center text-[12px] text-muted-foreground mt-4 leading-relaxed transition-all duration-200">
               By creating an account you agree to our{' '}
               <a href="#" className="text-foreground font-semibold hover:underline">Terms</a> and{' '}
               <a href="#" className="text-foreground font-semibold hover:underline">Privacy Policy</a>.
             </p>
           )}
 
-          <p className="text-center text-[13px] text-muted-foreground mt-6">
-            {mode === 'login' ? "Don't have an account? " : "Already have an account? "}
-            <button 
-              type="button"
-              onClick={() => switchMode(mode === 'login' ? 'signup' : 'login')}
-              className="text-foreground font-bold hover:text-primary transition-colors underline ml-1"
-            >
-              {mode === 'login' ? 'Register now' : 'Sign In'}
-            </button>
-          </p>
+          {isAuthMode && (
+            <p className="text-center text-[13px] text-muted-foreground mt-6">
+              {mode === 'login' ? "Don't have an account? " : "Already have an account? "}
+              <button 
+                type="button"
+                onClick={() => switchMode(mode === 'login' ? 'signup' : 'login')}
+                className="text-foreground font-bold hover:text-primary transition-colors underline ml-1"
+              >
+                {mode === 'login' ? 'Register now' : 'Sign In'}
+              </button>
+            </p>
+          )}
 
         </div>
 
