@@ -3,7 +3,7 @@ import {
   User, Shield, Lock, Trash2, CheckCircle2, AlertCircle, 
   Save, KeyRound, Globe, Award, Briefcase, GraduationCap, RefreshCw, 
   Sparkles, Mail, Phone, MapPin, ExternalLink, Link2, CheckCircle,
-  Sliders, ShieldCheck, Download, LogOut
+  Sliders, ShieldCheck, Download, LogOut, Bell
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { API_BASE_URL } from '../../config/api.js';
@@ -11,24 +11,15 @@ import { API_BASE_URL } from '../../config/api.js';
 export default function SettingsView({ triggerToast }) {
   const { user, careerProfile, searchProfile, updateCareerProfile, updateSearchPreferences, logout } = useAuth();
 
-  const [activeTab, setActiveTab] = useState('profile'); // 'profile' | 'preferences' | 'security' | 'danger'
+  const [activeTab, setActiveTab] = useState('account'); // 'account' | 'preferences' | 'security' | 'notifications' | 'danger'
   const [isSaving, setIsSaving] = useState(false);
   const [feedback, setFeedback] = useState({ type: '', text: '' });
 
-  // Profile Form State
+  // Account Form State
   const [fullName, setFullName] = useState(careerProfile?.full_name || '');
-  const [headline, setHeadline] = useState(careerProfile?.headline || '');
+  const [email, setEmail] = useState(user?.email || '');
   const [phone, setPhone] = useState(careerProfile?.phone || '');
-  const [degreeLevel, setDegreeLevel] = useState(careerProfile?.degree_level || 'undergrad');
-  const [degreeTitle, setDegreeTitle] = useState(careerProfile?.degree_title || 'Bachelor of Science (BSc)');
-  const [major, setMajor] = useState(careerProfile?.field_of_study || 'Software Engineering');
-  const [university, setUniversity] = useState(careerProfile?.university || 'Asia Pacific University');
-  const [gpa, setGpa] = useState(careerProfile?.gpa || 3.85);
-  const [skills, setSkills] = useState((careerProfile?.skills || []).join(', '));
-  const [portfolioUrl, setPortfolioUrl] = useState(careerProfile?.portfolio_url || '');
-  const [linkedinUrl, setLinkedinUrl] = useState(careerProfile?.linkedin_url || '');
-  const [githubUrl, setGithubUrl] = useState(careerProfile?.github_url || '');
-  const [noIelts, setNoIelts] = useState(careerProfile?.no_ielts_preference ?? 1);
+  const [location, setLocation] = useState(careerProfile?.location || 'San Francisco, CA');
 
   // Search Preferences Form State
   const [targetRoles, setTargetRoles] = useState((searchProfile?.target_roles || ['Senior Product Designer', 'Frontend Engineer']).join(', '));
@@ -42,28 +33,24 @@ export default function SettingsView({ triggerToast }) {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
+  // Notifications Form State
+  const [emailAlerts, setEmailAlerts] = useState(true);
+  const [dailyDigest, setDailyDigest] = useState(true);
+  const [deadlineReminders, setDeadlineReminders] = useState(true);
+
   const token = localStorage.getItem('careerly_token');
 
-  // Synchronize form fields whenever careerProfile loads asynchronously
+  // Synchronize form fields whenever profile loads
   useEffect(() => {
     if (careerProfile) {
       if (careerProfile.full_name !== undefined) setFullName(careerProfile.full_name || '');
-      if (careerProfile.headline !== undefined) setHeadline(careerProfile.headline || '');
       if (careerProfile.phone !== undefined) setPhone(careerProfile.phone || '');
-      if (careerProfile.degree_level) setDegreeLevel(careerProfile.degree_level);
-      if (careerProfile.degree_title) setDegreeTitle(careerProfile.degree_title);
-      if (careerProfile.field_of_study) setMajor(careerProfile.field_of_study);
-      if (careerProfile.university) setUniversity(careerProfile.university);
-      if (careerProfile.gpa !== undefined && careerProfile.gpa !== null) setGpa(careerProfile.gpa);
-      if (Array.isArray(careerProfile.skills)) setSkills(careerProfile.skills.join(', '));
-      if (careerProfile.portfolio_url !== undefined) setPortfolioUrl(careerProfile.portfolio_url || '');
-      if (careerProfile.linkedin_url !== undefined) setLinkedinUrl(careerProfile.linkedin_url || '');
-      if (careerProfile.github_url !== undefined) setGithubUrl(careerProfile.github_url || '');
-      if (careerProfile.no_ielts_preference !== undefined) setNoIelts(careerProfile.no_ielts_preference);
+      if (careerProfile.location !== undefined) setLocation(careerProfile.location || 'San Francisco, CA');
     }
-  }, [careerProfile]);
+    if (user?.email) setEmail(user.email);
+  }, [careerProfile, user]);
 
-  // Synchronize search preferences whenever searchProfile loads asynchronously
+  // Synchronize search preferences
   useEffect(() => {
     if (searchProfile) {
       if (Array.isArray(searchProfile.target_roles)) setTargetRoles(searchProfile.target_roles.join(', '));
@@ -74,33 +61,21 @@ export default function SettingsView({ triggerToast }) {
     }
   }, [searchProfile]);
 
-  const handleSaveProfile = async (e) => {
+  const handleSaveAccount = async (e) => {
     e.preventDefault();
     setIsSaving(true);
     setFeedback({ type: '', text: '' });
 
     try {
-      const skillsArray = skills.split(',').map(s => s.trim()).filter(Boolean);
       await updateCareerProfile({
         full_name: fullName,
-        headline,
         phone,
-        degree_level: degreeLevel,
-        degree_title: degreeTitle,
-        field_of_study: major,
-        university,
-        gpa: Number(gpa),
-        skills: skillsArray,
-        portfolio_url: portfolioUrl,
-        linkedin_url: linkedinUrl,
-        github_url: githubUrl,
-        no_ielts_preference: noIelts ? 1 : 0
+        location
       });
-
-      setFeedback({ type: 'success', text: 'Career profile successfully updated!' });
-      if (triggerToast) triggerToast('✓ Profile updated & match scores recalculated.');
+      setFeedback({ type: 'success', text: 'Account settings successfully updated!' });
+      if (triggerToast) triggerToast('✓ Account settings updated!');
     } catch (err) {
-      setFeedback({ type: 'error', text: err.message });
+      setFeedback({ type: 'error', text: err.message || 'Failed to update account settings.' });
     } finally {
       setIsSaving(false);
     }
@@ -119,27 +94,31 @@ export default function SettingsView({ triggerToast }) {
         target_roles: rolesArray,
         required_locations: locsArray,
         remote_only: remoteOnly ? 1 : 0,
-        min_salary: minSalary ? Number(minSalary.replace(/[^0-9]/g, '')) : 0,
+        min_salary: minSalary,
         visa_sponsorship_required: visaSponsorship ? 1 : 0
       });
 
-      setFeedback({ type: 'success', text: 'Search preferences saved successfully!' });
-      if (triggerToast) triggerToast('✓ Search criteria updated.');
+      setFeedback({ type: 'success', text: 'Search preferences saved!' });
+      if (triggerToast) triggerToast('✓ Search preferences updated!');
     } catch (err) {
-      setFeedback({ type: 'error', text: err.message });
+      setFeedback({ type: 'error', text: err.message || 'Failed to save search preferences.' });
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleChangePassword = async (e) => {
+  const handleUpdatePassword = async (e) => {
     e.preventDefault();
+    if (!currentPassword || !newPassword) {
+      setFeedback({ type: 'error', text: 'Please fill in all password fields.' });
+      return;
+    }
     if (newPassword !== confirmPassword) {
       setFeedback({ type: 'error', text: 'New passwords do not match.' });
       return;
     }
-    if (newPassword.length < 6) {
-      setFeedback({ type: 'error', text: 'New password must be at least 6 characters.' });
+    if (newPassword.length < 8) {
+      setFeedback({ type: 'error', text: 'New password must be at least 8 characters long.' });
       return;
     }
 
@@ -147,23 +126,26 @@ export default function SettingsView({ triggerToast }) {
     setFeedback({ type: '', text: '' });
 
     try {
-      const res = await fetch(`${API_BASE_URL}/user/account/password`, {
+      const res = await fetch(`${API_BASE_URL}/auth/password`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({ currentPassword, newPassword })
+        body: JSON.stringify({
+          current_password: currentPassword,
+          new_password: newPassword
+        })
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to update password');
+      if (!res.ok) throw new Error(data.message || 'Failed to update password.');
 
-      setFeedback({ type: 'success', text: 'Password successfully changed!' });
+      setFeedback({ type: 'success', text: 'Password successfully updated!' });
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
-      if (triggerToast) triggerToast('✓ Password updated successfully.');
+      if (triggerToast) triggerToast('✓ Password updated successfully!');
     } catch (err) {
       setFeedback({ type: 'error', text: err.message });
     } finally {
@@ -172,402 +154,322 @@ export default function SettingsView({ triggerToast }) {
   };
 
   return (
-    <div className="p-6 sm:p-8 max-w-[1000px] mx-auto space-y-7" style={{ fontFamily: 'var(--font-sans)' }}>
+    <div className="p-6 sm:p-8 max-w-[1100px] mx-auto space-y-6" style={{ fontFamily: 'var(--font-sans)' }}>
       
-      {/* Header */}
+      {/* ── Page Header ─────────────────────────────────────────────── */}
       <div>
-        <h1 className="font-display text-[26px] sm:text-[30px] font-bold text-foreground leading-tight">
-          Account & Career Settings
+        <h1 className="font-display text-[24px] sm:text-[28px] font-bold text-foreground leading-tight">
+          Account & App Settings
         </h1>
         <p className="text-[13px] text-muted-foreground mt-1">
-          Manage your academic credentials, 7-factor matching preferences, and account security.
+          Manage your account credentials, notifications, and discovery preferences.
         </p>
       </div>
 
-      {/* Tabs */}
-      <div className="flex items-center gap-2 border-b border-border pb-1 overflow-x-auto">
-        {[
-          { id: 'profile', label: 'Academic & Career Profile', icon: GraduationCap },
-          { id: 'preferences', label: 'Search & Match Preferences', icon: Sliders },
-          { id: 'security', label: 'Password & Security', icon: Lock },
-          { id: 'danger', label: 'Danger Zone', icon: Trash2 }
-        ].map(({ id, label, icon: Icon }) => (
-          <button
-            key={id}
-            onClick={() => { setActiveTab(id); setFeedback({ type: '', text: '' }); }}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-[13px] font-semibold transition-all whitespace-nowrap ${
-              activeTab === id
-                ? 'bg-primary text-white shadow-sm'
-                : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
-            }`}
-            style={activeTab === id ? { background: '#2457FF' } : {}}
-          >
-            <Icon size={15} /> {label}
-          </button>
-        ))}
-      </div>
-
-      {/* Feedback Banner */}
+      {/* ── Feedback Banner ──────────────────────────────────────────── */}
       {feedback.text && (
-        <div className={`flex items-center gap-2 p-3.5 rounded-xl text-[13px] ${
+        <div className={`p-4 rounded-xl text-[13px] font-medium flex items-center gap-3 border shadow-xs ${
           feedback.type === 'success'
-            ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-            : 'bg-red-50 text-red-800 border border-red-200'
+            ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-400'
+            : 'bg-red-500/10 border-red-500/30 text-red-700 dark:text-red-400'
         }`}>
-          {feedback.type === 'success' ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
+          {feedback.type === 'success' ? <CheckCircle size={16} /> : <AlertCircle size={16} />}
           <span>{feedback.text}</span>
         </div>
       )}
 
-      {/* ── TAB 1: ACADEMIC & CAREER PROFILE ─────────────────────────── */}
-      {activeTab === 'profile' && (
-        <form onSubmit={handleSaveProfile} className="bg-card border border-border rounded-2xl p-6 sm:p-7 shadow-sm space-y-6">
-          <div className="flex items-center justify-between pb-4 border-b border-border">
-            <div>
-              <h2 className="text-[15px] font-semibold text-foreground">Personal & Academic Credentials</h2>
-              <p className="text-[12px] text-muted-foreground mt-0.5">Used by our deterministic matching engine to calculate fit scores.</p>
-            </div>
-            <div className="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm">
-              {fullName.charAt(0) || 'A'}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-            <div>
-              <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">Full Name</label>
-              <input 
-                type="text" 
-                value={fullName} 
-                onChange={e => setFullName(e.target.value)} 
-                className="w-full bg-secondary/60 border border-border rounded-lg px-3.5 py-2.5 text-[13px] text-foreground outline-none focus:border-primary transition-all"
-                placeholder="Alex Kim"
-              />
-            </div>
-
-            <div>
-              <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">Phone Number</label>
-              <input 
-                type="text" 
-                value={phone} 
-                onChange={e => setPhone(e.target.value)} 
-                className="w-full bg-secondary/60 border border-border rounded-lg px-3.5 py-2.5 text-[13px] text-foreground outline-none focus:border-primary transition-all"
-                placeholder="+1 (555) 000-0000"
-              />
-            </div>
-
-            <div className="sm:col-span-2">
-              <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">Professional Headline</label>
-              <input 
-                type="text" 
-                value={headline} 
-                onChange={e => setHeadline(e.target.value)} 
-                className="w-full bg-secondary/60 border border-border rounded-lg px-3.5 py-2.5 text-[13px] text-foreground outline-none focus:border-primary transition-all"
-                placeholder="Senior Product Designer & Systems Architect"
-              />
-            </div>
-
-            <div>
-              <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">Degree Level</label>
-              <select 
-                value={degreeLevel} 
-                onChange={e => setDegreeLevel(e.target.value)}
-                className="w-full bg-secondary/60 border border-border rounded-lg px-3.5 py-2.5 text-[13px] text-foreground outline-none focus:border-primary transition-all"
+      {/* ── Settings Layout: Left Tabs + Right Content ─────────────────── */}
+      <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-6">
+        
+        {/* Left Tabs */}
+        <div className="space-y-1">
+          {[
+            { id: 'account', label: 'Account', icon: User },
+            { id: 'preferences', label: 'Preferences', icon: Sliders },
+            { id: 'security', label: 'Security', icon: Lock },
+            { id: 'notifications', label: 'Notifications', icon: Bell },
+            { id: 'danger', label: 'Danger Zone', icon: AlertCircle }
+          ].map(tab => {
+            const Icon = tab.icon;
+            const isSel = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => { setActiveTab(tab.id); setFeedback({ type: '', text: '' }); }}
+                className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-[13px] font-semibold text-left transition-all ${
+                  isSel
+                    ? 'bg-primary text-white shadow-xs'
+                    : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+                }`}
+                style={isSel ? { background: '#2457FF' } : {}}
               >
-                <option value="undergrad">Undergraduate (BSc / BA / BBA)</option>
-                <option value="postgrad">Postgraduate (MSc / MA / MBA)</option>
-                <option value="doctorate">Doctorate (PhD)</option>
-                <option value="diploma">Diploma / Associate Degree</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">Degree Title</label>
-              <input 
-                type="text" 
-                value={degreeTitle} 
-                onChange={e => setDegreeTitle(e.target.value)} 
-                className="w-full bg-secondary/60 border border-border rounded-lg px-3.5 py-2.5 text-[13px] text-foreground outline-none focus:border-primary transition-all"
-                placeholder="Bachelor of Science (BSc)"
-              />
-            </div>
-
-            <div>
-              <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">Major / Field of Study</label>
-              <input 
-                type="text" 
-                value={major} 
-                onChange={e => setMajor(e.target.value)} 
-                className="w-full bg-secondary/60 border border-border rounded-lg px-3.5 py-2.5 text-[13px] text-foreground outline-none focus:border-primary transition-all"
-                placeholder="Software Engineering"
-              />
-            </div>
-
-            <div>
-              <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">Cumulative GPA (Out of 4.0)</label>
-              <input 
-                type="number" 
-                step="0.01" 
-                max="4.0" 
-                min="0"
-                value={gpa} 
-                onChange={e => setGpa(e.target.value)} 
-                className="w-full bg-secondary/60 border border-border rounded-lg px-3.5 py-2.5 text-[13px] text-foreground outline-none focus:border-primary transition-all font-mono"
-                placeholder="3.85"
-              />
-            </div>
-
-            <div className="sm:col-span-2">
-              <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">University / College</label>
-              <input 
-                type="text" 
-                value={university} 
-                onChange={e => setUniversity(e.target.value)} 
-                className="w-full bg-secondary/60 border border-border rounded-lg px-3.5 py-2.5 text-[13px] text-foreground outline-none focus:border-primary transition-all"
-                placeholder="Asia Pacific University of Technology & Innovation"
-              />
-            </div>
-
-            <div className="sm:col-span-2">
-              <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">Skills (Comma-separated)</label>
-              <input 
-                type="text" 
-                value={skills} 
-                onChange={e => setSkills(e.target.value)} 
-                className="w-full bg-secondary/60 border border-border rounded-lg px-3.5 py-2.5 text-[13px] text-foreground outline-none focus:border-primary transition-all"
-                placeholder="Figma, React, Design Systems, TypeScript, User Research"
-              />
-            </div>
-
-            <div>
-              <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">LinkedIn Profile URL</label>
-              <input 
-                type="text" 
-                value={linkedinUrl} 
-                onChange={e => setLinkedinUrl(e.target.value)} 
-                className="w-full bg-secondary/60 border border-border rounded-lg px-3.5 py-2.5 text-[13px] text-foreground outline-none focus:border-primary transition-all"
-                placeholder="https://linkedin.com/in/alexkim"
-              />
-            </div>
-
-            <div>
-              <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">GitHub / Portfolio URL</label>
-              <input 
-                type="text" 
-                value={portfolioUrl || githubUrl} 
-                onChange={e => { setPortfolioUrl(e.target.value); setGithubUrl(e.target.value); }} 
-                className="w-full bg-secondary/60 border border-border rounded-lg px-3.5 py-2.5 text-[13px] text-foreground outline-none focus:border-primary transition-all"
-                placeholder="https://alexkim.design"
-              />
-            </div>
-
-            <div className="sm:col-span-2 flex items-center gap-2.5 pt-2">
-              <input 
-                type="checkbox" 
-                id="noIeltsCheck"
-                checked={Boolean(noIelts)} 
-                onChange={e => setNoIelts(e.target.checked ? 1 : 0)}
-                className="w-4 h-4 rounded accent-primary"
-              />
-              <label htmlFor="noIeltsCheck" className="text-[13px] text-foreground font-medium cursor-pointer">
-                Prefer English Medium of Instruction waiver (No IELTS required for international fellowships)
-              </label>
-            </div>
-          </div>
-
-          <div className="pt-4 border-t border-border flex justify-end">
-            <button 
-              type="submit" 
-              disabled={isSaving}
-              className="flex items-center gap-2 px-6 py-2.5 bg-primary text-white text-[13px] font-semibold rounded-lg hover:opacity-95 transition-all disabled:opacity-50 shadow-sm"
-              style={{ background: '#2457FF' }}
-            >
-              {isSaving ? <RefreshCw size={14} className="animate-spin" /> : <Save size={14} />}
-              Save Profile Changes
-            </button>
-          </div>
-        </form>
-      )}
-
-      {/* ── TAB 2: SEARCH PREFERENCES ────────────────────────────────── */}
-      {activeTab === 'preferences' && (
-        <form onSubmit={handleSavePreferences} className="bg-card border border-border rounded-2xl p-6 sm:p-7 shadow-sm space-y-6">
-          <div>
-            <h2 className="text-[15px] font-semibold text-foreground">Discovery & Search Filters</h2>
-            <p className="text-[12px] text-muted-foreground mt-0.5">Control which opportunities appear on your personalized dashboard feed.</p>
-          </div>
-
-          <div className="space-y-4">
-            <div>
-              <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">Target Roles (Comma-separated)</label>
-              <input 
-                type="text" 
-                value={targetRoles} 
-                onChange={e => setTargetRoles(e.target.value)} 
-                className="w-full bg-secondary/60 border border-border rounded-lg px-3.5 py-2.5 text-[13px] text-foreground outline-none focus:border-primary transition-all"
-                placeholder="Product Designer, Senior Frontend Engineer, UX Researcher"
-              />
-            </div>
-
-            <div>
-              <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">Preferred Locations</label>
-              <input 
-                type="text" 
-                value={requiredLocations} 
-                onChange={e => setRequiredLocations(e.target.value)} 
-                className="w-full bg-secondary/60 border border-border rounded-lg px-3.5 py-2.5 text-[13px] text-foreground outline-none focus:border-primary transition-all"
-                placeholder="Remote, San Francisco, London, Singapore"
-              />
-            </div>
-
-            <div>
-              <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">Minimum Desired Compensation / Salary</label>
-              <input 
-                type="text" 
-                value={minSalary} 
-                onChange={e => setMinSalary(e.target.value)} 
-                className="w-full bg-secondary/60 border border-border rounded-lg px-3.5 py-2.5 text-[13px] text-foreground outline-none focus:border-primary transition-all font-mono"
-                placeholder="$120,000 / year"
-              />
-            </div>
-
-            <div className="flex flex-col gap-3 pt-2">
-              <label className="flex items-center gap-2.5 cursor-pointer">
-                <input 
-                  type="checkbox" 
-                  checked={remoteOnly} 
-                  onChange={e => setRemoteOnly(e.target.checked)}
-                  className="w-4 h-4 rounded accent-primary"
-                />
-                <span className="text-[13px] text-foreground font-medium">Remote opportunities only</span>
-              </label>
-
-              <label className="flex items-center gap-2.5 cursor-pointer">
-                <input 
-                  type="checkbox" 
-                  checked={visaSponsorship} 
-                  onChange={e => setVisaSponsorship(e.target.checked)}
-                  className="w-4 h-4 rounded accent-primary"
-                />
-                <span className="text-[13px] text-foreground font-medium">Require Visa Sponsorship / Relocation support</span>
-              </label>
-            </div>
-          </div>
-
-          <div className="pt-4 border-t border-border flex justify-end">
-            <button 
-              type="submit" 
-              disabled={isSaving}
-              className="flex items-center gap-2 px-6 py-2.5 bg-primary text-white text-[13px] font-semibold rounded-lg hover:opacity-95 transition-all disabled:opacity-50 shadow-sm"
-              style={{ background: '#2457FF' }}
-            >
-              {isSaving ? <RefreshCw size={14} className="animate-spin" /> : <Save size={14} />}
-              Save Preferences
-            </button>
-          </div>
-        </form>
-      )}
-
-      {/* ── TAB 3: PASSWORD & SECURITY ───────────────────────────────── */}
-      {activeTab === 'security' && (
-        <form onSubmit={handleChangePassword} className="bg-card border border-border rounded-2xl p-6 sm:p-7 shadow-sm space-y-6">
-          <div>
-            <h2 className="text-[15px] font-semibold text-foreground">Update Password</h2>
-            <p className="text-[12px] text-muted-foreground mt-0.5">Ensure your account is protected with a strong, unique password.</p>
-          </div>
-
-          <div className="space-y-4 max-w-md">
-            <div>
-              <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">Current Password</label>
-              <input 
-                type="password" 
-                required
-                value={currentPassword} 
-                onChange={e => setCurrentPassword(e.target.value)} 
-                className="w-full bg-secondary/60 border border-border rounded-lg px-3.5 py-2.5 text-[13px] text-foreground outline-none focus:border-primary transition-all"
-                placeholder="••••••••"
-              />
-            </div>
-
-            <div>
-              <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">New Password</label>
-              <input 
-                type="password" 
-                required
-                value={newPassword} 
-                onChange={e => setNewPassword(e.target.value)} 
-                className="w-full bg-secondary/60 border border-border rounded-lg px-3.5 py-2.5 text-[13px] text-foreground outline-none focus:border-primary transition-all"
-                placeholder="••••••••"
-              />
-            </div>
-
-            <div>
-              <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">Confirm New Password</label>
-              <input 
-                type="password" 
-                required
-                value={confirmPassword} 
-                onChange={e => setConfirmPassword(e.target.value)} 
-                className="w-full bg-secondary/60 border border-border rounded-lg px-3.5 py-2.5 text-[13px] text-foreground outline-none focus:border-primary transition-all"
-                placeholder="••••••••"
-              />
-            </div>
-          </div>
-
-          <div className="pt-4 border-t border-border flex justify-end">
-            <button 
-              type="submit" 
-              disabled={isSaving}
-              className="flex items-center gap-2 px-6 py-2.5 bg-primary text-white text-[13px] font-semibold rounded-lg hover:opacity-95 transition-all disabled:opacity-50 shadow-sm"
-              style={{ background: '#2457FF' }}
-            >
-              {isSaving ? <RefreshCw size={14} className="animate-spin" /> : <KeyRound size={14} />}
-              Update Password
-            </button>
-          </div>
-        </form>
-      )}
-
-      {/* ── TAB 4: DANGER ZONE ───────────────────────────────────────── */}
-      {activeTab === 'danger' && (
-        <div className="bg-card border border-red-200 rounded-2xl p-6 sm:p-7 shadow-sm space-y-5">
-          <div>
-            <h2 className="text-[15px] font-semibold text-red-700">Danger Zone</h2>
-            <p className="text-[12px] text-muted-foreground mt-0.5">Actions here are irreversible. Please proceed with caution.</p>
-          </div>
-
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 bg-red-50/50 border border-red-200 rounded-xl">
-              <div>
-                <p className="text-[13px] font-semibold text-foreground">Sign out of all devices</p>
-                <p className="text-[11px] text-muted-foreground mt-0.5">Invalidate all active sessions across browsers.</p>
-              </div>
-              <button 
-                onClick={() => { logout(); triggerToast('Signed out of all devices.'); }}
-                className="flex items-center gap-1.5 px-4 py-2 border border-red-200 text-red-600 bg-white rounded-lg text-[12px] font-semibold hover:bg-red-50 transition-all"
-              >
-                <LogOut size={13} /> Sign Out All
+                <Icon size={15} />
+                <span>{tab.label}</span>
               </button>
-            </div>
-
-            <div className="flex items-center justify-between p-4 bg-red-50 border border-red-200 rounded-xl">
-              <div>
-                <p className="text-[13px] font-semibold text-red-800">Delete Account & Data</p>
-                <p className="text-[11px] text-red-600/80 mt-0.5">Permanently erase your calibrated profile, applications, and saved roles.</p>
-              </div>
-              <button 
-                onClick={() => {
-                  if (window.confirm('Are you sure you want to permanently delete your Careerly account?')) {
-                    logout();
-                  }
-                }}
-                className="flex items-center gap-1.5 px-4 py-2 bg-red-600 text-white rounded-lg text-[12px] font-semibold hover:bg-red-700 transition-all shadow-sm"
-              >
-                <Trash2 size={13} /> Delete Account
-              </button>
-            </div>
-          </div>
+            );
+          })}
         </div>
-      )}
+
+        {/* Right Form Card */}
+        <div className="bg-card border border-border rounded-2xl p-6 sm:p-7 shadow-sm">
+          
+          {/* TAB 1: ACCOUNT */}
+          {activeTab === 'account' && (
+            <form onSubmit={handleSaveAccount} className="space-y-5">
+              <div>
+                <h3 className="text-[16px] font-bold text-foreground">Account Information</h3>
+                <p className="text-[12px] text-muted-foreground mt-0.5">Your core identity details and primary contact email.</p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">Full Name</label>
+                  <input 
+                    type="text" 
+                    value={fullName} 
+                    onChange={e => setFullName(e.target.value)}
+                    className="w-full bg-secondary/50 border border-border rounded-lg px-3.5 py-2 text-[13px] text-foreground outline-none focus:border-primary transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">Email Address</label>
+                  <input 
+                    type="email" 
+                    value={email} 
+                    disabled
+                    className="w-full bg-secondary/30 border border-border rounded-lg px-3.5 py-2 text-[13px] text-muted-foreground outline-none cursor-not-allowed"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">Phone Number</label>
+                  <input 
+                    type="text" 
+                    value={phone} 
+                    onChange={e => setPhone(e.target.value)}
+                    className="w-full bg-secondary/50 border border-border rounded-lg px-3.5 py-2 text-[13px] text-foreground outline-none focus:border-primary transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">Location</label>
+                  <input 
+                    type="text" 
+                    value={location} 
+                    onChange={e => setLocation(e.target.value)}
+                    className="w-full bg-secondary/50 border border-border rounded-lg px-3.5 py-2 text-[13px] text-foreground outline-none focus:border-primary transition-all"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-border flex justify-end">
+                <button
+                  type="submit"
+                  disabled={isSaving}
+                  className="flex items-center gap-2 px-5 py-2 bg-primary text-white text-[13px] font-semibold rounded-lg hover:opacity-95 transition-all shadow-sm disabled:opacity-50"
+                  style={{ background: '#2457FF' }}
+                >
+                  <Save size={13} />
+                  <span>{isSaving ? 'Saving...' : 'Save Account'}</span>
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* TAB 2: PREFERENCES */}
+          {activeTab === 'preferences' && (
+            <form onSubmit={handleSavePreferences} className="space-y-5">
+              <div>
+                <h3 className="text-[16px] font-bold text-foreground">Discovery & Search Preferences</h3>
+                <p className="text-[12px] text-muted-foreground mt-0.5">Control automated matching thresholds and salary expectations.</p>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">Target Roles (Comma-separated)</label>
+                  <input 
+                    type="text" 
+                    value={targetRoles} 
+                    onChange={e => setTargetRoles(e.target.value)}
+                    className="w-full bg-secondary/50 border border-border rounded-lg px-3.5 py-2 text-[13px] text-foreground outline-none focus:border-primary transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">Preferred Locations</label>
+                  <input 
+                    type="text" 
+                    value={requiredLocations} 
+                    onChange={e => setRequiredLocations(e.target.value)}
+                    className="w-full bg-secondary/50 border border-border rounded-lg px-3.5 py-2 text-[13px] text-foreground outline-none focus:border-primary transition-all"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">Minimum Desired Salary</label>
+                    <input 
+                      type="text" 
+                      value={minSalary} 
+                      onChange={e => setMinSalary(e.target.value)}
+                      className="w-full bg-secondary/50 border border-border rounded-lg px-3.5 py-2 text-[13px] text-foreground outline-none focus:border-primary transition-all font-mono"
+                    />
+                  </div>
+
+                  <div className="flex flex-col justify-end space-y-2">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        checked={remoteOnly} 
+                        onChange={e => setRemoteOnly(e.target.checked)}
+                        className="w-4 h-4 rounded accent-primary cursor-pointer"
+                      />
+                      <span className="text-[13px] font-medium text-foreground">Worldwide & Remote Only</span>
+                    </label>
+
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        checked={visaSponsorship} 
+                        onChange={e => setVisaSponsorship(e.target.checked)}
+                        className="w-4 h-4 rounded accent-primary cursor-pointer"
+                      />
+                      <span className="text-[13px] font-medium text-foreground">Require Visa Sponsorship</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-border flex justify-end">
+                <button
+                  type="submit"
+                  disabled={isSaving}
+                  className="flex items-center gap-2 px-5 py-2 bg-primary text-white text-[13px] font-semibold rounded-lg hover:opacity-95 transition-all shadow-sm disabled:opacity-50"
+                  style={{ background: '#2457FF' }}
+                >
+                  <Save size={13} />
+                  <span>{isSaving ? 'Saving...' : 'Save Preferences'}</span>
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* TAB 3: SECURITY */}
+          {activeTab === 'security' && (
+            <form onSubmit={handleUpdatePassword} className="space-y-5">
+              <div>
+                <h3 className="text-[16px] font-bold text-foreground">Security & Password</h3>
+                <p className="text-[12px] text-muted-foreground mt-0.5">Update your password and review active device sessions.</p>
+              </div>
+
+              <div className="space-y-4 max-w-md">
+                <div>
+                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">Current Password</label>
+                  <input 
+                    type="password" 
+                    value={currentPassword} 
+                    onChange={e => setCurrentPassword(e.target.value)}
+                    className="w-full bg-secondary/50 border border-border rounded-lg px-3.5 py-2 text-[13px] text-foreground outline-none focus:border-primary transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">New Password (Min 8 characters)</label>
+                  <input 
+                    type="password" 
+                    value={newPassword} 
+                    onChange={e => setNewPassword(e.target.value)}
+                    className="w-full bg-secondary/50 border border-border rounded-lg px-3.5 py-2 text-[13px] text-foreground outline-none focus:border-primary transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">Confirm New Password</label>
+                  <input 
+                    type="password" 
+                    value={confirmPassword} 
+                    onChange={e => setConfirmPassword(e.target.value)}
+                    className="w-full bg-secondary/50 border border-border rounded-lg px-3.5 py-2 text-[13px] text-foreground outline-none focus:border-primary transition-all"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-border flex justify-end">
+                <button
+                  type="submit"
+                  disabled={isSaving}
+                  className="flex items-center gap-2 px-5 py-2 bg-primary text-white text-[13px] font-semibold rounded-lg hover:opacity-95 transition-all shadow-sm disabled:opacity-50"
+                  style={{ background: '#2457FF' }}
+                >
+                  <KeyRound size={13} />
+                  <span>{isSaving ? 'Updating...' : 'Update Password'}</span>
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* TAB 4: NOTIFICATIONS */}
+          {activeTab === 'notifications' && (
+            <div className="space-y-5">
+              <div>
+                <h3 className="text-[16px] font-bold text-foreground">Notification Preferences</h3>
+                <p className="text-[12px] text-muted-foreground mt-0.5">Control how and when Careerly sends you opportunity alerts.</p>
+              </div>
+
+              <div className="space-y-4">
+                {[
+                  { title: "Real-time Opportunity Alerts", desc: "Receive email updates when high-match opportunities (90%+) are discovered.", checked: emailAlerts, toggle: setEmailAlerts },
+                  { title: "Daily Career Digest", desc: "A morning summary of verified positions and application deadline countdowns.", checked: dailyDigest, toggle: setDailyDigest },
+                  { title: "STAR Coach Reminders", desc: "Reminders to prepare for upcoming interviews and practice STAR responses.", checked: deadlineReminders, toggle: setDeadlineReminders }
+                ].map(({ title, desc, checked, toggle }) => (
+                  <div key={title} className="flex items-center justify-between p-4 bg-secondary/30 border border-border rounded-xl">
+                    <div>
+                      <h4 className="text-[13px] font-semibold text-foreground">{title}</h4>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">{desc}</p>
+                    </div>
+                    <input 
+                      type="checkbox" 
+                      checked={checked} 
+                      onChange={e => toggle(e.target.checked)}
+                      className="w-4 h-4 rounded accent-primary cursor-pointer"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* TAB 5: DANGER ZONE */}
+          {activeTab === 'danger' && (
+            <div className="space-y-5">
+              <div>
+                <h3 className="text-[16px] font-bold text-red-600">Danger Zone</h3>
+                <p className="text-[12px] text-muted-foreground mt-0.5">Destructive actions and global session revocation.</p>
+              </div>
+
+              <div className="p-4 border border-red-500/30 bg-red-500/5 rounded-xl space-y-3">
+                <h4 className="text-[13px] font-bold text-red-600">Revoke All Device Sessions</h4>
+                <p className="text-[12px] text-muted-foreground">
+                  Signing out everywhere will immediately invalidate your JWT token family on all browsers and mobile sessions.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    logout();
+                    window.location.href = '/login';
+                  }}
+                  className="px-4 py-2 bg-red-600 text-white text-[12px] font-semibold rounded-lg hover:bg-red-700 transition-all shadow-sm flex items-center gap-1.5"
+                >
+                  <LogOut size={13} /> Sign Out Everywhere
+                </button>
+              </div>
+            </div>
+          )}
+
+        </div>
+
+      </div>
 
     </div>
   );

@@ -20,6 +20,7 @@ import OnboardingWizard from './components/Onboarding/OnboardingWizard.jsx';
 import PublicLandingView from './components/Landing/PublicLandingView.jsx';
 import PersonalizedDashboard from './components/Dashboard/PersonalizedDashboard.jsx';
 import DiscoverScreen from './components/Discovery/DiscoverScreen.jsx';
+import ProfileView from './components/Profile/ProfileView.jsx';
 import SettingsView from './components/Settings/SettingsView.jsx';
 import NotFoundPage from './components/NotFoundPage.jsx';
 
@@ -400,6 +401,7 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
     cv_studio: 'AI CV Studio & ATS Tailor',
     interview: 'STAR Interview Coach',
     calendar: 'Deadlines Timeline',
+    profile: 'Professional Profile',
     settings: 'Account & Security Settings',
     admin: 'Enterprise Security Operations'
   };
@@ -500,8 +502,11 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
 
             <div className="pt-2.5 border-t border-border mt-2 space-y-0.5">
               <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-2.5 py-1">Account</p>
+              <button onClick={() => navigate('/profile')} className={navCls('profile')}>
+                <User size={15} /> Profile
+              </button>
               <button onClick={() => navigate('/settings')} className={navCls('settings')}>
-                <User size={15} /> Profile & Settings
+                <Settings size={15} /> Settings
               </button>
               {isAdmin && (
                 <button onClick={() => navigate('/admin/security')} className={navCls('admin')}>
@@ -514,7 +519,7 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
           {/* User Profile Footer */}
           <div className="p-2.5 border-t border-border space-y-2">
             <div 
-              onClick={() => navigate('/settings')}
+              onClick={() => navigate('/profile')}
               className="flex items-center gap-2.5 p-2 rounded-lg bg-secondary/50 hover:bg-secondary transition-colors cursor-pointer"
             >
               <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-[11px] font-bold flex-shrink-0" style={{ background: '#2457FF' }}>
@@ -819,6 +824,11 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
           </div>
         )}
 
+        {/* TAB: PROFILE VIEW */}
+        {activeTab === 'profile' && (
+          <ProfileView triggerToast={triggerToast} />
+        )}
+
         {/* TAB: SETTINGS VIEW */}
         {activeTab === 'settings' && (
           <SettingsView triggerToast={triggerToast} />
@@ -1014,7 +1024,7 @@ export default function App() {
           } />
           <Route path="/profile" element={
             <ProtectedRoute>
-              <CareerlyWorkspace activeTab="settings" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
+              <CareerlyWorkspace activeTab="profile" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
             </ProtectedRoute>
           } />
           <Route path="/settings" element={
