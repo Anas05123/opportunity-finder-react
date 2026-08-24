@@ -142,7 +142,7 @@ export default function ProfileView({ triggerToast }) {
       
       {/* ── 1. Profile Header Card (Figma Style) ─────────────────────── */}
       <div className="bg-card border-b border-border px-6 py-6 sm:px-8">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-start gap-5">
+        <div className="w-full flex flex-col sm:flex-row items-start gap-5">
           
           {/* Avatar with initial */}
           <div className="relative flex-shrink-0">
@@ -241,8 +241,8 @@ export default function ProfileView({ triggerToast }) {
       </div>
 
       {/* ── 2. 2-Column Responsive Body ──────────────────────────────── */}
-      <div className="max-w-6xl mx-auto p-5 sm:p-7">
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6">
+      <div className="w-full p-5 sm:p-7">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6">
           
           {/* ── Left Column: About, Experience, Education ────────────── */}
           <div className="space-y-6">

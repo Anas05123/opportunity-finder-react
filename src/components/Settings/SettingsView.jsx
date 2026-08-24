@@ -154,7 +154,7 @@ export default function SettingsView({ triggerToast }) {
   };
 
   return (
-    <div className="p-6 sm:p-8 max-w-[1100px] mx-auto space-y-6" style={{ fontFamily: 'var(--font-sans)' }}>
+    <div className="w-full p-6 sm:p-8 space-y-6" style={{ fontFamily: 'var(--font-sans)' }}>
       
       {/* ── Page Header ─────────────────────────────────────────────── */}
       <div>

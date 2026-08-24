@@ -636,7 +636,7 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
 
         {/* TAB: SAVED OPPORTUNITIES (USER-OWNED) */}
         {activeTab === 'saved' && (
-          <div className="p-6 sm:p-8 max-w-[1280px] mx-auto space-y-6" style={{ fontFamily: 'var(--font-sans)' }}>
+          <div className="w-full p-6 sm:p-8 space-y-6" style={{ fontFamily: 'var(--font-sans)' }}>
             <div>
               <h1 className="font-display text-[26px] sm:text-[30px] font-bold text-foreground leading-tight">
                 Saved Opportunities ({savedOppsList.length})
@@ -647,9 +647,9 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
             </div>
 
             {savedOppsList.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                 {savedOppsList.map(opp => (
-                  <OpportunityCard
+                  <OpportunityCard 
                     key={opp.id || opp.opportunity_id}
                     opportunity={opp}
                     onSelectOp={(o) => { setDrawerOp(o); navigate(`/opportunities/${o.id}`); }}
@@ -682,7 +682,7 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
 
         {/* TAB: APPLICATION TRACKER CRM BOARD (USER-OWNED) */}
         {activeTab === 'tracker' && (
-          <div className="p-6 sm:p-8 max-w-[1400px] mx-auto space-y-6" style={{ fontFamily: 'var(--font-sans)' }}>
+          <div className="w-full p-6 sm:p-8 space-y-6" style={{ fontFamily: 'var(--font-sans)' }}>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h1 className="font-display text-[26px] sm:text-[30px] font-bold text-foreground leading-tight">
@@ -769,14 +769,14 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
 
         {/* TAB: AI MOCK INTERVIEW COACH */}
         {activeTab === 'interview' && (
-          <div className="tab-content-anim">
+          <div className="tab-content-anim w-full">
             <InterviewCoach userProfile={careerProfile} triggerToast={triggerToast} />
           </div>
         )}
 
         {/* TAB: DEADLINES TIMELINE */}
         {activeTab === 'calendar' && (
-          <div className="p-6 sm:p-8 max-w-[1000px] mx-auto space-y-6" style={{ fontFamily: 'var(--font-sans)' }}>
+          <div className="w-full p-6 sm:p-8 space-y-6" style={{ fontFamily: 'var(--font-sans)' }}>
             <div>
               <h1 className="font-display text-[26px] sm:text-[30px] font-bold text-foreground leading-tight">
                 Application Deadlines Timeline

@@ -135,7 +135,7 @@ export default function PersonalizedDashboard({
   };
 
   return (
-    <div className="p-5 sm:p-8 max-w-[1280px] mx-auto space-y-7" style={{ fontFamily: 'var(--font-sans)' }}>
+    <div className="w-full p-5 sm:p-8 space-y-7" style={{ fontFamily: 'var(--font-sans)' }}>
       
       {/* ── 1. Header & Greeting Banner ─────────────────────────────── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border/60">
