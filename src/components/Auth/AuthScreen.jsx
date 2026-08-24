@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation, useSearchParams, Link } from 'react-router-dom';
 import { 
   Mail, Lock, User, ArrowRight, CheckCircle2, AlertCircle, 
-  RefreshCw, ArrowLeft, Eye, EyeOff 
+  RefreshCw, ArrowLeft, Eye, EyeOff, Key 
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
 
