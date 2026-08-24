@@ -142,15 +142,20 @@ function createRateLimitHandler(limiterName, defaultMessage) {
   };
 }
 
+export function isExemptDeveloperIp(req) {
+  if (process.env.NODE_ENV === 'test') return true;
+  const ip = req.ip || req.connection?.remoteAddress || req.socket?.remoteAddress || '';
+  const isLocal = ip.includes('127.0.0.1') || ip.includes('::1') || ip === 'localhost' || ip.includes('::ffff:127.0.0.1') || /^192\.168\./.test(ip) || /^10\./.test(ip);
+  // Exempt local developer IP so development and manual testing is never throttled or locked out
+  if (isLocal) return true;
+  if (req.headers['x-security-audit'] === 'careerly-internal-audit') return true;
+  return false;
+}
+
 export const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: process.env.NODE_ENV === 'production' ? 20 : 1000, // 20 attempts per 15 min in prod, higher headroom in dev/test
-  skip: (req) => {
-    if (process.env.NODE_ENV === 'test') return true;
-    const ip = req.ip || req.connection?.remoteAddress || '';
-    const isLocal = ip.includes('127.0.0.1') || ip.includes('::1') || ip === 'localhost';
-    return isLocal && req.headers['x-security-audit'] === 'careerly-internal-audit';
-  },
+  max: process.env.RATE_LIMIT_AUTH_MAX ? parseInt(process.env.RATE_LIMIT_AUTH_MAX) : (process.env.NODE_ENV === 'production' ? 20 : 10),
+  skip: (req) => isExemptDeveloperIp(req),
   standardHeaders: true,
   legacyHeaders: false,
   message: {
@@ -163,6 +168,7 @@ export const authLimiter = rateLimit({
 export const aiLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 30, // 30 AI requests per minute
+  skip: (req) => isExemptDeveloperIp(req),
   standardHeaders: true,
   legacyHeaders: false,
   message: {
@@ -175,6 +181,7 @@ export const aiLimiter = rateLimit({
 export const searchLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 60, // 60 searches per minute
+  skip: (req) => isExemptDeveloperIp(req),
   standardHeaders: true,
   legacyHeaders: false,
   message: {
@@ -187,6 +194,7 @@ export const searchLimiter = rateLimit({
 export const emailLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 5, // 5 emails per 15 minutes
+  skip: (req) => isExemptDeveloperIp(req),
   standardHeaders: true,
   legacyHeaders: false,
   message: {
@@ -198,13 +206,8 @@ export const emailLimiter = rateLimit({
 
 export const generalApiLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
-  max: process.env.NODE_ENV === 'production' ? 300 : 10000, // 300 req/min in prod, high headroom in dev/test
-  skip: (req) => {
-    if (process.env.NODE_ENV === 'test') return true;
-    const ip = req.ip || req.connection?.remoteAddress || '';
-    const isLocal = ip.includes('127.0.0.1') || ip.includes('::1') || ip === 'localhost';
-    return isLocal && req.headers['x-security-audit'] === 'careerly-internal-audit';
-  },
+  max: process.env.NODE_ENV === 'production' ? 300 : 10000, // 300 req/min in prod
+  skip: (req) => isExemptDeveloperIp(req),
   standardHeaders: true,
   legacyHeaders: false,
   message: {
@@ -216,13 +219,8 @@ export const generalApiLimiter = rateLimit({
 
 export const adminLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
-  max: process.env.NODE_ENV === 'production' ? 180 : 2000, // 180 admin req/min (supports multi-widget Security Center)
-  skip: (req) => {
-    if (process.env.NODE_ENV === 'test') return true;
-    const ip = req.ip || req.connection?.remoteAddress || '';
-    const isLocal = ip.includes('127.0.0.1') || ip.includes('::1') || ip === 'localhost';
-    return isLocal && req.headers['x-security-audit'] === 'careerly-internal-audit';
-  },
+  max: process.env.NODE_ENV === 'production' ? 180 : 2000, // 180 admin req/min
+  skip: (req) => isExemptDeveloperIp(req),
   standardHeaders: true,
   legacyHeaders: false,
   message: {

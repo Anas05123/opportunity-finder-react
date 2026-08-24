@@ -11,7 +11,7 @@ export default function NotFoundPage() {
       alignItems: 'center',
       justifyContent: 'center',
       padding: '2rem 1.5rem',
-      background: 'radial-gradient(circle at 50% 30%, rgba(31, 228, 119, 0.06) 0%, transparent 60%), #06070a',
+      background: 'radial-gradient(circle at 50% 30%, rgba(36, 87, 255, 0.08) 0%, transparent 60%), #06070a',
       textAlign: 'center'
     }}>
       <div style={{
@@ -27,13 +27,13 @@ export default function NotFoundPage() {
           width: '56px',
           height: '56px',
           borderRadius: '16px',
-          background: 'rgba(31, 228, 119, 0.12)',
-          border: '1px solid rgba(31, 228, 119, 0.3)',
+          background: 'rgba(36, 87, 255, 0.12)',
+          border: '1px solid rgba(36, 87, 255, 0.3)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           margin: '0 auto 1.25rem',
-          color: '#1FE477'
+          color: '#2457FF'
         }}>
           <Compass size={28} />
         </div>
@@ -43,7 +43,7 @@ export default function NotFoundPage() {
           fontWeight: '800',
           textTransform: 'uppercase',
           letterSpacing: '0.08em',
-          color: '#1FE477',
+          color: '#2457FF',
           fontFamily: "'JetBrains Mono', monospace"
         }}>
           Error 404
@@ -53,7 +53,7 @@ export default function NotFoundPage() {
           fontSize: '1.6rem',
           fontWeight: '800',
           color: '#ffffff',
-          fontFamily: "'Space Grotesk', sans-serif",
+          fontFamily: 'var(--font-display, sans-serif)',
           margin: '0.5rem 0 0.75rem',
           letterSpacing: '-0.02em'
         }}>
@@ -78,13 +78,13 @@ export default function NotFoundPage() {
             gap: '0.5rem',
             width: '100%',
             height: '46px',
-            background: 'linear-gradient(135deg, #1FE477 0%, #10B981 100%)',
-            color: '#06070a',
+            background: '#2457FF',
+            color: '#ffffff',
             fontWeight: '800',
             fontSize: '0.9rem',
             borderRadius: '12px',
             textDecoration: 'none',
-            boxShadow: '0 4px 20px rgba(31, 228, 119, 0.35)'
+            boxShadow: '0 4px 20px rgba(36, 87, 255, 0.35)'
           }}
         >
           <ArrowLeft size={16} />

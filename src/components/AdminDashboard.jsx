@@ -136,25 +136,31 @@ export default function AdminDashboard({ triggerToast }) {
     }
   };
 
-  const filteredSources = sources.filter(s => sourceFilter === 'all' || String(s.tier) === sourceFilter);
-
   return (
-    <div style={{ marginTop: '1.75rem' }}>
+    <div className="w-full p-5 sm:p-8 space-y-7" style={{ fontFamily: 'var(--font-sans)' }}>
       {/* Top Admin Section Tabs */}
-      <div style={{ display: 'flex', gap: '0.65rem', marginBottom: '1.75rem', background: 'var(--bg-card)', padding: '0.45rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', width: 'fit-content' }}>
+      <div className="flex items-center gap-1.5 p-1.5 bg-slate-100/80 dark:bg-slate-900/80 border border-border rounded-xl w-fit shadow-xs">
         <button
-          className={`btn ${adminSection === 'security' ? 'btn-primary' : 'btn-ghost'}`}
           onClick={() => setAdminSection('security')}
-          style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.86rem', padding: '0.55rem 1.15rem' }}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+            adminSection === 'security'
+              ? 'bg-[#2457FF] text-white shadow-xs'
+              : 'text-muted-foreground hover:text-foreground hover:bg-white/60 dark:hover:bg-slate-800/60'
+          }`}
         >
-          <ShieldCheck size={16} /> Enterprise Security Center
+          <ShieldCheck size={15} />
+          <span>Enterprise Security Center</span>
         </button>
         <button
-          className={`btn ${adminSection === 'sources' ? 'btn-primary' : 'btn-ghost'}`}
           onClick={() => setAdminSection('sources')}
-          style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.86rem', padding: '0.55rem 1.15rem' }}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+            adminSection === 'sources'
+              ? 'bg-[#2457FF] text-white shadow-xs'
+              : 'text-muted-foreground hover:text-foreground hover:bg-white/60 dark:hover:bg-slate-800/60'
+          }`}
         >
-          <Globe size={16} /> Scraper Sources & Registry
+          <Globe size={15} />
+          <span>Scraper Sources & Registry</span>
         </button>
       </div>
 

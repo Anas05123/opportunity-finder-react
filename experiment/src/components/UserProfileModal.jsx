@@ -1,17 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { User, Check, X, Shield, Phone, Mail, Award, BookOpen, GraduationCap } from 'lucide-react';
+import { User, X, CheckCircle, Shield } from 'lucide-react';
 
-export default function UserProfileModal({ profile, onClose, onSaveProfile, triggerToast }) {
+export default function UserProfileModal({ 
+  profile, 
+  user, 
+  isOpen = true, 
+  onClose, 
+  onSaveProfile, 
+  triggerToast 
+}) {
+  const activeUser = profile || user || {};
+
   const [formData, setFormData] = useState({
-    name: profile?.name || 'Anas',
-    email: profile?.email || 'ayarianas79@gmail.com',
-    phone: profile?.phone || '+60172513031',
-    degree_level: profile?.degree_level || 'undergrad',
-    degree_title: profile?.degree_title || 'Bachelor of Arts (BA)',
-    major: profile?.major || 'Advertising & Marketing',
-    gpa: profile?.gpa || 3.85,
-    no_ielts_preference: profile?.no_ielts_preference ?? 1,
-    target_country: profile?.target_country || 'Malaysia / Global / Europe / US'
+    name: activeUser?.full_name || activeUser?.name || 'Anas',
+    email: activeUser?.email || 'ayarianas79@gmail.com',
+    phone: activeUser?.phone || '+60172513031',
+    degree_level: activeUser?.degree_level || 'undergrad',
+    degree_title: activeUser?.degree_title || 'Bachelor of Arts (BA)',
+    major: activeUser?.major || 'Advertising & Marketing',
+    gpa: activeUser?.gpa || 3.85,
+    no_ielts_preference: activeUser?.no_ielts_preference ?? 1,
+    target_country: activeUser?.target_country || 'Malaysia / Global / Europe / US'
   });
 
   useEffect(() => {
@@ -22,146 +31,203 @@ export default function UserProfileModal({ profile, onClose, onSaveProfile, trig
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onClose]);
 
+  if (isOpen === false) return null;
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSaveProfile(formData);
-    triggerToast('Profile updated to ' + formData.degree_title + ' & match scores recalculated!');
+    if (typeof onSaveProfile === 'function') {
+      onSaveProfile(formData);
+    }
+    if (typeof triggerToast === 'function') {
+      triggerToast('Candidate profile preferences saved.');
+    }
     onClose();
   };
 
   return (
-    <div className="modal-backdrop" onClick={onClose} role="presentation">
+    <div style={{
+      position: 'fixed',
+      inset: 0,
+      background: 'rgba(5, 8, 15, 0.75)',
+      backdropFilter: 'blur(8px)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 100,
+      padding: '20px'
+    }} onClick={onClose}>
       <div 
-        className="modal-card modal-medium" 
-        onClick={(e) => e.stopPropagation()} 
-        role="dialog" 
-        aria-modal="true" 
-        aria-labelledby="user-profile-title"
-        style={{ padding: '2rem', position: 'relative' }}
+        style={{
+          background: 'var(--bg-surface)',
+          border: '1px solid var(--border-default)',
+          borderRadius: 'var(--radius-md)',
+          width: '100%',
+          maxWidth: '560px',
+          padding: '24px',
+          boxShadow: 'var(--shadow-lg)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '16px'
+        }}
+        onClick={(e) => e.stopPropagation()}
       >
-        <button className="modal-close" onClick={onClose} aria-label="Close Modal">
-          <X size={16} />
-        </button>
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{
+              width: '34px',
+              height: '34px',
+              borderRadius: 'var(--radius-xs)',
+              background: 'var(--primary-subtle)',
+              border: '1px solid var(--primary-border)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'var(--primary)'
+            }}>
+              <User size={18} />
+            </div>
+            <div>
+              <div style={{ fontWeight: '700', fontSize: '14px', color: 'var(--text-primary)' }}>
+                Candidate Profile & Calibration
+              </div>
+              <div style={{ fontSize: '11.5px', color: 'var(--text-tertiary)' }}>
+                Configure degree qualifications, major specialization, and English waivers.
+              </div>
+            </div>
+          </div>
 
-        {/* Modal Header */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', marginBottom: '1.5rem' }}>
-          <div style={{ width: '44px', height: '44px', borderRadius: 'var(--radius-md)', background: 'var(--primary-subtle)', border: '1px solid var(--border-default)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <User size={22} color="var(--primary)" />
-          </div>
-          <div>
-            <h3 id="user-profile-title" className="type-h2">Academic & Candidate Profile</h3>
-            <p className="type-body" style={{ marginTop: '0.15rem' }}>Set your exact degree qualification (BA/BSc/BBA), GPA, and phone number.</p>
-          </div>
+          <button
+            onClick={onClose}
+            className="btn-ghost btn-icon"
+            style={{ width: '28px', height: '28px' }}
+          >
+            <X size={16} />
+          </button>
         </div>
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        {/* Form */}
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           
-          {/* Row 1: Name & Phone */}
-          <div className="responsive-grid-2col">
+          {/* Full Name & Phone */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
             <div>
-              <label htmlFor="user-fullname" className="filter-label">Full Name</label>
-              <input 
-                id="user-fullname"
-                type="text" 
-                className="form-input" 
+              <label style={{ fontSize: '11.5px', fontWeight: '600', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>
+                Full Name
+              </label>
+              <input
+                type="text"
+                className="input-field"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                required 
+                required
               />
             </div>
+
             <div>
-              <label htmlFor="user-phone" className="filter-label">Phone Number *</label>
-              <input 
-                id="user-phone"
-                type="text" 
-                className="form-input" 
+              <label style={{ fontSize: '11.5px', fontWeight: '600', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>
+                Phone Number
+              </label>
+              <input
+                type="text"
+                className="input-field"
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                required 
+                required
               />
             </div>
           </div>
 
-          {/* Row 2: Email & GPA */}
-          <div className="responsive-grid-2col">
+          {/* Email & GPA */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
             <div>
-              <label htmlFor="user-email" className="filter-label">Email Address</label>
-              <input 
-                id="user-email"
-                type="email" 
-                className="form-input" 
+              <label style={{ fontSize: '11.5px', fontWeight: '600', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>
+                Email Address
+              </label>
+              <input
+                type="email"
+                className="input-field"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                required 
+                required
               />
             </div>
+
             <div>
-              <label htmlFor="user-gpa" className="filter-label">Cumulative GPA (Out of 4.0)</label>
-              <input 
-                id="user-gpa"
-                type="number" 
-                step="0.01" 
-                max="4.0" 
-                className="form-input" 
+              <label style={{ fontSize: '11.5px', fontWeight: '600', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>
+                Cumulative GPA (Out of 4.0)
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                max="4.0"
+                className="input-field"
                 value={formData.gpa}
                 onChange={(e) => setFormData({ ...formData, gpa: parseFloat(e.target.value) || 0 })}
-                required 
+                required
               />
             </div>
           </div>
 
-          {/* Row 3: Degree Title & Major */}
-          <div className="responsive-grid-2col">
+          {/* Degree Title & Major */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
             <div>
-              <label htmlFor="user-degree-title" className="filter-label">Exact Degree Qualification *</label>
-              <input 
-                id="user-degree-title"
-                type="text" 
-                className="form-input" 
+              <label style={{ fontSize: '11.5px', fontWeight: '600', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>
+                Degree Qualification
+              </label>
+              <input
+                type="text"
+                className="input-field"
                 value={formData.degree_title}
                 onChange={(e) => setFormData({ ...formData, degree_title: e.target.value })}
-                placeholder="e.g. Bachelor of Arts (BA), Bachelor of Science (BSc)"
-                required 
+                placeholder="e.g. Bachelor of Arts (BA)"
+                required
               />
             </div>
+
             <div>
-              <label htmlFor="user-major" className="filter-label">Academic Major / Specialization *</label>
-              <input 
-                id="user-major"
-                type="text" 
-                className="form-input" 
+              <label style={{ fontSize: '11.5px', fontWeight: '600', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>
+                Specialization / Major
+              </label>
+              <input
+                type="text"
+                className="input-field"
                 value={formData.major}
                 onChange={(e) => setFormData({ ...formData, major: e.target.value })}
-                required 
+                placeholder="e.g. Advertising & Marketing"
+                required
               />
             </div>
           </div>
 
-          {/* English Waiver Checkbox Box */}
-          <div style={{ background: 'var(--bg-surface-elevated)', padding: '1rem 1.25rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-default)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          {/* Waiver Checkbox Box */}
+          <div style={{ background: 'var(--bg-surface-elevated)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-xs)', padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
-              <div style={{ fontSize: '0.88rem', fontWeight: '800', color: 'var(--text-primary)' }}>No IELTS / English Medium Waiver Preferred</div>
-              <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '0.15rem' }}>Boosts matching opportunities that accept Medium of Instruction certificates.</div>
+              <div style={{ fontSize: '12.5px', fontWeight: '600', color: 'var(--text-primary)' }}>
+                English Medium / No IELTS Preference
+              </div>
+              <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
+                Prioritize opportunities accepting Medium of Instruction certificates.
+              </div>
             </div>
-            <input 
-              id="user-no-ielts"
-              aria-label="No IELTS / English Medium Waiver Preferred"
-              type="checkbox" 
+            <input
+              type="checkbox"
               checked={formData.no_ielts_preference === 1}
               onChange={(e) => setFormData({ ...formData, no_ielts_preference: e.target.checked ? 1 : 0 })}
-              style={{ width: '20px', height: '20px', cursor: 'pointer', accentColor: 'var(--accent-emerald)' }}
+              style={{ width: '16px', height: '16px', cursor: 'pointer' }}
             />
           </div>
 
-          {/* Modal Footer Actions */}
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '0.5rem', paddingTop: '1rem', borderTop: '1px solid var(--border-subtle)' }}>
-            <button type="button" className="btn btn-outline" onClick={onClose}>
+          {/* Actions */}
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '8px', paddingTop: '12px', borderTop: '1px solid var(--border-default)' }}>
+            <button type="button" className="btn btn-secondary" onClick={onClose}>
               Cancel
             </button>
-            <button type="submit" className="btn btn-primary" style={{ padding: '0.65rem 1.6rem' }}>
-              Save Profile
+            <button type="submit" className="btn btn-primary">
+              Save Calibration
             </button>
           </div>
+
         </form>
       </div>
     </div>

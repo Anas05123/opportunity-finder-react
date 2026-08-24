@@ -1,7 +1,8 @@
 import React from 'react';
 import { Navigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext.jsx';
-import { ShieldAlert, ArrowLeft, RefreshCw } from 'lucide-react';
+import { ShieldAlert, ArrowLeft } from 'lucide-react';
+import LoadingScreen from '../Common/LoadingScreen.jsx';
 
 export default function AdminRoute({ children }) {
   const { isAuthenticated, isAdmin, isLoading } = useAuth();
@@ -9,19 +10,10 @@ export default function AdminRoute({ children }) {
 
   if (isLoading) {
     return (
-      <div style={{
-        minHeight: '80vh',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: '#06070a',
-        color: '#94a3b8',
-        gap: '1rem'
-      }}>
-        <RefreshCw size={28} className="spin-slow" color="#1FE477" />
-        <span style={{ fontSize: '0.88rem', fontWeight: '600' }}>Verifying permissions...</span>
-      </div>
+      <LoadingScreen 
+        message="Verifying Admin Access" 
+        subMessage="Validating administrative privileges & cryptographic role..." 
+      />
     );
   }
 
@@ -105,13 +97,13 @@ export default function AdminRoute({ children }) {
               gap: '0.5rem',
               width: '100%',
               height: '46px',
-              background: '#1FE477',
-              color: '#06070a',
+              background: '#2457FF',
+              color: '#ffffff',
               fontWeight: '800',
               fontSize: '0.9rem',
               borderRadius: '12px',
               textDecoration: 'none',
-              boxShadow: '0 4px 20px rgba(31, 228, 119, 0.35)'
+              boxShadow: '0 4px 20px rgba(36, 87, 255, 0.35)'
             }}
           >
             <ArrowLeft size={16} />

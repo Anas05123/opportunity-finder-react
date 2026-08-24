@@ -2,14 +2,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation, useSearchParams, Link } from 'react-router-dom';
 import { 
   Mail, Lock, User, ArrowRight, CheckCircle2, AlertCircle, 
-  RefreshCw, Sun, Moon, ArrowLeft, Eye, EyeOff 
+  RefreshCw, ArrowLeft, Eye, EyeOff 
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '483326712949-d6d0p5rg49a32bu80i443293kk916u8p.apps.googleusercontent.com';
 
-export default function AuthScreen({ triggerToast, theme, toggleTheme }) {
-  const { login, signup, verifyEmail, resendVerification, loginWithGoogle, forgotPassword, resetPassword, isAuthenticated, needsOnboarding } = useAuth();
+export default function AuthScreen({ triggerToast }) {
+  const { login, signup, verifyEmail, forgotPassword, resetPassword, loginWithGoogle, isAuthenticated, needsOnboarding } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
@@ -27,9 +27,12 @@ export default function AuthScreen({ triggerToast, theme, toggleTheme }) {
   const [mode, setMode] = useState(() => getModeFromPath(location.pathname));
 
   useEffect(() => {
-    setMode(getModeFromPath(location.pathname));
-    setErrorMsg('');
-    setSuccessMsg('');
+    const derived = getModeFromPath(location.pathname);
+    if (derived !== mode) {
+      setMode(derived);
+      setErrorMsg('');
+      setSuccessMsg('');
+    }
   }, [location.pathname]);
 
   // If already authenticated, redirect immediately
@@ -51,677 +54,592 @@ export default function AuthScreen({ triggerToast, theme, toggleTheme }) {
   // Form Fields
   const [email, setEmail] = useState(() => searchParams.get('email') || localStorage.getItem('careerly_pending_email') || '');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [fullName, setFullName] = useState('');
 
   // OTP Verification States
   const [otpDigits, setOtpDigits] = useState(['', '', '', '', '', '']);
-  const [cooldown, setCooldown] = useState(60);
-  const [isResending, setIsResending] = useState(false);
-  const otpInputRefs = useRef([]);
 
-  // Reset Password States
-  const [resetCode, setResetCode] = useState('');
-  const [newPassword, setNewPassword] = useState('');
+  // Google Sign-In init & SSO State
+  const googleButtonRef = useRef(null);
+  const [showGoogleSsoDialog, setShowGoogleSsoDialog] = useState(false);
+  const [googleSsoEmail, setGoogleSsoEmail] = useState('');
+  const [googleSsoName, setGoogleSsoName] = useState('');
 
-  // 1. Initialize Real Google Identity Services (GIS)
   useEffect(() => {
     if (mode !== 'login' && mode !== 'signup') return;
 
-    const initGoogleGIS = () => {
-      if (window.google?.accounts?.id) {
+    const initGoogle = () => {
+      if (window.google?.accounts?.id && googleButtonRef.current) {
         try {
           window.google.accounts.id.initialize({
             client_id: GOOGLE_CLIENT_ID,
             callback: async (response) => {
-              if (response?.credential) {
-                try {
-                  setIsSubmitting(true);
-                  const base64Url = response.credential.split('.')[1];
-                  const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-                  const jsonPayload = decodeURIComponent(
-                    atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')
-                  );
-                  const payload = JSON.parse(jsonPayload);
-
-                  const authData = await loginWithGoogle({
-                    email: payload.email,
-                    full_name: payload.name || payload.given_name || payload.email.split('@')[0],
-                    google_id: payload.sub,
-                    avatar_url: payload.picture
-                  });
-
-                  if (triggerToast) triggerToast(`✓ Signed in with Google as ${payload.email}`);
-                  if (authData.needsOnboarding) {
-                    navigate('/onboarding', { replace: true });
-                  } else {
-                    navigate(redirectTarget, { replace: true });
-                  }
-                } catch (err) {
-                  setErrorMsg(err.message || 'Google authentication failed.');
-                } finally {
-                  setIsSubmitting(false);
+              try {
+                setIsSubmitting(true);
+                setErrorMsg('');
+                const authData = await loginWithGoogle({
+                  credential: response.credential,
+                  clientId: response.clientId
+                });
+                if (triggerToast) triggerToast(`Welcome back, ${authData.user?.full_name || 'Innovator'}!`);
+                if (authData.needsOnboarding) {
+                  navigate('/onboarding', { replace: true });
+                } else {
+                  navigate(redirectTarget, { replace: true });
                 }
+              } catch (err) {
+                setErrorMsg(err.message || 'Google sign-in failed. Please try email/password.');
+              } finally {
+                setIsSubmitting(false);
               }
-            },
-            auto_select: false,
-            cancel_on_tap_outside: true
+            }
           });
 
-          // Render official Google button
-          const btnContainer = document.getElementById('google-screen-btn');
-          if (btnContainer) {
-            btnContainer.innerHTML = '';
-            window.google.accounts.id.renderButton(btnContainer, {
-              theme: 'filled_black',
-              size: 'large',
-              type: 'standard',
-              shape: 'rectangular',
-              text: mode === 'signup' ? 'signup_with' : 'signin_with',
-              logo_alignment: 'left',
-              width: 370
-            });
-          }
-        } catch (e) {
-          console.warn('[GIS Screen Init Note]:', e.message);
+          window.google.accounts.id.renderButton(googleButtonRef.current, {
+            theme: 'outline',
+            size: 'large',
+            width: 380,
+            text: mode === 'signup' ? 'signup_with' : 'signin_with',
+            shape: 'rectangular'
+          });
+        } catch (err) {
+          console.warn('Google Auth render note:', err.message);
         }
       }
     };
 
-    const timer = setTimeout(initGoogleGIS, 150);
-    return () => clearTimeout(timer);
-  }, [mode, navigate, redirectTarget, triggerToast, loginWithGoogle]);
-
-  // Auto-decrement cooldown timer
-  useEffect(() => {
-    let timer;
-    if (mode === 'verify' && cooldown > 0) {
-      timer = setInterval(() => setCooldown(c => c - 1), 1000);
+    if (window.google) {
+      initGoogle();
+    } else {
+      const script = document.createElement('script');
+      script.src = 'https://accounts.google.com/gsi/client';
+      script.async = true;
+      script.defer = true;
+      script.onload = initGoogle;
+      document.body.appendChild(script);
     }
-    return () => clearInterval(timer);
-  }, [mode, cooldown]);
+  }, [mode, redirectTarget, triggerToast, loginWithGoogle, navigate]);
 
-  // Password strength calculation
-  const calculatePasswordStrength = (pass) => {
-    if (!pass) return 0;
-    let score = 0;
-    if (pass.length >= 6) score += 25;
-    if (pass.length >= 10) score += 25;
-    if (/[A-Z]/.test(pass) && /[a-z]/.test(pass)) score += 25;
-    if (/[0-9]/.test(pass) || /[^A-Za-z0-9]/.test(pass)) score += 25;
-    return score;
+  const handleGoogleCustomClick = () => {
+    setErrorMsg('');
+
+    // 1. Official Google OAuth 2.0 Token Client Popup
+    if (window.google?.accounts?.oauth2) {
+      try {
+        const tokenClient = window.google.accounts.oauth2.initTokenClient({
+          client_id: GOOGLE_CLIENT_ID,
+          scope: 'email profile openid',
+          callback: async (tokenResponse) => {
+            if (tokenResponse.error) {
+              console.warn('[Google OAuth Error]:', tokenResponse.error);
+              if (tokenResponse.error !== 'popup_closed_by_user') {
+                setErrorMsg('Google sign-in was cancelled or encountered an error.');
+              }
+              return;
+            }
+            try {
+              setIsSubmitting(true);
+              const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+                headers: { Authorization: `Bearer ${tokenResponse.access_token}` }
+              });
+              const profile = await userInfoRes.json();
+
+              const authData = await loginWithGoogle({
+                email: profile.email,
+                full_name: profile.name || profile.given_name || profile.email.split('@')[0],
+                google_id: profile.sub,
+                avatar_url: profile.picture
+              });
+
+              if (triggerToast) triggerToast(`✓ Welcome back, ${authData.user?.full_name || profile.name}!`);
+              if (authData.needsOnboarding) {
+                navigate('/onboarding', { replace: true });
+              } else {
+                navigate(redirectTarget, { replace: true });
+              }
+            } catch (err) {
+              setErrorMsg(err.message || 'Failed to authenticate with Google.');
+            } finally {
+              setIsSubmitting(false);
+            }
+          }
+        });
+
+        tokenClient.requestAccessToken({ prompt: 'select_account' });
+        return;
+      } catch (e) {
+        console.warn('[OAuth 2.0 Token Client Exception]:', e.message);
+      }
+    }
+
+    // 2. Try Google Identity Services One-Tap prompt
+    if (window.google?.accounts?.id) {
+      window.google.accounts.id.prompt();
+    }
   };
 
-  const passwordStrength = calculatePasswordStrength(password);
-  const strengthColor = passwordStrength <= 25 ? '#ef4444' : passwordStrength <= 50 ? '#f59e0b' : passwordStrength <= 75 ? '#38bdf8' : '#1FE477';
-  const strengthLabel = passwordStrength <= 25 ? 'Weak' : passwordStrength <= 50 ? 'Fair' : passwordStrength <= 75 ? 'Good' : 'Strong';
-
-  const handleOtpChange = (index, value) => {
-    if (!/^\d*$/.test(value)) return;
-    const newDigits = [...otpDigits];
-    newDigits[index] = value.slice(-1);
-    setOtpDigits(newDigits);
-
-    if (value && index < 5 && otpInputRefs.current[index + 1]) {
-      otpInputRefs.current[index + 1].focus();
-    }
-  };
-
-  const handleOtpKeyDown = (index, e) => {
-    if (e.key === 'Backspace' && !otpDigits[index] && index > 0) {
-      otpInputRefs.current[index - 1].focus();
-    }
-  };
-
-  const handleOtpPaste = (e) => {
-    e.preventDefault();
-    const pasted = e.clipboardData.getData('text').trim();
-    if (/^\d{6}$/.test(pasted)) {
-      setOtpDigits(pasted.split(''));
-      if (otpInputRefs.current[5]) otpInputRefs.current[5].focus();
-    }
-  };
-
+  // Handle Form Submission
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     setErrorMsg('');
     setSuccessMsg('');
+
+    if (mode === 'signup' && password !== confirmPassword) {
+      setErrorMsg('Passwords do not match.');
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
       if (mode === 'login') {
         const data = await login(email, password);
-        if (triggerToast) triggerToast('✓ Welcome back to Careerly!');
+        if (triggerToast) triggerToast(`Welcome back, ${data.user?.full_name || 'Innovator'}!`);
         if (data.needsOnboarding) {
           navigate('/onboarding', { replace: true });
         } else {
           navigate(redirectTarget, { replace: true });
         }
       } else if (mode === 'signup') {
-        const res = await signup({ email, password, full_name: fullName });
-        if (res.status === 'verification_required') {
-          try { localStorage.setItem('careerly_pending_email', email); } catch (e) {}
-          navigate('/verify-email', { replace: false });
-          setCooldown(res.cooldownSeconds || 60);
-          if (triggerToast) triggerToast(`📧 Verification code sent to ${email}`);
-        }
+        const data = await signup(email, password, fullName);
+        if (triggerToast) triggerToast('Account created! Please verify your email.');
+        localStorage.setItem('careerly_pending_email', email);
+        navigate(`/verify-email?email=${encodeURIComponent(email)}`, { replace: true });
       } else if (mode === 'verify') {
-        const fullCode = otpDigits.join('');
-        if (fullCode.length !== 6) {
-          throw new Error('Please enter the full 6-digit verification code.');
+        const otpCode = otpDigits.join('');
+        if (otpCode.length < 6) {
+          setErrorMsg('Please enter the complete 6-digit verification code.');
+          setIsSubmitting(false);
+          return;
         }
-        if (!email) {
-          throw new Error('Please provide your account email address.');
-        }
-        await verifyEmail({ email, code: fullCode });
-        try { localStorage.removeItem('careerly_pending_email'); } catch (e) {}
-        if (triggerToast) triggerToast('🎉 Email verified! Welcome to Careerly.');
+        await verifyEmail(email, otpCode);
+        if (triggerToast) triggerToast('Email successfully verified! Welcome aboard.');
+        localStorage.removeItem('careerly_pending_email');
         navigate('/onboarding', { replace: true });
       } else if (mode === 'forgot') {
         await forgotPassword(email);
-        navigate('/reset-password', { replace: false });
-        setSuccessMsg(`If an account exists for ${email}, a 6-digit recovery code was dispatched.`);
+        setSuccessMsg('A password reset link has been sent to your email address.');
       } else if (mode === 'reset') {
-        await resetPassword({ email, code: resetCode, newPassword });
-        setSuccessMsg('Password reset successful! You can now sign in.');
-        navigate('/login', { replace: true });
-        setPassword('');
-        if (triggerToast) triggerToast('✓ Password updated! Please sign in.');
+        const resetToken = searchParams.get('token');
+        await resetPassword(resetToken, password);
+        setSuccessMsg('Your password has been successfully reset.');
+        setTimeout(() => navigate('/login', { replace: true }), 2000);
       }
     } catch (err) {
-      setErrorMsg(err.message || 'Authentication error.');
+      setErrorMsg(err.message || 'Authentication request failed. Please check your credentials.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleResendCode = async () => {
-    if (cooldown > 0 || isResending) return;
-    setIsResending(true);
+  // Smooth switch mode without reload or route flashing
+  const switchMode = (newMode) => {
+    if (newMode === mode) return;
+    setMode(newMode);
     setErrorMsg('');
-    try {
-      await resendVerification(email);
-      setCooldown(60);
-      setSuccessMsg('A fresh verification code has been dispatched.');
-      if (triggerToast) triggerToast('✓ New code sent!');
-    } catch (err) {
-      setErrorMsg(err.message || 'Failed to resend code.');
-    } finally {
-      setIsResending(false);
-    }
+    setSuccessMsg('');
+    window.history.replaceState(null, '', newMode === 'signup' ? '/register' : '/login');
   };
 
+  const isAuthMode = mode === 'login' || mode === 'signup';
+
   return (
-    <div style={{
-      minHeight: '100vh',
-      width: '100%',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '2rem 1.25rem',
-      position: 'relative',
-      background: 'radial-gradient(circle at 50% 15%, rgba(31, 228, 119, 0.08) 0%, transparent 60%), #06070a'
-    }}>
-      {/* Home / Back to Explore Link */}
-      <div style={{ position: 'absolute', top: '1.5rem', left: '1.5rem' }}>
-        <Link 
-          to="/"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '0.45rem',
-            color: '#94a3b8',
-            textDecoration: 'none',
-            fontSize: '0.84rem',
-            fontWeight: '600',
-            background: 'rgba(255,255,255,0.04)',
-            border: '1px solid rgba(255,255,255,0.08)',
-            borderRadius: '10px',
-            padding: '0.45rem 0.85rem',
-            transition: 'all 0.15s ease'
-          }}
-        >
-          <ArrowLeft size={15} />
-          <span>Back to Home</span>
-        </Link>
-      </div>
-
-      {/* Theme Switcher */}
-      <div style={{ position: 'absolute', top: '1.5rem', right: '1.5rem' }}>
-        <button 
-          className="icon-button" 
-          onClick={toggleTheme} 
-          aria-label="Toggle theme mode"
-          style={{ width: '40px', height: '40px', borderRadius: '10px' }}
-        >
-          {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
-        </button>
-      </div>
-
-      {/* Main Card */}
-      <div style={{
-        width: '100%',
-        maxWidth: '420px',
-        background: 'var(--card)',
-        border: '1px solid var(--border-default)',
-        borderRadius: 'var(--radius-2xl)',
-        boxShadow: 'var(--shadow-lg)',
-        padding: '2.25rem',
-        position: 'relative'
-      }}>
-        {/* Header */}
-        <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-          <Link to="/" style={{ textDecoration: 'none' }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem', marginBottom: '0.4rem' }}>
-              <div style={{ width: '26px', height: '26px', borderRadius: '7px', background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#06070a', fontWeight: '900', fontSize: '0.85rem' }}>
-                ⚡
+    <div className="min-h-screen lg:h-screen w-screen lg:max-h-screen bg-background flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden" style={{ fontFamily: 'var(--font-sans)' }}>
+      
+      {/* ── Left Branding Panel ────────────────────────────────────────── */}
+      <div className="hidden lg:flex flex-col justify-between w-[460px] xl:w-[480px] flex-shrink-0 bg-primary p-9 xl:p-11 text-white h-full" style={{ background: '#2457FF' }}>
+        <div>
+          <div className="flex items-center gap-3 mb-10 xl:mb-12">
+            <Link to="/" className="flex items-center gap-3 text-white no-underline">
+              <div className="w-10 h-10 bg-white rounded-xl p-1 flex items-center justify-center shadow-md">
+                <img src="/careerly-logo.png" alt="Careerly" className="w-full h-full object-contain" />
               </div>
-              <span style={{ fontSize: '1.15rem', fontWeight: '800', letterSpacing: '-0.02em', color: 'var(--foreground)', fontFamily: "'Space Grotesk', sans-serif" }}>
-                Careerly
-              </span>
-            </div>
-          </Link>
+              <span className="text-white text-[19px] font-bold tracking-tight">Careerly</span>
+            </Link>
+          </div>
 
-          <h2 style={{ fontSize: '1.35rem', fontWeight: '800', color: 'var(--foreground)', fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '-0.02em', margin: '0 0 0.25rem' }}>
-            {mode === 'login' && 'Welcome back'}
-            {mode === 'signup' && 'Create your account'}
-            {mode === 'verify' && 'Verify your email'}
-            {mode === 'forgot' && 'Reset your password'}
-            {mode === 'reset' && 'Set new password'}
+          <h2 className="font-display text-[34px] xl:text-[38px] font-bold text-white leading-[1.12] mb-4">
+            Land your next<br />
+            <span className="italic text-blue-200">opportunity</span><br />
+            with confidence.
           </h2>
 
-          <p style={{ fontSize: '0.82rem', color: 'var(--muted-foreground)', margin: 0 }}>
-            {mode === 'login' && 'Sign in to access your calibrated opportunities.'}
-            {mode === 'signup' && 'Join 14,000+ professionals using verified career matching.'}
-            {mode === 'verify' && `Enter the 6-digit code sent to ${email || 'your email'}`}
-            {mode === 'forgot' && 'Enter your email to receive recovery instructions.'}
-            {mode === 'reset' && 'Enter the reset code and your new password.'}
+          <p className="text-[14px] xl:text-[15px] text-white/80 leading-relaxed max-w-[340px]">
+            Join 120,000+ professionals discovering dream roles through intelligent matching, AI CV studio, and STAR interview coaching.
           </p>
         </div>
 
-        {/* Alerts */}
-        {errorMsg && (
-          <div style={{
-            background: 'rgba(239, 68, 68, 0.12)',
-            border: '1px solid rgba(239, 68, 68, 0.35)',
-            borderRadius: '10px',
-            padding: '0.7rem 0.9rem',
-            color: '#f87171',
-            fontSize: '0.82rem',
-            display: 'flex',
-            alignItems: 'flex-start',
-            gap: '0.5rem',
-            marginBottom: '1.1rem'
-          }}>
-            <AlertCircle size={15} style={{ flexShrink: 0, marginTop: '2px' }} />
-            <span>{errorMsg}</span>
-          </div>
-        )}
-
-        {successMsg && (
-          <div style={{
-            background: 'rgba(31, 228, 119, 0.12)',
-            border: '1px solid rgba(31, 228, 119, 0.35)',
-            borderRadius: '10px',
-            padding: '0.7rem 0.9rem',
-            color: '#1FE477',
-            fontSize: '0.82rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            marginBottom: '1.1rem'
-          }}>
-            <CheckCircle2 size={15} style={{ flexShrink: 0 }} />
-            <span>{successMsg}</span>
-          </div>
-        )}
-
-        {/* Real Google Sign-In Official GIS Container & Frosted Button */}
-        {(mode === 'login' || mode === 'signup') && (
-          <div style={{ marginBottom: '1.25rem' }}>
-            <button
-              type="button"
-              onClick={() => {
-                if (window.google?.accounts?.id) {
-                  window.google.accounts.id.prompt();
-                } else {
-                  setErrorMsg('Google Sign-In SDK is loading. Please try again in a moment or use email.');
-                }
-              }}
-              disabled={isSubmitting}
-              style={{
-                width: '100%',
-                height: '46px',
-                background: 'rgba(255, 255, 255, 0.05)',
-                border: '1px solid rgba(255, 255, 255, 0.14)',
-                borderRadius: '12px',
-                color: '#ffffff',
-                fontSize: '0.9rem',
-                fontWeight: '700',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '0.75rem',
-                cursor: isSubmitting ? 'not-allowed' : 'pointer',
-                transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.08)'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.09)';
-                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.28)';
-                e.currentTarget.style.transform = 'translateY(-1px)';
-                e.currentTarget.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.4), 0 0 15px rgba(66, 133, 244, 0.2)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
-                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.14)';
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.08)';
-              }}
-            >
-              <svg width="19" height="19" viewBox="0 0 24 24">
-                <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
-                <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z"/>
-                <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 10.04 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
-                <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
-              </svg>
-              <span>Continue with Google</span>
-            </button>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginTop: '1.15rem', marginBottom: '0.25rem' }}>
-              <div style={{ flex: 1, height: '1px', background: 'rgba(255, 255, 255, 0.08)' }} />
-              <span style={{ fontSize: '0.72rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em', fontFamily: "'JetBrains Mono', monospace" }}>or continue with email</span>
-              <div style={{ flex: 1, height: '1px', background: 'rgba(255, 255, 255, 0.08)' }} />
+        {/* Testimonial Quote */}
+        <div className="bg-white/10 border border-white/15 rounded-2xl p-5 backdrop-blur-sm shadow-xs space-y-3">
+          <p className="text-[13.5px] text-white/95 leading-relaxed italic">
+            "Careerly helped me go from zero callbacks to four offers in six weeks. The match scoring alone saved me hours of wasted applications."
+          </p>
+          <div className="flex items-center gap-3 pt-2.5 border-t border-white/10">
+            <div className="w-8 h-8 rounded-full bg-white/25 flex items-center justify-center text-white text-[12px] font-bold">
+              SM
+            </div>
+            <div>
+              <p className="text-[13px] font-semibold text-white leading-tight">Sarah Mitchell</p>
+              <p className="text-[11px] text-white/70">Product Manager at Atlassian</p>
             </div>
           </div>
-        )}
+        </div>
 
-        {/* Main Form */}
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
-          {mode === 'signup' && (
-            <div>
-              <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '700', color: 'var(--foreground)', marginBottom: '0.3rem', textTransform: 'uppercase' }}>
-                Full Name
-              </label>
-              <div style={{ position: 'relative' }}>
-                <User size={15} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--muted-foreground)' }} />
-                <input
-                  type="text"
-                  required
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  placeholder="e.g. Alex Johnson"
-                  className="input-field"
-                  style={{ paddingLeft: '38px', height: '42px', borderRadius: '10px' }}
-                />
-              </div>
+        {/* Live Metrics */}
+        <div className="flex items-center justify-between pt-4 border-t border-white/15">
+          {[
+            ["50K+", "Opportunities"],
+            ["120K+", "Users"],
+            ["87%", "Success Rate"]
+          ].map(([n, l]) => (
+            <div key={l}>
+              <p className="text-[18px] xl:text-[20px] font-bold font-mono text-white leading-none">{n}</p>
+              <p className="text-[11px] text-white/70 mt-1">{l}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Right Form Panel ─────────────────────────────────────────── */}
+      <div className="flex-1 flex flex-col justify-between px-6 py-6 sm:px-12 xl:px-16 h-full">
+        <div>
+          <Link to="/" className="inline-flex items-center gap-2 text-[13px] font-semibold text-muted-foreground hover:text-foreground transition-colors">
+            <ArrowLeft size={15} /> Back to home
+          </Link>
+        </div>
+
+        <div className="w-full max-w-[430px] mx-auto my-auto py-2">
+          
+          {/* Mobile Logo */}
+          <div className="flex items-center gap-2.5 mb-5 lg:hidden">
+            <img src="/careerly-logo.png" alt="Careerly" className="w-8 h-8 object-contain" />
+            <span className="text-foreground text-[18px] font-bold">Careerly</span>
+          </div>
+
+          {/* Heading */}
+          <div className="mb-5">
+            <h1 className="font-display text-[26px] sm:text-[29px] font-bold text-foreground mb-1.5 leading-tight">
+              {mode === 'login' && 'Welcome back'}
+              {mode === 'signup' && 'Create your account'}
+              {mode === 'verify' && 'Verify your email'}
+              {mode === 'forgot' && 'Reset your password'}
+              {mode === 'reset' && 'Set new password'}
+            </h1>
+            <p className="text-[13.5px] text-muted-foreground leading-normal">
+              {mode === 'login' && 'Sign in to access your calibrated career intelligence.'}
+              {mode === 'signup' && 'Start discovering 50,000+ verified opportunities tailored for you.'}
+              {mode === 'verify' && `We sent a 6-digit code to ${email}.`}
+              {mode === 'forgot' && 'Enter your email address and we will send you a reset link.'}
+              {mode === 'reset' && 'Enter your new password below.'}
+            </p>
+          </div>
+
+          {/* Mode Switcher Pill with smooth sliding indicator */}
+          {isAuthMode && (
+            <div className="relative flex bg-secondary/80 rounded-xl p-1.5 mb-4 border border-border/40 select-none">
+              {/* Animated active background pill */}
+              <div 
+                className={`absolute top-1.5 bottom-1.5 w-[calc(50%-6px)] bg-card rounded-lg shadow-xs transition-transform duration-300 ease-out ${
+                  mode === 'signup' ? 'translate-x-[calc(100%+6px)]' : 'translate-x-0'
+                }`} 
+              />
+
+              <button 
+                type="button"
+                onClick={() => switchMode('login')}
+                className={`relative z-10 flex-1 py-2 rounded-lg text-[13.5px] font-semibold transition-colors duration-200 text-center ${
+                  mode === 'login' 
+                    ? 'text-foreground' 
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Sign In
+              </button>
+              <button 
+                type="button"
+                onClick={() => switchMode('signup')}
+                className={`relative z-10 flex-1 py-2 rounded-lg text-[13.5px] font-semibold transition-colors duration-200 text-center ${
+                  mode === 'signup' 
+                    ? 'text-foreground' 
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Register
+              </button>
             </div>
           )}
 
-          {mode !== 'verify' && (
-            <div>
-              <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '700', color: 'var(--foreground)', marginBottom: '0.3rem', textTransform: 'uppercase' }}>
-                Email Address
-              </label>
-              <div style={{ position: 'relative' }}>
-                <Mail size={15} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--muted-foreground)' }} />
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@company.com"
-                  className="input-field"
-                  style={{ paddingLeft: '38px', height: '42px', borderRadius: '10px' }}
-                />
-              </div>
-            </div>
-          )}
-
-          {(mode === 'login' || mode === 'signup') && (
-            <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.3rem' }}>
-                <label style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--foreground)', textTransform: 'uppercase' }}>Password</label>
-                {mode === 'login' && (
-                  <Link 
-                    to="/forgot-password"
-                    style={{ color: 'var(--primary)', fontSize: '0.75rem', fontWeight: '600', textDecoration: 'none' }}
-                  >
-                    Forgot password?
-                  </Link>
-                )}
-              </div>
-              <div style={{ position: 'relative' }}>
-                <Lock size={15} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }} />
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="input-field"
-                  style={{ paddingLeft: '38px', paddingRight: '38px', height: '42px', borderRadius: '10px' }}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#64748b', cursor: 'pointer' }}
-                >
-                  {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
-                </button>
-              </div>
-
-              {mode === 'signup' && password.length > 0 && (
-                <div style={{ marginTop: '0.45rem' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', color: '#94a3b8', marginBottom: '0.2rem' }}>
-                    <span>Security Strength</span>
-                    <span style={{ color: strengthColor, fontWeight: '700' }}>{strengthLabel}</span>
-                  </div>
-                  <div style={{ height: '3px', background: 'rgba(255,255,255,0.08)', borderRadius: '9999px', overflow: 'hidden' }}>
-                    <div style={{ width: `${passwordStrength}%`, height: '100%', background: strengthColor, transition: 'all 0.3s ease' }} />
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {mode === 'verify' && (
-            <div>
-              {!email && (
-                <div style={{ marginBottom: '1rem' }}>
-                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '700', color: 'var(--foreground)', marginBottom: '0.3rem', textTransform: 'uppercase' }}>
-                    Account Email
-                  </label>
-                  <div style={{ position: 'relative' }}>
-                    <Mail size={15} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--muted-foreground)' }} />
-                    <input
-                      type="email"
-                      required
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="name@company.com"
-                      className="input-field"
-                      style={{ paddingLeft: '38px', height: '42px', borderRadius: '10px' }}
-                    />
-                  </div>
-                </div>
-              )}
-
-              <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: '700', color: 'var(--foreground)', textAlign: 'center', marginBottom: '0.75rem' }}>
-                6-Digit Activation Code
-              </label>
-
-              <div style={{ display: 'flex', justifyContent: 'center', gap: '0.45rem', marginBottom: '1.1rem' }} onPaste={handleOtpPaste}>
-                {otpDigits.map((digit, idx) => (
-                  <input
-                    key={idx}
-                    ref={(el) => (otpInputRefs.current[idx] = el)}
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={1}
-                    value={digit}
-                    onChange={(e) => handleOtpChange(idx, e.target.value)}
-                    onKeyDown={(e) => handleOtpKeyDown(idx, e)}
-                    style={{
-                      width: '44px',
-                      height: '50px',
-                      textAlign: 'center',
-                      fontSize: '1.3rem',
-                      fontWeight: '800',
-                      fontFamily: 'monospace',
-                      background: 'var(--bg-surface-elevated, #161b22)',
-                      border: digit ? '1.5px solid var(--primary, #1FE477)' : '1px solid var(--border-default, rgba(255, 255, 255, 0.14))',
-                      borderRadius: '8px',
-                      color: 'var(--foreground, #ffffff)',
-                      boxShadow: digit ? '0 0 12px rgba(31, 228, 119, 0.25)' : 'none',
-                      outline: 'none'
-                    }}
-                  />
-                ))}
-              </div>
-
-              <div style={{ textAlign: 'center', fontSize: '0.8rem', color: 'var(--muted-foreground)' }}>
-                {cooldown > 0 ? (
-                  <span>Resend code in <strong style={{ color: 'var(--primary)' }}>{cooldown}s</strong></span>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={handleResendCode}
-                    disabled={isResending}
-                    style={{ background: 'none', border: 'none', color: 'var(--primary)', fontWeight: '700', cursor: 'pointer', textDecoration: 'underline' }}
-                  >
-                    {isResending ? 'Sending...' : 'Resend 6-Digit Code'}
-                  </button>
-                )}
-              </div>
-            </div>
-          )}
-
-          {mode === 'reset' && (
+          {/* Google SSO Button */}
+          {isAuthMode && (
             <>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '700', color: '#cbd5e1', marginBottom: '0.3rem', textTransform: 'uppercase' }}>
-                  6-Digit Recovery Code
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={resetCode}
-                  onChange={(e) => setResetCode(e.target.value)}
-                  placeholder="Enter code from email"
-                  className="input-field"
-                  style={{ height: '42px', borderRadius: '10px', fontFamily: 'monospace', letterSpacing: '2px' }}
-                />
-              </div>
+              <button
+                type="button"
+                onClick={handleGoogleCustomClick}
+                disabled={isSubmitting}
+                className="w-full flex items-center justify-center gap-3 py-2.5 px-4 bg-card border border-border hover:bg-secondary text-foreground font-semibold text-[13.5px] rounded-xl transition-all shadow-xs hover:shadow-sm"
+              >
+                <svg className="w-4.5 h-4.5 flex-shrink-0" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+                </svg>
+                <span>{mode === 'signup' ? 'Sign up with Google' : 'Sign in with Google'}</span>
+              </button>
 
-              <div>
-                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '700', color: '#cbd5e1', marginBottom: '0.3rem', textTransform: 'uppercase' }}>
-                  New Password
-                </label>
-                <input
-                  type="password"
-                  required
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="Min 6 characters"
-                  className="input-field"
-                  style={{ height: '42px', borderRadius: '10px' }}
-                />
+              <div ref={googleButtonRef} className="hidden" />
+
+              <div className="flex items-center gap-3 my-3.5">
+                <div className="flex-1 h-px bg-border" />
+                <span className="text-[11.5px] text-muted-foreground font-semibold uppercase tracking-wider">or with email</span>
+                <div className="flex-1 h-px bg-border" />
               </div>
             </>
           )}
 
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            style={{
-              width: '100%',
-              height: '46px',
-              background: 'linear-gradient(135deg, #1FE477 0%, #10B981 100%)',
-              color: '#06070a',
-              fontSize: '0.92rem',
-              fontWeight: '800',
-              letterSpacing: '-0.01em',
-              borderRadius: '12px',
-              border: 'none',
-              cursor: isSubmitting ? 'not-allowed' : 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.5rem',
-              boxShadow: '0 4px 20px rgba(31, 228, 119, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
-              marginTop: '0.5rem',
-              transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)'
-            }}
-            onMouseEnter={(e) => {
-              if (!isSubmitting) {
-                e.currentTarget.style.background = 'linear-gradient(135deg, #34F588 0%, #1FE477 100%)';
-                e.currentTarget.style.boxShadow = '0 6px 28px rgba(31, 228, 119, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.5)';
-                e.currentTarget.style.transform = 'translateY(-1px)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!isSubmitting) {
-                e.currentTarget.style.background = 'linear-gradient(135deg, #1FE477 0%, #10B981 100%)';
-                e.currentTarget.style.boxShadow = '0 4px 20px rgba(31, 228, 119, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.4)';
-                e.currentTarget.style.transform = 'translateY(0)';
-              }
-            }}
-          >
-            {isSubmitting ? (
-              <RefreshCw size={16} className="spin-slow" />
-            ) : (
-              <>
-                <span>
+          {/* Form Fields with Smooth Expansions */}
+          <form onSubmit={handleSubmit} className="space-y-3">
+            
+            {/* Full Name field (smooth accordion transition) */}
+            <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
+              mode === 'signup' ? 'max-h-24 opacity-100' : 'max-h-0 opacity-0 pointer-events-none'
+            }`}>
+              <label className="text-[11.5px] font-bold text-foreground uppercase tracking-wider block mb-1">
+                Full Name
+              </label>
+              <div className="relative">
+                <User size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <input 
+                  type="text" 
+                  required={mode === 'signup'}
+                  value={fullName} 
+                  onChange={e => setFullName(e.target.value)} 
+                  placeholder="Alex Kim"
+                  className="w-full bg-card border border-border rounded-xl py-2.5 pl-10 pr-3.5 text-[13.5px] text-foreground placeholder-muted-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all shadow-xs" 
+                />
+              </div>
+            </div>
+
+            {/* Email Address */}
+            {(isAuthMode || mode === 'forgot') && (
+              <div>
+                <label className="text-[11.5px] font-bold text-foreground uppercase tracking-wider block mb-1">
+                  Email Address
+                </label>
+                <div className="relative">
+                  <Mail size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                  <input 
+                    type="email" 
+                    required
+                    value={email} 
+                    onChange={e => setEmail(e.target.value)} 
+                    placeholder="alex@example.com"
+                    className="w-full bg-card border border-border rounded-xl py-2.5 pl-10 pr-3.5 text-[13.5px] text-foreground placeholder-muted-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all shadow-xs" 
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Password */}
+            {(isAuthMode || mode === 'reset') && (
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-[11.5px] font-bold text-foreground uppercase tracking-wider">
+                    Password
+                  </label>
+                  {mode === 'login' && (
+                    <Link to="/forgot-password" className="text-[11.5px] text-primary hover:underline font-semibold">
+                      Forgot password?
+                    </Link>
+                  )}
+                </div>
+                <div className="relative">
+                  <Lock size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                  <input 
+                    type={showPassword ? "text" : "password"} 
+                    required
+                    value={password} 
+                    onChange={e => setPassword(e.target.value)} 
+                    placeholder="••••••••"
+                    className="w-full bg-card border border-border rounded-xl py-2.5 pl-10 pr-10 text-[13.5px] text-foreground placeholder-muted-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all shadow-xs" 
+                  />
+                  <button 
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)} 
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1"
+                  >
+                    {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Confirm Password field (smooth accordion transition) */}
+            <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
+              mode === 'signup' ? 'max-h-24 opacity-100' : 'max-h-0 opacity-0 pointer-events-none'
+            }`}>
+              <label className="text-[11.5px] font-bold text-foreground uppercase tracking-wider block mb-1">
+                Confirm Password
+              </label>
+              <div className="relative">
+                <Lock size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <input 
+                  type="password" 
+                  required={mode === 'signup'}
+                  value={confirmPassword} 
+                  onChange={e => setConfirmPassword(e.target.value)} 
+                  placeholder="••••••••"
+                  className="w-full bg-card border border-border rounded-xl py-2.5 pl-10 pr-3.5 text-[13.5px] text-foreground placeholder-muted-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all shadow-xs" 
+                />
+              </div>
+            </div>
+
+            {/* Error Message */}
+            {errorMsg && (
+              <div className="flex items-center gap-2 p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-700 dark:text-red-400 text-[12.5px] animate-fadeIn">
+                <AlertCircle size={15} className="flex-shrink-0 text-red-500" />
+                <span>{errorMsg}</span>
+              </div>
+            )}
+
+            {/* Success Message */}
+            {successMsg && (
+              <div className="flex items-center gap-2 p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-700 dark:text-emerald-400 text-[12.5px] animate-fadeIn">
+                <CheckCircle2 size={15} className="flex-shrink-0 text-emerald-500" />
+                <span>{successMsg}</span>
+              </div>
+            )}
+
+            <button 
+              type="submit" 
+              disabled={isSubmitting}
+              className="w-full mt-2 py-3 bg-primary text-white text-[14px] font-bold rounded-xl hover:opacity-95 transition-all shadow-sm flex items-center justify-center gap-2 disabled:opacity-50"
+              style={{ background: '#2457FF' }}
+            >
+              {isSubmitting ? (
+                <>
+                  <RefreshCw size={15} className="animate-spin" /> Processing...
+                </>
+              ) : (
+                <>
                   {mode === 'login' && 'Sign In'}
                   {mode === 'signup' && 'Create Account'}
-                  {mode === 'verify' && 'Verify & Launch Onboarding'}
-                  {mode === 'forgot' && 'Send Recovery Code'}
+                  {mode === 'verify' && 'Verify & Continue'}
+                  {mode === 'forgot' && 'Send Reset Link'}
                   {mode === 'reset' && 'Update Password'}
-                </span>
-                <ArrowRight size={16} />
-              </>
-            )}
-          </button>
-        </form>
-
-        {/* Footer */}
-        <div style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid rgba(255, 255, 255, 0.08)', textAlign: 'center', fontSize: '0.82rem', color: '#94a3b8' }}>
-          {mode === 'login' && (
-            <span>
-              Don't have an account?{' '}
-              <Link 
-                to="/register"
-                style={{ color: '#1FE477', fontWeight: '800', textDecoration: 'none' }}
-              >
-                Sign up free
-              </Link>
-            </span>
-          )}
+                  <ArrowRight size={15} />
+                </>
+              )}
+            </button>
+          </form>
 
           {mode === 'signup' && (
-            <span>
-              Already registered?{' '}
-              <Link 
-                to="/login"
-                style={{ color: '#1FE477', fontWeight: '800', textDecoration: 'none' }}
-              >
-                Sign in
-              </Link>
-            </span>
+            <p className="text-center text-[11.5px] text-muted-foreground mt-3 leading-tight">
+              By creating an account you agree to our{' '}
+              <a href="#" className="text-foreground font-semibold hover:underline">Terms</a> and{' '}
+              <a href="#" className="text-foreground font-semibold hover:underline">Privacy Policy</a>.
+            </p>
           )}
 
-          {(mode === 'verify' || mode === 'forgot' || mode === 'reset') && (
-            <Link
-              to="/login"
-              style={{ color: '#94a3b8', fontWeight: '700', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
-            >
-              <ArrowLeft size={14} />
-              <span>Back to sign in</span>
-            </Link>
+          {isAuthMode && (
+            <p className="text-center text-[12.5px] text-muted-foreground mt-3.5">
+              {mode === 'login' ? "Don't have an account? " : "Already have an account? "}
+              <button 
+                type="button"
+                onClick={() => switchMode(mode === 'login' ? 'signup' : 'login')}
+                className="text-foreground font-bold hover:text-primary transition-colors underline ml-1"
+              >
+                {mode === 'login' ? 'Register now' : 'Sign In'}
+              </button>
+            </p>
           )}
+
+        </div>
+
+        <div className="text-center text-[11.5px] text-muted-foreground py-1">
+          © 2024 Careerly Intelligence. All rights reserved.
         </div>
       </div>
+
+      {/* ── Google SSO Dialog ────────────────────────────────────────── */}
+      {showGoogleSsoDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
+          <div className="w-full max-w-sm bg-card border border-border rounded-2xl p-6 shadow-2xl space-y-4 animate-scaleUp">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+                </svg>
+                <h3 className="text-base font-bold text-foreground">Continue with Google</h3>
+              </div>
+              <button 
+                type="button" 
+                onClick={() => setShowGoogleSsoDialog(false)}
+                className="text-muted-foreground hover:text-foreground text-sm font-bold p-1"
+              >
+                ✕
+              </button>
+            </div>
+
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Confirm the Google Account you would like to connect to Careerly.
+            </p>
+
+            <form onSubmit={handleConfirmGoogleSso} className="space-y-3.5 pt-1">
+              <div>
+                <label className="text-[11px] font-bold text-foreground uppercase tracking-wider block mb-1">
+                  Google Email
+                </label>
+                <input 
+                  type="email"
+                  required
+                  autoFocus
+                  value={googleSsoEmail}
+                  onChange={e => setGoogleSsoEmail(e.target.value)}
+                  placeholder="alex.kim@gmail.com"
+                  className="w-full bg-background border border-border rounded-xl py-2 px-3 text-[13px] text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                />
+              </div>
+
+              <div>
+                <label className="text-[11px] font-bold text-foreground uppercase tracking-wider block mb-1">
+                  Display Name (Optional)
+                </label>
+                <input 
+                  type="text"
+                  value={googleSsoName}
+                  onChange={e => setGoogleSsoName(e.target.value)}
+                  placeholder="Alex Kim"
+                  className="w-full bg-background border border-border rounded-xl py-2 px-3 text-[13px] text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                />
+              </div>
+
+              <div className="flex items-center gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowGoogleSsoDialog(false)}
+                  className="flex-1 py-2 px-3 rounded-xl border border-border text-xs font-semibold text-foreground hover:bg-secondary transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="flex-1 py-2 px-3 rounded-xl bg-primary text-white text-xs font-bold hover:opacity-90 transition-all flex items-center justify-center gap-1.5 shadow-sm"
+                  style={{ background: '#2457FF' }}
+                >
+                  {isSubmitting ? <RefreshCw size={13} className="animate-spin" /> : 'Connect Google'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

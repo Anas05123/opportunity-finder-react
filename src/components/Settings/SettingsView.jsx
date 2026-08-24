@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { 
   User, Shield, Lock, Trash2, CheckCircle2, AlertCircle, 
-  Save, KeyRound, Globe, Award, Briefcase, GraduationCap, RefreshCw 
+  Save, KeyRound, Globe, Award, Briefcase, GraduationCap, RefreshCw, 
+  Sparkles, Mail, Phone, MapPin, ExternalLink, Link2, CheckCircle,
+  Sliders, ShieldCheck, Download, LogOut, Bell
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { API_BASE_URL } from '../../config/api.js';
@@ -9,30 +11,21 @@ import { API_BASE_URL } from '../../config/api.js';
 export default function SettingsView({ triggerToast }) {
   const { user, careerProfile, searchProfile, updateCareerProfile, updateSearchPreferences, logout } = useAuth();
 
-  const [activeTab, setActiveTab] = useState('career'); // 'career' | 'search' | 'security' | 'danger'
+  const [activeTab, setActiveTab] = useState('account'); // 'account' | 'preferences' | 'security' | 'notifications' | 'danger'
   const [isSaving, setIsSaving] = useState(false);
   const [feedback, setFeedback] = useState({ type: '', text: '' });
 
-  // Profile Form State
+  // Account Form State
   const [fullName, setFullName] = useState(careerProfile?.full_name || '');
-  const [headline, setHeadline] = useState(careerProfile?.headline || '');
+  const [email, setEmail] = useState(user?.email || '');
   const [phone, setPhone] = useState(careerProfile?.phone || '');
-  const [degreeLevel, setDegreeLevel] = useState(careerProfile?.degree_level || 'undergrad');
-  const [degreeTitle, setDegreeTitle] = useState(careerProfile?.degree_title || 'Bachelor of Science (BSc)');
-  const [major, setMajor] = useState(careerProfile?.field_of_study || 'Computer Science');
-  const [university, setUniversity] = useState(careerProfile?.university || '');
-  const [gpa, setGpa] = useState(careerProfile?.gpa || 3.5);
-  const [skills, setSkills] = useState((careerProfile?.skills || []).join(', '));
-  const [portfolioUrl, setPortfolioUrl] = useState(careerProfile?.portfolio_url || '');
-  const [linkedinUrl, setLinkedinUrl] = useState(careerProfile?.linkedin_url || '');
-  const [githubUrl, setGithubUrl] = useState(careerProfile?.github_url || '');
-  const [noIelts, setNoIelts] = useState(careerProfile?.no_ielts_preference ?? 1);
+  const [location, setLocation] = useState(careerProfile?.location || 'San Francisco, CA');
 
   // Search Preferences Form State
-  const [targetRoles, setTargetRoles] = useState((searchProfile?.target_roles || []).join(', '));
-  const [requiredLocations, setRequiredLocations] = useState((searchProfile?.required_locations || []).join(', '));
+  const [targetRoles, setTargetRoles] = useState((searchProfile?.target_roles || ['Senior Product Designer', 'Frontend Engineer']).join(', '));
+  const [requiredLocations, setRequiredLocations] = useState((searchProfile?.required_locations || ['Remote', 'Worldwide']).join(', '));
   const [remoteOnly, setRemoteOnly] = useState(Boolean(searchProfile?.remote_only));
-  const [minSalary, setMinSalary] = useState(searchProfile?.min_salary || '');
+  const [minSalary, setMinSalary] = useState(searchProfile?.min_salary || '$120,000');
   const [visaSponsorship, setVisaSponsorship] = useState(Boolean(searchProfile?.visa_sponsorship_required));
 
   // Security Form State
@@ -40,28 +33,24 @@ export default function SettingsView({ triggerToast }) {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
+  // Notifications Form State
+  const [emailAlerts, setEmailAlerts] = useState(true);
+  const [dailyDigest, setDailyDigest] = useState(true);
+  const [deadlineReminders, setDeadlineReminders] = useState(true);
+
   const token = localStorage.getItem('careerly_token');
 
-  // Synchronize form fields whenever careerProfile loads asynchronously
+  // Synchronize form fields whenever profile loads
   useEffect(() => {
     if (careerProfile) {
       if (careerProfile.full_name !== undefined) setFullName(careerProfile.full_name || '');
-      if (careerProfile.headline !== undefined) setHeadline(careerProfile.headline || '');
       if (careerProfile.phone !== undefined) setPhone(careerProfile.phone || '');
-      if (careerProfile.degree_level) setDegreeLevel(careerProfile.degree_level);
-      if (careerProfile.degree_title) setDegreeTitle(careerProfile.degree_title);
-      if (careerProfile.field_of_study) setMajor(careerProfile.field_of_study);
-      if (careerProfile.university) setUniversity(careerProfile.university);
-      if (careerProfile.gpa !== undefined && careerProfile.gpa !== null) setGpa(careerProfile.gpa);
-      if (Array.isArray(careerProfile.skills)) setSkills(careerProfile.skills.join(', '));
-      if (careerProfile.portfolio_url !== undefined) setPortfolioUrl(careerProfile.portfolio_url || '');
-      if (careerProfile.linkedin_url !== undefined) setLinkedinUrl(careerProfile.linkedin_url || '');
-      if (careerProfile.github_url !== undefined) setGithubUrl(careerProfile.github_url || '');
-      if (careerProfile.no_ielts_preference !== undefined) setNoIelts(careerProfile.no_ielts_preference);
+      if (careerProfile.location !== undefined) setLocation(careerProfile.location || 'San Francisco, CA');
     }
-  }, [careerProfile]);
+    if (user?.email) setEmail(user.email);
+  }, [careerProfile, user]);
 
-  // Synchronize search preferences whenever searchProfile loads asynchronously
+  // Synchronize search preferences
   useEffect(() => {
     if (searchProfile) {
       if (Array.isArray(searchProfile.target_roles)) setTargetRoles(searchProfile.target_roles.join(', '));
@@ -72,72 +61,64 @@ export default function SettingsView({ triggerToast }) {
     }
   }, [searchProfile]);
 
-  const handleSaveProfile = async (e) => {
+  const handleSaveAccount = async (e) => {
     e.preventDefault();
     setIsSaving(true);
     setFeedback({ type: '', text: '' });
 
     try {
-      const skillsArray = skills.split(',').map(s => s.trim()).filter(Boolean);
       await updateCareerProfile({
         full_name: fullName,
-        headline,
         phone,
-        degree_level: degreeLevel,
-        degree_title: degreeTitle,
-        field_of_study: major,
-        university,
-        gpa: Number(gpa),
-        skills: skillsArray,
-        portfolio_url: portfolioUrl,
-        linkedin_url: linkedinUrl,
-        github_url: githubUrl,
-        no_ielts_preference: noIelts ? 1 : 0
+        location
       });
-
-      setFeedback({ type: 'success', text: 'Career profile successfully updated!' });
-      if (triggerToast) triggerToast('✓ Profile updated & match scores recalculated.');
+      setFeedback({ type: 'success', text: 'Account settings successfully updated!' });
+      if (triggerToast) triggerToast('✓ Account settings updated!');
     } catch (err) {
-      setFeedback({ type: 'error', text: err.message });
+      setFeedback({ type: 'error', text: err.message || 'Failed to update account settings.' });
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleSaveSearchPrefs = async (e) => {
+  const handleSavePreferences = async (e) => {
     e.preventDefault();
     setIsSaving(true);
     setFeedback({ type: '', text: '' });
 
     try {
       const rolesArray = targetRoles.split(',').map(r => r.trim()).filter(Boolean);
-      const locationsArray = requiredLocations.split(',').map(l => l.trim()).filter(Boolean);
+      const locsArray = requiredLocations.split(',').map(l => l.trim()).filter(Boolean);
 
       await updateSearchPreferences({
         target_roles: rolesArray,
-        required_locations: locationsArray,
+        required_locations: locsArray,
         remote_only: remoteOnly ? 1 : 0,
-        min_salary: minSalary ? Number(minSalary) : 0,
+        min_salary: minSalary,
         visa_sponsorship_required: visaSponsorship ? 1 : 0
       });
 
-      setFeedback({ type: 'success', text: 'Search preferences saved successfully!' });
-      if (triggerToast) triggerToast('✓ Search criteria updated.');
+      setFeedback({ type: 'success', text: 'Search preferences saved!' });
+      if (triggerToast) triggerToast('✓ Search preferences updated!');
     } catch (err) {
-      setFeedback({ type: 'error', text: err.message });
+      setFeedback({ type: 'error', text: err.message || 'Failed to save search preferences.' });
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleChangePassword = async (e) => {
+  const handleUpdatePassword = async (e) => {
     e.preventDefault();
+    if (!currentPassword || !newPassword) {
+      setFeedback({ type: 'error', text: 'Please fill in all password fields.' });
+      return;
+    }
     if (newPassword !== confirmPassword) {
       setFeedback({ type: 'error', text: 'New passwords do not match.' });
       return;
     }
-    if (newPassword.length < 6) {
-      setFeedback({ type: 'error', text: 'New password must be at least 6 characters.' });
+    if (newPassword.length < 8) {
+      setFeedback({ type: 'error', text: 'New password must be at least 8 characters long.' });
       return;
     }
 
@@ -145,23 +126,26 @@ export default function SettingsView({ triggerToast }) {
     setFeedback({ type: '', text: '' });
 
     try {
-      const res = await fetch(`${API_BASE_URL}/user/account/password`, {
+      const res = await fetch(`${API_BASE_URL}/auth/password`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({ currentPassword, newPassword })
+        body: JSON.stringify({
+          current_password: currentPassword,
+          new_password: newPassword
+        })
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to update password');
+      if (!res.ok) throw new Error(data.message || 'Failed to update password.');
 
-      setFeedback({ type: 'success', text: 'Password successfully changed!' });
+      setFeedback({ type: 'success', text: 'Password successfully updated!' });
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
-      if (triggerToast) triggerToast('✓ Password updated successfully.');
+      if (triggerToast) triggerToast('✓ Password updated successfully!');
     } catch (err) {
       setFeedback({ type: 'error', text: err.message });
     } finally {
@@ -169,456 +153,323 @@ export default function SettingsView({ triggerToast }) {
     }
   };
 
-  const handleDeleteAccount = async () => {
-    if (!window.confirm('Are you absolutely sure you want to permanently delete your Careerly account? All saved opportunities and applications will be erased.')) {
-      return;
-    }
-
-    try {
-      const res = await fetch(`${API_BASE_URL}/user/account`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      if (res.ok) {
-        logout();
-        if (triggerToast) triggerToast('Your account has been deleted.');
-      }
-    } catch (err) {
-      if (triggerToast) triggerToast('Error deleting account: ' + err.message);
-    }
-  };
-
   return (
-    <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '1.5rem 1.5rem 4rem' }}>
+    <div className="w-full p-6 sm:p-8 space-y-6" style={{ fontFamily: 'var(--font-sans)' }}>
       
-      {/* Settings Header */}
-      <div style={{ marginBottom: '2rem' }}>
-        <h1 className="type-h1" style={{ fontSize: '1.85rem' }}>Account & Career Settings</h1>
-        <p className="type-body" style={{ marginTop: '0.2rem', color: 'var(--muted-foreground)' }}>
-          Manage your academic credentials, 7-factor matching preferences, and account security.
+      {/* ── Page Header ─────────────────────────────────────────────── */}
+      <div>
+        <h1 className="font-display text-[24px] sm:text-[28px] font-bold text-foreground leading-tight">
+          Account & App Settings
+        </h1>
+        <p className="text-[13px] text-muted-foreground mt-1">
+          Manage your account credentials, notifications, and discovery preferences.
         </p>
       </div>
 
-      {/* Tabs Navigation */}
-      <div style={{ display: 'flex', gap: '0.5rem', borderBottom: '1px solid var(--border-default)', marginBottom: '2rem', overflowX: 'auto' }}>
-        <button
-          onClick={() => { setActiveTab('career'); setFeedback({ type: '', text: '' }); }}
-          style={{
-            padding: '0.75rem 1.25rem',
-            border: 'none',
-            background: 'none',
-            borderBottom: activeTab === 'career' ? '2px solid var(--primary)' : '2px solid transparent',
-            color: activeTab === 'career' ? 'var(--primary)' : 'var(--muted-foreground)',
-            fontWeight: activeTab === 'career' ? '700' : '500',
-            cursor: 'pointer',
-            fontSize: '0.92rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.4rem',
-            whiteSpace: 'nowrap'
-          }}
-        >
-          <GraduationCap size={16} />
-          <span>Academic & Career Profile</span>
-        </button>
-
-        <button
-          onClick={() => { setActiveTab('search'); setFeedback({ type: '', text: '' }); }}
-          style={{
-            padding: '0.75rem 1.25rem',
-            border: 'none',
-            background: 'none',
-            borderBottom: activeTab === 'search' ? '2px solid var(--primary)' : '2px solid transparent',
-            color: activeTab === 'search' ? 'var(--primary)' : 'var(--muted-foreground)',
-            fontWeight: activeTab === 'search' ? '700' : '500',
-            cursor: 'pointer',
-            fontSize: '0.92rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.4rem',
-            whiteSpace: 'nowrap'
-          }}
-        >
-          <Briefcase size={16} />
-          <span>Search & Match Preferences</span>
-        </button>
-
-        <button
-          onClick={() => { setActiveTab('security'); setFeedback({ type: '', text: '' }); }}
-          style={{
-            padding: '0.75rem 1.25rem',
-            border: 'none',
-            background: 'none',
-            borderBottom: activeTab === 'security' ? '2px solid var(--primary)' : '2px solid transparent',
-            color: activeTab === 'security' ? 'var(--primary)' : 'var(--muted-foreground)',
-            fontWeight: activeTab === 'security' ? '700' : '500',
-            cursor: 'pointer',
-            fontSize: '0.92rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.4rem',
-            whiteSpace: 'nowrap'
-          }}
-        >
-          <Shield size={16} />
-          <span>Password & Security</span>
-        </button>
-
-        <button
-          onClick={() => { setActiveTab('danger'); setFeedback({ type: '', text: '' }); }}
-          style={{
-            padding: '0.75rem 1.25rem',
-            border: 'none',
-            background: 'none',
-            borderBottom: activeTab === 'danger' ? '2px solid #ef4444' : '2px solid transparent',
-            color: activeTab === 'danger' ? '#ef4444' : 'var(--muted-foreground)',
-            fontWeight: activeTab === 'danger' ? '700' : '500',
-            cursor: 'pointer',
-            fontSize: '0.92rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.4rem',
-            whiteSpace: 'nowrap'
-          }}
-        >
-          <Trash2 size={16} />
-          <span>Danger Zone</span>
-        </button>
-      </div>
-
-      {/* Inline Feedback Banner */}
+      {/* ── Feedback Banner ──────────────────────────────────────────── */}
       {feedback.text && (
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.5rem',
-          padding: '0.75rem 1rem',
-          borderRadius: 'var(--radius-lg)',
-          marginBottom: '1.5rem',
-          background: feedback.type === 'success' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-          border: feedback.type === 'success' ? '1px solid rgba(16, 185, 129, 0.25)' : '1px solid rgba(239, 68, 68, 0.25)',
-          color: feedback.type === 'success' ? '#10b981' : '#ef4444',
-          fontSize: '0.86rem'
-        }}>
-          {feedback.type === 'success' ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
+        <div className={`p-4 rounded-xl text-[13px] font-medium flex items-center gap-3 border shadow-xs ${
+          feedback.type === 'success'
+            ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-400'
+            : 'bg-red-500/10 border-red-500/30 text-red-700 dark:text-red-400'
+        }`}>
+          {feedback.type === 'success' ? <CheckCircle size={16} /> : <AlertCircle size={16} />}
           <span>{feedback.text}</span>
         </div>
       )}
 
-      {/* TAB 1: Academic & Career Profile */}
-      {activeTab === 'career' && (
-        <form onSubmit={handleSaveProfile} style={{ background: 'var(--card)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-2xl)', padding: '2rem', boxShadow: 'var(--shadow-sm)' }}>
-          <h3 className="type-h3" style={{ marginBottom: '1.25rem' }}>Personal & Academic Credentials</h3>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            <div className="responsive-grid-2col">
-              <div>
-                <label className="filter-label">Full Name</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                />
-              </div>
-              <div>
-                <label className="filter-label">Phone Number</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  placeholder="+1 (555) 000-0000"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="filter-label">Professional Headline</label>
-              <input
-                type="text"
-                className="form-input"
-                placeholder="e.g. Final Year AI Scholar & Software Engineer"
-                value={headline}
-                onChange={(e) => setHeadline(e.target.value)}
-              />
-            </div>
-
-            <div className="responsive-grid-2col">
-              <div>
-                <label className="filter-label">Degree Level</label>
-                <select
-                  className="form-input"
-                  value={degreeLevel}
-                  onChange={(e) => setDegreeLevel(e.target.value)}
-                >
-                  <option value="undergrad">Undergraduate (BSc / BA / BBA)</option>
-                  <option value="masters">Master's (MSc / MA / MBA)</option>
-                  <option value="phd">Doctorate / PhD</option>
-                  <option value="fresh_grad">Recent Graduate</option>
-                </select>
-              </div>
-              <div>
-                <label className="filter-label">Degree Title</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  value={degreeTitle}
-                  onChange={(e) => setDegreeTitle(e.target.value)}
-                />
-              </div>
-            </div>
-
-            <div className="responsive-grid-2col">
-              <div>
-                <label className="filter-label">Major / Field of Study</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  value={major}
-                  onChange={(e) => setMajor(e.target.value)}
-                />
-              </div>
-              <div>
-                <label className="filter-label">Cumulative GPA (Out of 4.0)</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  min="2.0"
-                  max="4.0"
-                  className="form-input"
-                  value={gpa}
-                  onChange={(e) => setGpa(e.target.value)}
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="filter-label">University / College</label>
-              <input
-                type="text"
-                className="form-input"
-                value={university}
-                onChange={(e) => setUniversity(e.target.value)}
-              />
-            </div>
-
-            <div>
-              <label className="filter-label">Skills (Comma-separated)</label>
-              <input
-                type="text"
-                className="form-input"
-                placeholder="React, TypeScript, Node.js, Python, Figma"
-                value={skills}
-                onChange={(e) => setSkills(e.target.value)}
-              />
-            </div>
-
-            <div className="responsive-grid-2col">
-              <div>
-                <label className="filter-label">LinkedIn Profile URL</label>
-                <input
-                  type="url"
-                  className="form-input"
-                  placeholder="https://linkedin.com/in/username"
-                  value={linkedinUrl}
-                  onChange={(e) => setLinkedinUrl(e.target.value)}
-                />
-              </div>
-              <div>
-                <label className="filter-label">GitHub or Portfolio URL</label>
-                <input
-                  type="url"
-                  className="form-input"
-                  placeholder="https://github.com/username"
-                  value={githubUrl}
-                  onChange={(e) => setGithubUrl(e.target.value)}
-                />
-              </div>
-            </div>
-
-            <div style={{ marginTop: '0.5rem' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', cursor: 'pointer' }}>
-                <input
-                  type="checkbox"
-                  checked={Boolean(noIelts)}
-                  onChange={(e) => setNoIelts(e.target.checked ? 1 : 0)}
-                  style={{ width: '16px', height: '16px', accentColor: 'var(--primary)' }}
-                />
-                <span style={{ fontSize: '0.88rem', color: 'var(--foreground)' }}>
-                  Prefer English Medium of Instruction waiver (No IELTS required)
-                </span>
-              </label>
-            </div>
-
-            <div style={{ marginTop: '1.25rem' }}>
+      {/* ── Settings Layout: Left Tabs + Right Content ─────────────────── */}
+      <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-6">
+        
+        {/* Left Tabs */}
+        <div className="space-y-1">
+          {[
+            { id: 'account', label: 'Account', icon: User },
+            { id: 'preferences', label: 'Preferences', icon: Sliders },
+            { id: 'security', label: 'Security', icon: Lock },
+            { id: 'notifications', label: 'Notifications', icon: Bell },
+            { id: 'danger', label: 'Danger Zone', icon: AlertCircle }
+          ].map(tab => {
+            const Icon = tab.icon;
+            const isSel = activeTab === tab.id;
+            return (
               <button
-                type="submit"
-                disabled={isSaving}
-                className="btn btn-primary"
-                style={{ height: '42px', padding: '0 1.5rem', fontWeight: '700' }}
+                key={tab.id}
+                onClick={() => { setActiveTab(tab.id); setFeedback({ type: '', text: '' }); }}
+                className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-[13px] font-semibold text-left transition-all ${
+                  isSel
+                    ? 'bg-primary text-white shadow-xs'
+                    : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+                }`}
+                style={isSel ? { background: '#2457FF' } : {}}
               >
-                {isSaving ? <RefreshCw size={16} className="spin-slow" /> : <Save size={16} />}
-                <span>Save Profile Changes</span>
+                <Icon size={15} />
+                <span>{tab.label}</span>
               </button>
-            </div>
-          </div>
-        </form>
-      )}
-
-      {/* TAB 2: Search Preferences */}
-      {activeTab === 'search' && (
-        <form onSubmit={handleSaveSearchPrefs} style={{ background: 'var(--card)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-2xl)', padding: '2rem', boxShadow: 'var(--shadow-sm)' }}>
-          <h3 className="type-h3" style={{ marginBottom: '1.25rem' }}>Opportunity Match Calibration</h3>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            <div>
-              <label className="filter-label">Target Role Titles (Comma-separated)</label>
-              <input
-                type="text"
-                className="form-input"
-                placeholder="Software Engineer, Product Manager, Brand Strategist"
-                value={targetRoles}
-                onChange={(e) => setTargetRoles(e.target.value)}
-              />
-            </div>
-
-            <div>
-              <label className="filter-label">Target Countries & Metros (Comma-separated)</label>
-              <input
-                type="text"
-                className="form-input"
-                placeholder="Netherlands, Germany, United Kingdom, Singapore, Remote"
-                value={requiredLocations}
-                onChange={(e) => setRequiredLocations(e.target.value)}
-              />
-            </div>
-
-            <div className="responsive-grid-2col">
-              <div>
-                <label className="filter-label">Minimum Monthly Compensation (USD)</label>
-                <input
-                  type="number"
-                  className="form-input"
-                  placeholder="e.g. 1500"
-                  value={minSalary}
-                  onChange={(e) => setMinSalary(e.target.value)}
-                />
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '0.5rem', marginTop: '1.5rem' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', cursor: 'pointer' }}>
-                  <input
-                    type="checkbox"
-                    checked={remoteOnly}
-                    onChange={(e) => setRemoteOnly(e.target.checked)}
-                    style={{ width: '16px', height: '16px', accentColor: 'var(--primary)' }}
-                  />
-                  <span style={{ fontSize: '0.88rem', color: 'var(--foreground)' }}>
-                    Only show Verified Global Remote roles
-                  </span>
-                </label>
-              </div>
-            </div>
-
-            <div style={{ marginTop: '1.25rem' }}>
-              <button
-                type="submit"
-                disabled={isSaving}
-                className="btn btn-primary"
-                style={{ height: '42px', padding: '0 1.5rem', fontWeight: '700' }}
-              >
-                {isSaving ? <RefreshCw size={16} className="spin-slow" /> : <Save size={16} />}
-                <span>Save Search Criteria</span>
-              </button>
-            </div>
-          </div>
-        </form>
-      )}
-
-      {/* TAB 3: Password & Security */}
-      {activeTab === 'security' && (
-        <form onSubmit={handleChangePassword} style={{ background: 'var(--card)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-2xl)', padding: '2rem', boxShadow: 'var(--shadow-sm)' }}>
-          <h3 className="type-h3" style={{ marginBottom: '1.25rem' }}>Change Account Password</h3>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', maxWidth: '480px' }}>
-            <div>
-              <label className="filter-label">Current Password</label>
-              <input
-                type="password"
-                required
-                className="form-input"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-              />
-            </div>
-
-            <div>
-              <label className="filter-label">New Password (Min 6 characters)</label>
-              <input
-                type="password"
-                required
-                className="form-input"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-              />
-            </div>
-
-            <div>
-              <label className="filter-label">Confirm New Password</label>
-              <input
-                type="password"
-                required
-                className="form-input"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-              />
-            </div>
-
-            <div style={{ marginTop: '1.25rem' }}>
-              <button
-                type="submit"
-                disabled={isSaving}
-                className="btn btn-primary"
-                style={{ height: '42px', padding: '0 1.5rem', fontWeight: '700' }}
-              >
-                {isSaving ? <RefreshCw size={16} className="spin-slow" /> : <KeyRound size={16} />}
-                <span>Update Password</span>
-              </button>
-            </div>
-          </div>
-        </form>
-      )}
-
-      {/* TAB 4: Danger Zone */}
-      {activeTab === 'danger' && (
-        <div style={{ background: 'var(--card)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: 'var(--radius-2xl)', padding: '2rem', boxShadow: 'var(--shadow-sm)' }}>
-          <h3 className="type-h3" style={{ color: '#ef4444', marginBottom: '0.5rem' }}>Permanently Delete Account</h3>
-          <p className="type-body" style={{ color: 'var(--muted-foreground)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
-            Once you delete your account, there is no going back. All of your personalized matches, saved opportunities, customized application kits, and CRM tracking records will be permanently removed.
-          </p>
-
-          <button
-            type="button"
-            onClick={handleDeleteAccount}
-            style={{
-              padding: '0.75rem 1.5rem',
-              background: '#ef4444',
-              color: '#ffffff',
-              border: 'none',
-              borderRadius: 'var(--radius-lg)',
-              fontWeight: '700',
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.5rem'
-            }}
-          >
-            <Trash2 size={16} />
-            <span>Delete My Careerly Account</span>
-          </button>
+            );
+          })}
         </div>
-      )}
+
+        {/* Right Form Card */}
+        <div className="bg-card border border-border rounded-2xl p-6 sm:p-7 shadow-sm">
+          
+          {/* TAB 1: ACCOUNT */}
+          {activeTab === 'account' && (
+            <form onSubmit={handleSaveAccount} className="space-y-5">
+              <div>
+                <h3 className="text-[16px] font-bold text-foreground">Account Information</h3>
+                <p className="text-[12px] text-muted-foreground mt-0.5">Your core identity details and primary contact email.</p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">Full Name</label>
+                  <input 
+                    type="text" 
+                    value={fullName} 
+                    onChange={e => setFullName(e.target.value)}
+                    className="w-full bg-secondary/50 border border-border rounded-lg px-3.5 py-2 text-[13px] text-foreground outline-none focus:border-primary transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">Email Address</label>
+                  <input 
+                    type="email" 
+                    value={email} 
+                    disabled
+                    className="w-full bg-secondary/30 border border-border rounded-lg px-3.5 py-2 text-[13px] text-muted-foreground outline-none cursor-not-allowed"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">Phone Number</label>
+                  <input 
+                    type="text" 
+                    value={phone} 
+                    onChange={e => setPhone(e.target.value)}
+                    className="w-full bg-secondary/50 border border-border rounded-lg px-3.5 py-2 text-[13px] text-foreground outline-none focus:border-primary transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">Location</label>
+                  <input 
+                    type="text" 
+                    value={location} 
+                    onChange={e => setLocation(e.target.value)}
+                    className="w-full bg-secondary/50 border border-border rounded-lg px-3.5 py-2 text-[13px] text-foreground outline-none focus:border-primary transition-all"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-border flex justify-end">
+                <button
+                  type="submit"
+                  disabled={isSaving}
+                  className="flex items-center gap-2 px-5 py-2 bg-primary text-white text-[13px] font-semibold rounded-lg hover:opacity-95 transition-all shadow-sm disabled:opacity-50"
+                  style={{ background: '#2457FF' }}
+                >
+                  <Save size={13} />
+                  <span>{isSaving ? 'Saving...' : 'Save Account'}</span>
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* TAB 2: PREFERENCES */}
+          {activeTab === 'preferences' && (
+            <form onSubmit={handleSavePreferences} className="space-y-5">
+              <div>
+                <h3 className="text-[16px] font-bold text-foreground">Discovery & Search Preferences</h3>
+                <p className="text-[12px] text-muted-foreground mt-0.5">Control automated matching thresholds and salary expectations.</p>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">Target Roles (Comma-separated)</label>
+                  <input 
+                    type="text" 
+                    value={targetRoles} 
+                    onChange={e => setTargetRoles(e.target.value)}
+                    className="w-full bg-secondary/50 border border-border rounded-lg px-3.5 py-2 text-[13px] text-foreground outline-none focus:border-primary transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">Preferred Locations</label>
+                  <input 
+                    type="text" 
+                    value={requiredLocations} 
+                    onChange={e => setRequiredLocations(e.target.value)}
+                    className="w-full bg-secondary/50 border border-border rounded-lg px-3.5 py-2 text-[13px] text-foreground outline-none focus:border-primary transition-all"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">Minimum Desired Salary</label>
+                    <input 
+                      type="text" 
+                      value={minSalary} 
+                      onChange={e => setMinSalary(e.target.value)}
+                      className="w-full bg-secondary/50 border border-border rounded-lg px-3.5 py-2 text-[13px] text-foreground outline-none focus:border-primary transition-all font-mono"
+                    />
+                  </div>
+
+                  <div className="flex flex-col justify-end space-y-2">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        checked={remoteOnly} 
+                        onChange={e => setRemoteOnly(e.target.checked)}
+                        className="w-4 h-4 rounded accent-primary cursor-pointer"
+                      />
+                      <span className="text-[13px] font-medium text-foreground">Worldwide & Remote Only</span>
+                    </label>
+
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        checked={visaSponsorship} 
+                        onChange={e => setVisaSponsorship(e.target.checked)}
+                        className="w-4 h-4 rounded accent-primary cursor-pointer"
+                      />
+                      <span className="text-[13px] font-medium text-foreground">Require Visa Sponsorship</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-border flex justify-end">
+                <button
+                  type="submit"
+                  disabled={isSaving}
+                  className="flex items-center gap-2 px-5 py-2 bg-primary text-white text-[13px] font-semibold rounded-lg hover:opacity-95 transition-all shadow-sm disabled:opacity-50"
+                  style={{ background: '#2457FF' }}
+                >
+                  <Save size={13} />
+                  <span>{isSaving ? 'Saving...' : 'Save Preferences'}</span>
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* TAB 3: SECURITY */}
+          {activeTab === 'security' && (
+            <form onSubmit={handleUpdatePassword} className="space-y-5">
+              <div>
+                <h3 className="text-[16px] font-bold text-foreground">Security & Password</h3>
+                <p className="text-[12px] text-muted-foreground mt-0.5">Update your password and review active device sessions.</p>
+              </div>
+
+              <div className="space-y-4 max-w-md">
+                <div>
+                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">Current Password</label>
+                  <input 
+                    type="password" 
+                    value={currentPassword} 
+                    onChange={e => setCurrentPassword(e.target.value)}
+                    className="w-full bg-secondary/50 border border-border rounded-lg px-3.5 py-2 text-[13px] text-foreground outline-none focus:border-primary transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">New Password (Min 8 characters)</label>
+                  <input 
+                    type="password" 
+                    value={newPassword} 
+                    onChange={e => setNewPassword(e.target.value)}
+                    className="w-full bg-secondary/50 border border-border rounded-lg px-3.5 py-2 text-[13px] text-foreground outline-none focus:border-primary transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">Confirm New Password</label>
+                  <input 
+                    type="password" 
+                    value={confirmPassword} 
+                    onChange={e => setConfirmPassword(e.target.value)}
+                    className="w-full bg-secondary/50 border border-border rounded-lg px-3.5 py-2 text-[13px] text-foreground outline-none focus:border-primary transition-all"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-border flex justify-end">
+                <button
+                  type="submit"
+                  disabled={isSaving}
+                  className="flex items-center gap-2 px-5 py-2 bg-primary text-white text-[13px] font-semibold rounded-lg hover:opacity-95 transition-all shadow-sm disabled:opacity-50"
+                  style={{ background: '#2457FF' }}
+                >
+                  <KeyRound size={13} />
+                  <span>{isSaving ? 'Updating...' : 'Update Password'}</span>
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* TAB 4: NOTIFICATIONS */}
+          {activeTab === 'notifications' && (
+            <div className="space-y-5">
+              <div>
+                <h3 className="text-[16px] font-bold text-foreground">Notification Preferences</h3>
+                <p className="text-[12px] text-muted-foreground mt-0.5">Control how and when Careerly sends you opportunity alerts.</p>
+              </div>
+
+              <div className="space-y-4">
+                {[
+                  { title: "Real-time Opportunity Alerts", desc: "Receive email updates when high-match opportunities (90%+) are discovered.", checked: emailAlerts, toggle: setEmailAlerts },
+                  { title: "Daily Career Digest", desc: "A morning summary of verified positions and application deadline countdowns.", checked: dailyDigest, toggle: setDailyDigest },
+                  { title: "STAR Coach Reminders", desc: "Reminders to prepare for upcoming interviews and practice STAR responses.", checked: deadlineReminders, toggle: setDeadlineReminders }
+                ].map(({ title, desc, checked, toggle }) => (
+                  <div key={title} className="flex items-center justify-between p-4 bg-secondary/30 border border-border rounded-xl">
+                    <div>
+                      <h4 className="text-[13px] font-semibold text-foreground">{title}</h4>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">{desc}</p>
+                    </div>
+                    <input 
+                      type="checkbox" 
+                      checked={checked} 
+                      onChange={e => toggle(e.target.checked)}
+                      className="w-4 h-4 rounded accent-primary cursor-pointer"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* TAB 5: DANGER ZONE */}
+          {activeTab === 'danger' && (
+            <div className="space-y-5">
+              <div>
+                <h3 className="text-[16px] font-bold text-red-600">Danger Zone</h3>
+                <p className="text-[12px] text-muted-foreground mt-0.5">Destructive actions and global session revocation.</p>
+              </div>
+
+              <div className="p-4 border border-red-500/30 bg-red-500/5 rounded-xl space-y-3">
+                <h4 className="text-[13px] font-bold text-red-600">Revoke All Device Sessions</h4>
+                <p className="text-[12px] text-muted-foreground">
+                  Signing out everywhere will immediately invalidate your JWT token family on all browsers and mobile sessions.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    logout();
+                    window.location.href = '/login';
+                  }}
+                  className="px-4 py-2 bg-red-600 text-white text-[12px] font-semibold rounded-lg hover:bg-red-700 transition-all shadow-sm flex items-center gap-1.5"
+                >
+                  <LogOut size={13} /> Sign Out Everywhere
+                </button>
+              </div>
+            </div>
+          )}
+
+        </div>
+
+      </div>
 
     </div>
   );

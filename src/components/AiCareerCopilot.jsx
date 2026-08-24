@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { 
   Bot, Send, Sparkles, X, Minimize2, Maximize2, User, RefreshCw, 
-  MessageSquare, Briefcase, Award, Copy, Check, Trash2, Zap
+  MessageSquare, Briefcase, Award, Copy, Check, Trash2, Zap, ArrowRight
 } from 'lucide-react';
 import FormattedMarkdown from '../utils/FormattedMarkdown.jsx';
 import { API_BASE_URL } from '../config/api.js';
@@ -55,10 +55,10 @@ export default function AiCareerCopilot({ userProfile, triggerToast }) {
       if (data.status === 'success' && data.reply) {
         setMessages(prev => [...prev, { role: 'assistant', text: data.reply }]);
       } else {
-        setMessages(prev => [...prev, { role: 'assistant', text: "I've analyzed your profile. You can leverage your 3.85 GPA in Advertising & Marketing along with our 1-Click Auto Apply engine to apply directly." }]);
+        setMessages(prev => [...prev, { role: 'assistant', text: "I've calibrated your target requirements. You can leverage our 1-Click Application Kit and ATS CV Studio to tailor your materials directly." }]);
       }
     } catch (err) {
-      setMessages(prev => [...prev, { role: 'assistant', text: "Connecting with live Gemini 3.6 engine..." }]);
+      setMessages(prev => [...prev, { role: 'assistant', text: "Connecting with live Gemini intelligence engine..." }]);
     } finally {
       setIsSending(false);
     }
@@ -75,103 +75,88 @@ export default function AiCareerCopilot({ userProfile, triggerToast }) {
     setMessages([
       {
         role: 'assistant',
-        text: `Chat reset. How can I help your career today, ${userProfile?.name?.split(' ')[0] || 'Anas'}?`
+        text: `Chat reset. How can I help your career today, ${userProfile?.name?.split(' ')[0] || 'there'}?`
       }
     ]);
     if (triggerToast) triggerToast('Conversation cleared');
   };
 
   const quickPrompts = [
-    { label: "Ogilvy Cover Letter", text: "Write a high-impact cover letter for an Advertising Brand Strategy role at Ogilvy for Anas (GPA 3.85)" },
-    { label: "Marketing Interview Prep", text: "Give me 3 tough behavioral interview questions for a Brand Strategist role and how to answer them using STAR method" },
-    { label: "English Waiver Scholarships", text: "Which top fully funded scholarships in Europe & Asia accept English Medium of Instruction waiver without IELTS?" },
-    { label: "Salary & Positioning", text: "What is the typical salary range and career progression for an entry-level Brand Strategist at a multinational agency?" }
+    { label: "Target Cover Letter", text: "Write a high-impact cover letter for a Senior Product Designer role at Stripe highlighting systems design." },
+    { label: "Mock STAR Interview", text: "Give me 3 tough behavioral interview questions for a Product Designer and how to answer them using STAR method." },
+    { label: "English Waiver Scholarships", text: "Which top fully funded scholarships in the UK & Europe accept English Medium of Instruction waiver?" },
+    { label: "Salary Negotiation", text: "What is the typical salary range and negotiation strategy for a Senior Product Designer?" }
   ];
 
   return (
     <>
-      {/* Floating Trigger Button with Ambient Pulse Glow */}
+      {/* ── Floating Trigger Button ──────────────────────────────────── */}
       {!isOpen && (
         <button 
           onClick={() => setIsOpen(true)}
-          className="copilot-floating-btn"
-          aria-label="Open Gemini Career Copilot"
+          className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-2.5 bg-[#08152F] text-white rounded-full border border-white/12 shadow-[0_10px_30px_rgba(8,21,47,0.35)] hover:bg-[#10213D] hover:scale-105 transition-all duration-200 group cursor-pointer"
+          style={{ fontFamily: 'var(--font-sans)' }}
+          aria-label="Open Careerly AI Copilot"
         >
-          <div className="copilot-icon-capsule">
-            <span className="copilot-pulse-ring" />
-            <Sparkles size={16} color="#ffffff" />
+          <div className="w-8 h-8 rounded-full bg-[#2457FF] flex items-center justify-center text-white relative flex-shrink-0 shadow-sm group-hover:scale-110 transition-transform">
+            <span className="absolute inset-0 rounded-full bg-[#2457FF] animate-ping opacity-25" />
+            <Sparkles size={15} />
           </div>
-          <div className="copilot-btn-text">
-            <span>Ask Career Copilot</span>
-            <span className="copilot-ai-tag">CAREERLY</span>
-            <span className="copilot-online-beacon" title="Live 24/7 AI Online" />
+
+          <div className="flex items-center gap-2 text-left">
+            <span className="text-[13px] font-semibold text-white tracking-tight">Ask Career Copilot</span>
+            <span className="text-[9px] font-bold bg-[#2457FF] text-white px-2 py-0.5 rounded-full uppercase tracking-wider">
+              CAREERLY
+            </span>
           </div>
+
+          <span className="w-2 h-2 rounded-full bg-emerald-400 ring-2 ring-[#08152F] flex-shrink-0" title="Live 24/7 AI Online" />
         </button>
       )}
 
-      {/* Copilot Chat Window with Spring Pop-In Physics */}
+      {/* ── Copilot Chat Modal / Floating Window ─────────────────────── */}
       {isOpen && (
-        <div style={{
-          position: 'fixed',
-          bottom: '2rem',
-          right: '2rem',
-          width: isExpanded ? '640px' : '440px',
-          maxWidth: '94vw',
-          height: isExpanded ? '720px' : '580px',
-          maxHeight: '88vh',
-          background: 'var(--card)',
-          border: '1px solid var(--border)',
-          borderRadius: 'var(--radius-2xl)',
-          boxShadow: 'var(--shadow-lg), 0 0 35px rgba(59, 130, 246, 0.2)',
-          display: 'flex',
-          flexDirection: 'column',
-          zIndex: 3500,
-          overflow: 'hidden',
-          animation: 'copilotSpringPop 0.32s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
-          transition: 'width 0.3s cubic-bezier(0.16, 1, 0.3, 1), height 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
-        }}>
+        <div 
+          className={`fixed bottom-6 right-6 z-50 bg-card border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden transition-all duration-300 ${
+            isExpanded ? 'w-[640px] max-w-[94vw] h-[720px] max-h-[90vh]' : 'w-[420px] max-w-[92vw] h-[580px] max-h-[86vh]'
+          }`}
+          style={{ fontFamily: 'var(--font-sans)' }}
+        >
           
           {/* Header */}
-          <div style={{ background: 'var(--banner-bg)', padding: '1rem 1.25rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-              <div style={{ width: '36px', height: '36px', borderRadius: 'var(--radius-md)', background: 'var(--primary)', color: 'var(--primary-foreground)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'var(--shadow-sm)' }}>
-                <Bot size={20} />
+          <div className="bg-[#08152F] px-4 py-3.5 border-b border-white/10 flex items-center justify-between text-white flex-shrink-0">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-white/10 p-1 flex items-center justify-center shadow-sm flex-shrink-0">
+                <img src="/careerly-logo.png" alt="Careerly" className="w-full h-full object-contain" />
               </div>
               <div>
-                <strong style={{ fontSize: '0.95rem', color: 'var(--foreground)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                  Careerly Copilot
-                  <span style={{ fontSize: '0.68rem', fontWeight: '800', background: 'var(--accent-emerald-light)', color: 'var(--accent-emerald)', padding: '0.1rem 0.45rem', borderRadius: 'var(--radius-full)' }}>
-                    Intelligence 2.0
-                  </span>
-                </strong>
-                <div style={{ fontSize: '0.74rem', color: 'var(--accent-emerald)', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.3rem', marginTop: '0.1rem' }}>
-                  <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--accent-emerald)', display: 'inline-block' }} /> Live 24/7 AI Strategist
+                <div className="flex items-center gap-1.5">
+                  <h3 className="text-[13px] font-semibold text-white leading-none">Careerly Copilot</h3>
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 </div>
+                <p className="text-[10px] text-white/60 mt-0.5">24/7 AI Career Intelligence Engine</p>
               </div>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+            <div className="flex items-center gap-1">
               <button 
-                className="icon-button" 
-                style={{ width: '30px', height: '30px' }} 
                 onClick={clearChat}
-                title="Clear Conversation"
+                className="w-7 h-7 flex items-center justify-center rounded-md text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+                title="Clear Chat"
               >
                 <Trash2 size={13} />
               </button>
               <button 
-                className="icon-button" 
-                style={{ width: '30px', height: '30px' }} 
                 onClick={() => setIsExpanded(!isExpanded)}
-                title={isExpanded ? "Collapse View" : "Expand View"}
+                className="w-7 h-7 flex items-center justify-center rounded-md text-white/60 hover:text-white hover:bg-white/10 transition-colors hidden sm:flex"
+                title={isExpanded ? "Collapse" : "Expand"}
               >
                 {isExpanded ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
               </button>
               <button 
-                className="icon-button" 
-                style={{ width: '30px', height: '30px' }} 
                 onClick={() => setIsOpen(false)}
-                title="Close Window"
+                className="w-7 h-7 flex items-center justify-center rounded-md text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+                title="Close"
               >
                 <X size={15} />
               </button>
@@ -179,127 +164,105 @@ export default function AiCareerCopilot({ userProfile, triggerToast }) {
           </div>
 
           {/* Quick Prompts Bar */}
-          <div style={{ display: 'flex', gap: '0.45rem', padding: '0.65rem 1rem', background: 'var(--card)', borderBottom: '1px solid var(--border)', overflowX: 'auto' }}>
-            {quickPrompts.map((p, i) => (
+          <div className="p-2.5 bg-secondary/60 border-b border-border flex items-center gap-1.5 overflow-x-auto no-scrollbar flex-shrink-0">
+            <span className="text-[10px] font-bold uppercase text-muted-foreground tracking-wider flex items-center gap-1 flex-shrink-0 pl-1">
+              <Zap size={10} className="text-primary" /> Prompts:
+            </span>
+            {quickPrompts.map((p, idx) => (
               <button
-                key={i}
+                key={idx}
                 onClick={() => handleSendMessage(p.text)}
-                style={{
-                  background: 'var(--muted)',
-                  border: '1px solid var(--border)',
-                  color: 'var(--foreground)',
-                  padding: '0.3rem 0.75rem',
-                  borderRadius: 'var(--radius-full)',
-                  fontSize: '0.76rem',
-                  fontWeight: '600',
-                  whiteSpace: 'nowrap',
-                  cursor: 'pointer',
-                  transition: 'var(--transition-fast)'
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.borderColor = 'var(--border-hover)'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.borderColor = 'var(--border)'; }}
+                className="text-[11px] px-2.5 py-1 bg-card text-foreground font-medium rounded-full border border-border hover:border-primary/40 hover:bg-primary/5 transition-all whitespace-nowrap flex-shrink-0"
               >
                 {p.label}
               </button>
             ))}
           </div>
 
-          {/* Messages Feed */}
-          <div style={{ flex: 1, padding: '1.15rem', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1rem', background: 'var(--background)' }}>
-            {messages.map((m, i) => {
-              const isUser = m.role === 'user';
+          {/* Messages Stream */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-3.5 bg-background">
+            {messages.map((msg, index) => {
+              const isUser = msg.role === 'user';
               return (
-                <div
-                  key={i}
-                  style={{
-                    display: 'flex',
-                    justifyContent: isUser ? 'flex-end' : 'flex-start',
-                    gap: '0.5rem',
-                    animation: 'messageSlideIn 0.22s ease-out forwards'
-                  }}
-                >
-                  <div
-                    style={{
-                      maxWidth: isExpanded ? '80%' : '88%',
-                      background: isUser ? 'var(--primary)' : 'var(--card)',
-                      color: isUser ? 'var(--primary-foreground)' : 'var(--foreground)',
-                      border: isUser ? 'none' : '1px solid var(--border)',
-                      padding: '0.85rem 1.15rem',
-                      borderRadius: isUser ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
-                      fontSize: '0.88rem',
-                      lineHeight: '1.65',
-                      whiteSpace: 'pre-line',
-                      boxShadow: 'var(--shadow-sm)',
-                      position: 'relative'
-                    }}
-                  >
-                    <FormattedMarkdown text={m.text} />
+                <div key={index} className={`flex gap-2.5 ${isUser ? 'justify-end' : 'justify-start'}`}>
+                  {!isUser && (
+                    <div className="w-7 h-7 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary text-xs font-bold flex-shrink-0 mt-0.5 shadow-sm">
+                      <Sparkles size={13} />
+                    </div>
+                  )}
 
-                    {!isUser && (
-                      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.5rem', paddingTop: '0.35rem', borderTop: '1px solid var(--border)' }}>
-                        <button
-                          onClick={() => copyMessage(m.text, i)}
-                          style={{
-                            background: 'transparent',
-                            border: 'none',
-                            color: 'var(--muted-foreground)',
-                            cursor: 'pointer',
-                            fontSize: '0.72rem',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.3rem',
-                            padding: '0.15rem 0.35rem',
-                            borderRadius: 'var(--radius-sm)'
-                          }}
-                        >
-                          {copiedIndex === i ? (
-                            <>
-                              <Check size={12} color="var(--accent-emerald)" /> <span style={{ color: 'var(--accent-emerald)' }}>Copied</span>
-                            </>
-                          ) : (
-                            <>
-                              <Copy size={12} /> <span>Copy</span>
-                            </>
-                          )}
-                        </button>
+                  <div className={`max-w-[85%] rounded-2xl p-3.5 text-[13px] leading-relaxed shadow-sm relative group ${
+                    isUser 
+                      ? 'bg-primary text-white rounded-br-none' 
+                      : 'bg-card text-foreground border border-border rounded-bl-none'
+                  }`} style={isUser ? { background: '#2457FF' } : {}}>
+                    {isUser ? (
+                      <p>{msg.text}</p>
+                    ) : (
+                      <div>
+                        <FormattedMarkdown text={msg.text} />
+                        <div className="flex items-center justify-end gap-1 mt-2 pt-2 border-t border-border/40 opacity-80 group-hover:opacity-100 transition-opacity">
+                          <button 
+                            onClick={() => copyMessage(msg.text, index)}
+                            className="inline-flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground font-medium"
+                          >
+                            {copiedIndex === index ? (
+                              <>
+                                <Check size={11} className="text-emerald-600" /> Copied
+                              </>
+                            ) : (
+                              <>
+                                <Copy size={11} /> Copy
+                              </>
+                            )}
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>
+
+                  {isUser && (
+                    <div className="w-7 h-7 rounded-lg bg-secondary flex items-center justify-center text-foreground text-xs font-bold flex-shrink-0 mt-0.5 border border-border">
+                      <User size={13} />
+                    </div>
+                  )}
                 </div>
               );
             })}
 
             {isSending && (
-              <div style={{ display: 'flex', gap: '0.5rem', animation: 'messageSlideIn 0.2s ease-out' }}>
-                <div style={{ background: 'var(--card)', border: '1px solid var(--border)', padding: '0.75rem 1.15rem', borderRadius: '16px 16px 16px 4px', fontSize: '0.82rem', color: 'var(--muted-foreground)', display: 'flex', alignItems: 'center', gap: '0.55rem', boxShadow: 'var(--shadow-sm)' }}>
-                  <RefreshCw size={14} className="spin" style={{ color: 'var(--accent-blue)' }} /> 
-                  <span>Gemini 3.6 Flash is formulating response...</span>
+              <div className="flex gap-2.5 items-center text-muted-foreground text-[12px]">
+                <div className="w-7 h-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">
+                  <RefreshCw size={13} className="animate-spin" />
                 </div>
+                <span>Analyzing career graph & generating strategy...</span>
               </div>
             )}
+
             <div ref={chatEndRef} />
           </div>
 
-          {/* Chat Input Bar */}
-          <div style={{ padding: '0.85rem 1.15rem', borderTop: '1px solid var(--border)', background: 'var(--card)', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          {/* Input Bar */}
+          <form 
+            onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }}
+            className="p-3 bg-card border-t border-border flex items-center gap-2 flex-shrink-0"
+          >
             <input 
-              type="text" 
-              className="form-input"
-              placeholder="Ask anything (e.g. 'Draft a cold email to Ogilvy Creative Director')..."
+              type="text"
               value={inputMsg}
               onChange={(e) => setInputMsg(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') handleSendMessage(); }}
-              style={{ fontSize: '0.88rem' }}
+              placeholder="Ask about jobs, cover letters, mock interviews..."
+              className="flex-1 bg-secondary border border-border rounded-xl px-3.5 py-2.5 text-[13px] text-foreground placeholder-muted-foreground outline-none focus:border-primary transition-colors"
             />
             <button 
-              className="btn btn-primary"
-              style={{ padding: '0.65rem 1rem' }}
-              onClick={() => handleSendMessage()}
-              disabled={isSending || !inputMsg.trim()}
+              type="submit"
+              disabled={!inputMsg.trim() || isSending}
+              className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center hover:opacity-95 transition-opacity disabled:opacity-40 flex-shrink-0 shadow-sm"
+              style={{ background: '#2457FF' }}
             >
               <Send size={15} />
             </button>
-          </div>
+          </form>
 
         </div>
       )}

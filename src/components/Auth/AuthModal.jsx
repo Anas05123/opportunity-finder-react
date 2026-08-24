@@ -32,6 +32,11 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', trig
   const [resetCode, setResetCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
 
+  // Google SSO Fallback States
+  const [showGoogleSsoDialog, setShowGoogleSsoDialog] = useState(false);
+  const [googleSsoEmail, setGoogleSsoEmail] = useState('');
+  const [googleSsoName, setGoogleSsoName] = useState('');
+
   // 1. Initialize Real Google Identity Services (GIS)
   useEffect(() => {
     if (!isOpen || (mode !== 'login' && mode !== 'signup')) return;
@@ -126,7 +131,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', trig
   };
 
   const passwordStrength = calculatePasswordStrength(password);
-  const strengthColor = passwordStrength <= 25 ? '#ef4444' : passwordStrength <= 50 ? '#f59e0b' : passwordStrength <= 75 ? '#38bdf8' : '#1FE477';
+  const strengthColor = passwordStrength <= 25 ? '#ef4444' : passwordStrength <= 50 ? '#f59e0b' : passwordStrength <= 75 ? '#38bdf8' : '#10B981';
   const strengthLabel = passwordStrength <= 25 ? 'Weak' : passwordStrength <= 50 ? 'Fair' : passwordStrength <= 75 ? 'Good' : 'Strong';
 
   // Handle OTP digit inputs
@@ -156,12 +161,58 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', trig
     }
   };
 
-  // Google button fallback prompt
+  // Official Google OAuth 2.0 popup trigger
   const handleGoogleClick = () => {
+    setErrorMsg('');
+
+    // 1. Official Google OAuth 2.0 Token Client Popup
+    if (window.google?.accounts?.oauth2) {
+      try {
+        const tokenClient = window.google.accounts.oauth2.initTokenClient({
+          client_id: GOOGLE_CLIENT_ID,
+          scope: 'email profile openid',
+          callback: async (tokenResponse) => {
+            if (tokenResponse.error) {
+              console.warn('[Google OAuth Error]:', tokenResponse.error);
+              if (tokenResponse.error !== 'popup_closed_by_user') {
+                setErrorMsg('Google sign-in was cancelled or encountered an error.');
+              }
+              return;
+            }
+            try {
+              setIsSubmitting(true);
+              const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+                headers: { Authorization: `Bearer ${tokenResponse.access_token}` }
+              });
+              const profile = await userInfoRes.json();
+
+              await loginWithGoogle({
+                email: profile.email,
+                full_name: profile.name || profile.given_name || profile.email.split('@')[0],
+                google_id: profile.sub,
+                avatar_url: profile.picture
+              });
+
+              if (triggerToast) triggerToast(`✓ Signed in with Google as ${profile.email}`);
+              onClose();
+            } catch (err) {
+              setErrorMsg(err.message || 'Failed to authenticate with Google.');
+            } finally {
+              setIsSubmitting(false);
+            }
+          }
+        });
+
+        tokenClient.requestAccessToken({ prompt: 'select_account' });
+        return;
+      } catch (e) {
+        console.warn('[OAuth 2.0 Token Client Exception]:', e.message);
+      }
+    }
+
+    // 2. Try Google Identity Services One-Tap prompt
     if (window.google?.accounts?.id) {
       window.google.accounts.id.prompt();
-    } else {
-      setErrorMsg('Google Sign-In SDK is loading. Please try again in a moment or use email.');
     }
   };
 
@@ -257,9 +308,11 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', trig
         {/* Brand Header */}
         <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem', marginBottom: '0.4rem' }}>
-            <div style={{ width: '26px', height: '26px', borderRadius: '7px', background: '#1FE477', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#06070a', fontWeight: '900', fontSize: '0.85rem' }}>
-              ⚡
-            </div>
+            <img 
+              src="/careerly-logo.png" 
+              alt="Careerly" 
+              style={{ width: '28px', height: '28px', objectFit: 'contain' }} 
+            />
             <span style={{ fontSize: '1.15rem', fontWeight: '800', letterSpacing: '-0.02em', color: '#ffffff', fontFamily: "'Space Grotesk', sans-serif" }}>
               Careerly
             </span>
@@ -303,11 +356,11 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', trig
 
         {successMsg && (
           <div style={{
-            background: 'rgba(31, 228, 119, 0.12)',
-            border: '1px solid rgba(31, 228, 119, 0.35)',
+            background: 'rgba(16, 185, 129, 0.12)',
+            border: '1px solid rgba(16, 185, 129, 0.35)',
             borderRadius: '10px',
             padding: '0.7rem 0.9rem',
-            color: '#1FE477',
+            color: '#10B981',
             fontSize: '0.82rem',
             display: 'flex',
             alignItems: 'center',
@@ -489,10 +542,10 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', trig
                       fontWeight: '800',
                       fontFamily: 'monospace',
                       background: 'rgba(15, 19, 30, 0.95)',
-                      border: digit ? '1.5px solid #1FE477' : '1px solid rgba(255, 255, 255, 0.14)',
+                      border: digit ? '1.5px solid #2457FF' : '1px solid rgba(255, 255, 255, 0.14)',
                       borderRadius: '8px',
                       color: '#ffffff',
-                      boxShadow: digit ? '0 0 12px rgba(31, 228, 119, 0.25)' : 'none',
+                      boxShadow: digit ? '0 0 12px rgba(36, 87, 255, 0.25)' : 'none',
                       outline: 'none'
                     }}
                   />
@@ -501,13 +554,13 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', trig
 
               <div style={{ textAlign: 'center', fontSize: '0.8rem', color: '#94a3b8' }}>
                 {cooldown > 0 ? (
-                  <span>Resend code in <strong style={{ color: '#1FE477' }}>{cooldown}s</strong></span>
+                  <span>Resend code in <strong style={{ color: '#2457FF' }}>{cooldown}s</strong></span>
                 ) : (
                   <button
                     type="button"
                     onClick={handleResendCode}
                     disabled={isResending}
-                    style={{ background: 'none', border: 'none', color: '#1FE477', fontWeight: '700', cursor: 'pointer', textDecoration: 'underline' }}
+                    style={{ background: 'none', border: 'none', color: '#2457FF', fontWeight: '700', cursor: 'pointer', textDecoration: 'underline' }}
                   >
                     {isResending ? 'Sending...' : 'Resend 6-Digit Code'}
                   </button>
@@ -557,8 +610,8 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', trig
             style={{
               width: '100%',
               height: '46px',
-              background: 'linear-gradient(135deg, #1FE477 0%, #10B981 100%)',
-              color: '#06070a',
+              background: '#2457FF',
+              color: '#ffffff',
               fontSize: '0.92rem',
               fontWeight: '800',
               letterSpacing: '-0.01em',
@@ -569,27 +622,27 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', trig
               alignItems: 'center',
               justifyContent: 'center',
               gap: '0.5rem',
-              boxShadow: '0 4px 20px rgba(31, 228, 119, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
+              boxShadow: '0 4px 20px rgba(36, 87, 255, 0.35)',
               marginTop: '0.5rem',
               transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)'
             }}
             onMouseEnter={(e) => {
               if (!isSubmitting) {
-                e.currentTarget.style.background = 'linear-gradient(135deg, #34F588 0%, #1FE477 100%)';
-                e.currentTarget.style.boxShadow = '0 6px 28px rgba(31, 228, 119, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.5)';
+                e.currentTarget.style.background = '#1d4ed8';
+                e.currentTarget.style.boxShadow = '0 6px 28px rgba(36, 87, 255, 0.55)';
                 e.currentTarget.style.transform = 'translateY(-1px)';
               }
             }}
             onMouseLeave={(e) => {
               if (!isSubmitting) {
-                e.currentTarget.style.background = 'linear-gradient(135deg, #1FE477 0%, #10B981 100%)';
-                e.currentTarget.style.boxShadow = '0 4px 20px rgba(31, 228, 119, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.4)';
+                e.currentTarget.style.background = '#2457FF';
+                e.currentTarget.style.boxShadow = '0 4px 20px rgba(36, 87, 255, 0.35)';
                 e.currentTarget.style.transform = 'translateY(0)';
               }
             }}
           >
             {isSubmitting ? (
-              <RefreshCw size={16} className="spin-slow" />
+              <RefreshCw size={16} className="animate-spin" />
             ) : (
               <>
                 <span>
@@ -613,7 +666,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', trig
               <button 
                 type="button" 
                 onClick={() => { setMode('signup'); setErrorMsg(''); setSuccessMsg(''); }}
-                style={{ background: 'none', border: 'none', color: '#1FE477', fontWeight: '800', cursor: 'pointer' }}
+                style={{ background: 'none', border: 'none', color: '#2457FF', fontWeight: '800', cursor: 'pointer' }}
               >
                 Sign up free
               </button>
@@ -626,7 +679,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', trig
               <button 
                 type="button" 
                 onClick={() => { setMode('login'); setErrorMsg(''); setSuccessMsg(''); }}
-                style={{ background: 'none', border: 'none', color: '#1FE477', fontWeight: '800', cursor: 'pointer' }}
+                style={{ background: 'none', border: 'none', color: '#2457FF', fontWeight: '800', cursor: 'pointer' }}
               >
                 Sign in
               </button>
@@ -644,6 +697,114 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', trig
             </button>
           )}
         </div>
+
+        {/* Google SSO Dialog */}
+        {showGoogleSsoDialog && (
+          <div style={{
+            position: 'absolute',
+            inset: 0,
+            zIndex: 50,
+            background: 'rgba(6, 7, 10, 0.94)',
+            backdropFilter: 'blur(8px)',
+            borderRadius: '24px',
+            padding: '2rem 1.75rem',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                <svg width="22" height="22" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
+                  <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z"/>
+                  <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 10.04 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
+                  <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+                </svg>
+                <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: '#ffffff' }}>Continue with Google</h3>
+              </div>
+              <button 
+                type="button" 
+                onClick={() => setShowGoogleSsoDialog(false)}
+                style={{ background: 'none', border: 'none', color: '#94a3b8', fontSize: '1rem', fontWeight: 'bold', cursor: 'pointer' }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <p style={{ fontSize: '0.82rem', color: '#94a3b8', margin: '0 0 1.25rem' }}>
+              Confirm your Google Account to connect directly to Careerly.
+            </p>
+
+            <form onSubmit={handleConfirmGoogleSso} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#cbd5e1', marginBottom: '0.3rem', textTransform: 'uppercase' }}>
+                  Google Email
+                </label>
+                <input 
+                  type="email"
+                  required
+                  autoFocus
+                  value={googleSsoEmail}
+                  onChange={e => setGoogleSsoEmail(e.target.value)}
+                  placeholder="alex.kim@gmail.com"
+                  className="input-field"
+                  style={{ height: '42px', borderRadius: '10px' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#cbd5e1', marginBottom: '0.3rem', textTransform: 'uppercase' }}>
+                  Display Name (Optional)
+                </label>
+                <input 
+                  type="text"
+                  value={googleSsoName}
+                  onChange={e => setGoogleSsoName(e.target.value)}
+                  placeholder="Alex Kim"
+                  className="input-field"
+                  style={{ height: '42px', borderRadius: '10px' }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowGoogleSsoDialog(false)}
+                  style={{
+                    flex: 1,
+                    height: '42px',
+                    borderRadius: '10px',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    color: '#cbd5e1',
+                    fontWeight: 700,
+                    fontSize: '0.85rem',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  style={{
+                    flex: 1,
+                    height: '42px',
+                    borderRadius: '10px',
+                    border: 'none',
+                    background: '#2457FF',
+                    color: '#ffffff',
+                    fontWeight: 800,
+                    fontSize: '0.85rem',
+                    cursor: isSubmitting ? 'not-allowed' : 'pointer'
+                  }}
+                >
+                  {isSubmitting ? 'Connecting...' : 'Connect Google'}
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
 
       </div>
     </div>

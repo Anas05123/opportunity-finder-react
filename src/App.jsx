@@ -19,8 +19,12 @@ import AuthScreen from './components/Auth/AuthScreen.jsx';
 import OnboardingWizard from './components/Onboarding/OnboardingWizard.jsx';
 import PublicLandingView from './components/Landing/PublicLandingView.jsx';
 import PersonalizedDashboard from './components/Dashboard/PersonalizedDashboard.jsx';
+import DiscoverScreen from './components/Discovery/DiscoverScreen.jsx';
+import ProfileView from './components/Profile/ProfileView.jsx';
 import SettingsView from './components/Settings/SettingsView.jsx';
 import NotFoundPage from './components/NotFoundPage.jsx';
+import LoadingScreen from './components/Common/LoadingScreen.jsx';
+import Toast from './components/Common/Toast.jsx';
 
 import ConversationalHero from './components/SearchInterface/ConversationalHero.jsx';
 import AIQuestionModal from './components/SearchInterface/AIQuestionModal.jsx';
@@ -399,380 +403,188 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
     cv_studio: 'AI CV Studio & ATS Tailor',
     interview: 'STAR Interview Coach',
     calendar: 'Deadlines Timeline',
+    profile: 'Professional Profile',
     settings: 'Account & Security Settings',
     admin: 'Enterprise Security Operations'
   };
 
+  const navCls = (tabKey) => {
+    const isActive = activeTab === tabKey;
+    return `w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-medium transition-all text-left ${
+      isActive 
+        ? 'bg-primary text-primary-foreground font-semibold shadow-sm' 
+        : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+    }`;
+  };
+
+  if (activeTab === 'landing') {
+    return (
+      <div className="min-h-screen bg-background overflow-x-hidden" style={{ fontFamily: 'var(--font-sans)' }}>
+        <PublicLandingView 
+          onOpenAuth={(mode) => navigate(mode === 'signup' ? '/register' : '/login')}
+          sampleOpportunities={opportunities}
+          onSelectOpportunity={(op) => { setDrawerOp(op); navigate(`/opportunities/${op.id}`); }}
+          onPrepareKit={(op) => setPrepareAppOp(op)}
+          onSaveOpportunity={(opId) => toggleSaveApp(opId)}
+          isSaved={isOpportunitySaved}
+          triggerToast={triggerToast}
+        />
+        
+        {/* Drawers and Modals if active */}
+        {drawerOp && (
+          <OpportunityDrawer 
+            opportunity={drawerOp}
+            onClose={() => { setDrawerOp(null); if (routeOpportunityId) navigate('/opportunities'); }}
+            onToggleSave={(id) => toggleSaveApp(id)}
+            isSaved={isOpportunitySaved(drawerOp.id)}
+            onAutoApply={(op) => { setPrepareAppOp(op); setDrawerOp(null); }}
+            onEmailOutreach={(op) => { setEmailOutreachOp(op); setDrawerOp(null); }}
+            triggerToast={triggerToast}
+          />
+        )}
+      </div>
+    );
+  }
+
   return (
-    <div className="saas-workspace">
+    <div className="flex h-screen bg-background overflow-hidden" style={{ fontFamily: 'var(--font-sans)' }}>
       {/* 1. SIDEBAR (AUTHENTICATED) */}
       {isAuthenticated && (
-        <>
-          {mobileMenuOpen && (
-            <div className="sidebar-backdrop" onClick={() => setMobileMenuOpen(false)} />
-          )}
+        <aside className="w-56 flex-shrink-0 h-screen flex flex-col border-r border-border bg-card">
+          {/* Header / Brand */}
+          <div className="h-14 flex items-center px-4 border-b border-border">
+            <Link to="/dashboard" className="flex items-center gap-2.5 no-underline">
+              <img 
+                src="/careerly-logo.png" 
+                alt="Careerly Logo" 
+                className="w-7 h-7 object-contain flex-shrink-0" 
+              />
+              <span className="text-[15px] font-semibold text-foreground tracking-tight">Careerly</span>
+            </Link>
+          </div>
 
-          <aside className={`saas-sidebar ${mobileMenuOpen ? 'mobile-open' : ''}`}>
-            {/* Sidebar Header */}
-            <div className="sidebar-header">
-              <Link to="/dashboard" className="sidebar-brand">
-                <div className="sidebar-logo">
-                  <img src="/careerly-logo.png" alt="Careerly Logo" />
-                </div>
-                <div className="sidebar-brand-name">
-                  Careerly
-                  <span className="sidebar-plan-tag">SAAS</span>
-                </div>
-              </Link>
+          {/* Navigation Links */}
+          <nav className="flex-1 p-3 overflow-y-auto space-y-1">
+            <div className="space-y-0.5">
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-2.5 py-1">Workspace</p>
+              <button onClick={() => navigate('/dashboard')} className={navCls('dashboard')}>
+                <LayoutGrid size={15} /> Dashboard
+              </button>
+              <button onClick={() => navigate('/opportunities')} className={navCls('explore')}>
+                <Compass size={15} /> Discover
+              </button>
+              <button onClick={() => navigate('/applications')} className={navCls('tracker')}>
+                <CheckSquare size={15} /> Applications
+                {applicationsList.length > 0 && (
+                  <span className="ml-auto text-[10px] font-mono font-bold bg-secondary text-foreground px-1.5 py-0.5 rounded">
+                    {applicationsList.length}
+                  </span>
+                )}
+              </button>
+            </div>
 
-              {mobileMenuOpen && (
-                <button 
-                  className="icon-button" 
-                  onClick={() => setMobileMenuOpen(false)}
-                  style={{ width: '28px', height: '28px' }}
-                >
-                  <X size={15} />
+            <div className="pt-2.5 border-t border-border mt-2 space-y-0.5">
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-2.5 py-1">Tools</p>
+              <button onClick={() => navigate('/saved')} className={navCls('saved')}>
+                <Bookmark size={15} /> Saved
+                {savedOppsList.length > 0 && (
+                  <span className="ml-auto text-[10px] font-mono font-bold bg-secondary text-foreground px-1.5 py-0.5 rounded">
+                    {savedOppsList.length}
+                  </span>
+                )}
+              </button>
+              <button onClick={() => navigate('/cv-studio')} className={navCls('cv_studio')}>
+                <FileText size={15} /> CV Studio
+              </button>
+              <button onClick={() => navigate('/interview')} className={navCls('interview')}>
+                <Mic size={15} /> Interview Coach
+              </button>
+              <button onClick={() => navigate('/calendar')} className={navCls('calendar')}>
+                <Calendar size={15} /> Calendar
+              </button>
+            </div>
+
+            <div className="pt-2.5 border-t border-border mt-2 space-y-0.5">
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-2.5 py-1">Account</p>
+              <button onClick={() => navigate('/profile')} className={navCls('profile')}>
+                <User size={15} /> Profile
+              </button>
+              <button onClick={() => navigate('/settings')} className={navCls('settings')}>
+                <Settings size={15} /> Settings
+              </button>
+              {isAdmin && (
+                <button onClick={() => navigate('/admin/security')} className={navCls('admin')}>
+                  <ShieldCheck size={15} /> Security Ops
                 </button>
               )}
             </div>
+          </nav>
 
-            {/* Sidebar Navigation Sections */}
-            <div className="sidebar-content">
-              
-              {/* WORKSPACE */}
-              <div>
-                <div className="sidebar-section-title">Workspace</div>
-                <div className="sidebar-nav-list">
-                  <button 
-                    className={`sidebar-nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
-                    onClick={() => { navigate('/dashboard'); setMobileMenuOpen(false); }}
-                  >
-                    <div className="sidebar-nav-item-left">
-                      <Sparkles size={17} />
-                      <span>Overview</span>
-                    </div>
-                  </button>
-
-                  <button 
-                    className={`sidebar-nav-item ${activeTab === 'explore' ? 'active' : ''}`}
-                    onClick={() => { navigate('/opportunities'); setMobileMenuOpen(false); }}
-                  >
-                    <div className="sidebar-nav-item-left">
-                      <Compass size={17} />
-                      <span>Opportunities</span>
-                    </div>
-                  </button>
-
-                  <button 
-                    className={`sidebar-nav-item ${activeTab === 'saved' ? 'active' : ''}`}
-                    onClick={() => { navigate('/saved'); setMobileMenuOpen(false); }}
-                  >
-                    <div className="sidebar-nav-item-left">
-                      <Bookmark size={17} />
-                      <span>Saved</span>
-                    </div>
-                    {savedOppsList.length > 0 && (
-                      <span className="sidebar-badge">{savedOppsList.length}</span>
-                    )}
-                  </button>
-
-                  <button 
-                    className={`sidebar-nav-item ${activeTab === 'tracker' ? 'active' : ''}`}
-                    onClick={() => { navigate('/applications'); setMobileMenuOpen(false); }}
-                  >
-                    <div className="sidebar-nav-item-left">
-                      <CheckSquare size={17} />
-                      <span>Applications</span>
-                    </div>
-                    {applicationsList.length > 0 && (
-                      <span className="sidebar-badge">{applicationsList.length}</span>
-                    )}
-                  </button>
-
-                  <button 
-                    className={`sidebar-nav-item ${activeTab === 'calendar' ? 'active' : ''}`}
-                    onClick={() => { navigate('/calendar'); setMobileMenuOpen(false); }}
-                  >
-                    <div className="sidebar-nav-item-left">
-                      <Calendar size={17} />
-                      <span>Deadlines</span>
-                    </div>
-                  </button>
-                </div>
+          {/* User Profile Footer */}
+          <div className="p-2.5 border-t border-border space-y-2">
+            <div 
+              onClick={() => navigate('/profile')}
+              className="flex items-center gap-2.5 p-2 rounded-lg bg-secondary/50 hover:bg-secondary transition-colors cursor-pointer"
+            >
+              <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-[11px] font-bold flex-shrink-0" style={{ background: '#2457FF' }}>
+                {userInitial}
               </div>
-
-              {/* CAREER TOOLS */}
-              <div>
-                <div className="sidebar-section-title">Career Tools</div>
-                <div className="sidebar-nav-list">
-                  <button 
-                    className={`sidebar-nav-item ${activeTab === 'cv_studio' ? 'active' : ''}`}
-                    onClick={() => { navigate('/cv-studio'); setMobileMenuOpen(false); }}
-                  >
-                    <div className="sidebar-nav-item-left">
-                      <FileText size={17} />
-                      <span>CV Studio & ATS</span>
-                    </div>
-                  </button>
-
-                  <button 
-                    className={`sidebar-nav-item ${activeTab === 'interview' ? 'active' : ''}`}
-                    onClick={() => { navigate('/interview'); setMobileMenuOpen(false); }}
-                  >
-                    <div className="sidebar-nav-item-left">
-                      <Mic size={17} />
-                      <span>Interview Coach</span>
-                    </div>
-                  </button>
-                </div>
-              </div>
-
-              {/* ACCOUNT & SECURITY */}
-              <div>
-                <div className="sidebar-section-title">Account</div>
-                <div className="sidebar-nav-list">
-                  <button 
-                    className={`sidebar-nav-item ${activeTab === 'settings' ? 'active' : ''}`}
-                    onClick={() => { navigate('/settings'); setMobileMenuOpen(false); }}
-                  >
-                    <div className="sidebar-nav-item-left">
-                      <Settings size={17} />
-                      <span>Profile & Settings</span>
-                    </div>
-                  </button>
-
-                  {isAdmin && (
-                    <button 
-                      className={`sidebar-nav-item ${activeTab === 'admin' ? 'active' : ''}`}
-                      onClick={() => { navigate('/admin/security'); setMobileMenuOpen(false); }}
-                    >
-                      <div className="sidebar-nav-item-left">
-                        <ShieldCheck size={17} color="var(--primary)" />
-                        <span>Security Operations</span>
-                      </div>
-                    </button>
-                  )}
-                </div>
-              </div>
-
-            </div>
-
-            {/* Sidebar User Footer */}
-            <div className="sidebar-footer">
-              <div 
-                className="sidebar-user-pill"
-                onClick={() => { navigate('/settings'); setMobileMenuOpen(false); }}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    navigate('/settings');
-                    setMobileMenuOpen(false);
-                  }
-                }}
-                title="Account Settings"
-                style={{ cursor: 'pointer' }}
-              >
-                <div className="sidebar-user-avatar">
-                  {userInitial}
-                </div>
-                <div className="sidebar-user-meta">
-                  <span className="sidebar-user-name">{displayName}</span>
-                  <span className="sidebar-user-email">{displayEmail}</span>
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                <button 
-                  className="icon-button" 
-                  onClick={toggleTheme} 
-                  title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-                  style={{ width: '28px', height: '28px' }}
-                >
-                  {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
-                </button>
-                <button 
-                  className="icon-button" 
-                  onClick={() => { logout(); navigate('/login'); triggerToast('Signed out of Careerly.'); }} 
-                  title="Sign Out"
-                  style={{ width: '28px', height: '28px', color: '#ef4444' }}
-                >
-                  <LogOut size={14} />
-                </button>
+              <div className="flex-1 min-w-0">
+                <p className="text-[12px] font-semibold text-foreground truncate">{displayName}</p>
+                <p className="text-[10px] text-muted-foreground truncate">{displayEmail}</p>
               </div>
             </div>
 
-          </aside>
-        </>
+            {/* Big Prominent Sign Out Button */}
+            <button 
+              onClick={() => { logout(); navigate('/login'); triggerToast('Signed out of Careerly.'); }} 
+              className="w-full flex items-center justify-center gap-2 py-2 px-3 bg-red-50 text-red-600 border border-red-200 hover:bg-red-600 hover:text-white rounded-lg text-[12px] font-bold transition-all shadow-xs"
+              title="Sign Out of Account"
+            >
+              <LogOut size={13} />
+              <span>Sign Out</span>
+            </button>
+          </div>
+        </aside>
       )}
 
       {/* 2. MAIN WORKSPACE CANVAS */}
-      <div className="saas-main">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         
         {/* Top Header Bar */}
-        {!isAuthenticated ? (
-          <>
-            <header className="brainwave-navbar">
-              <Link to="/" style={{ textDecoration: 'none' }}>
-                <div className="sidebar-brand" style={{ cursor: 'pointer' }}>
-                  <div className="sidebar-logo">
-                    <img src="/careerly-logo.png" alt="Careerly Logo" />
-                  </div>
-                  <div className="sidebar-brand-name" style={{ fontSize: '1.15rem', fontWeight: '800', letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>
-                    Careerly
-                    <span className="sidebar-plan-tag" style={{ marginLeft: '0.4rem' }}>
-                      INTELLIGENCE
-                    </span>
-                  </div>
-                </div>
-              </Link>
+        <header className="h-14 flex items-center justify-between px-6 border-b border-border bg-card flex-shrink-0">
+          <div>
+            <h1 className="text-[15px] font-semibold text-foreground leading-none">{tabTitles[activeTab] || 'Workspace'}</h1>
+            <p className="text-[11px] text-muted-foreground mt-1">Calibrated Career Intelligence</p>
+          </div>
 
-              {/* Modern Centered Navigation Links */}
-              <nav className="brainwave-nav-center">
-                <Link to="/opportunities" className="brainwave-nav-link" style={{ textDecoration: 'none' }}>
-                  Browse Catalog
-                </Link>
-                <button 
-                  className="brainwave-nav-link" 
-                  onClick={() => {
-                    navigate('/');
-                    setTimeout(() => {
-                      const el = document.getElementById('features-section');
-                      if (el) el.scrollIntoView({ behavior: 'smooth' });
-                    }, 100);
-                  }}
-                >
-                  Features
-                </button>
-                <Link to="/register" className="brainwave-nav-link" style={{ textDecoration: 'none' }}>
-                  AI CV Studio
-                </Link>
-                <Link to="/register" className="brainwave-nav-link" style={{ textDecoration: 'none' }}>
-                  STAR Coach
-                </Link>
-              </nav>
-
-              {/* Right Side Actions & Mobile Menu Toggle */}
-              <div className="brainwave-nav-actions">
-                <button 
-                  className="icon-button" 
-                  onClick={toggleTheme} 
-                  aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-                  title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-                  style={{ width: '40px', height: '40px' }}
-                >
-                  {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-                </button>
-
-                <Link
-                  to="/login"
-                  className="brainwave-btn-outline brainwave-desktop-only"
-                  style={{ height: '42px', padding: '0 1.4rem', fontSize: '0.86rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
-                >
-                  Sign In
-                </Link>
-
-                <Link
-                  to="/register"
-                  className="brainwave-btn-glow brainwave-nav-cta"
-                  style={{ height: '42px', padding: '0 1.4rem', fontSize: '0.86rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
-                >
-                  <span>Get Started</span>
-                  <ArrowRight size={15} className="btn-arrow-icon" />
-                </Link>
-
-                <button
-                  className="brainwave-hamburger-btn"
-                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                  aria-label="Toggle Navigation"
-                >
-                  {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
-                </button>
-              </div>
-            </header>
-
-            {/* Mobile Navigation Dropdown */}
-            {mobileMenuOpen && (
-              <div className="brainwave-mobile-menu">
-                <div className="brainwave-mobile-nav-list">
-                  <Link to="/opportunities" className="brainwave-mobile-nav-item" onClick={() => setMobileMenuOpen(false)}>
-                    Browse Catalog
-                  </Link>
-                  <Link to="/login" className="brainwave-mobile-nav-item" onClick={() => setMobileMenuOpen(false)}>
-                    AI CV Studio
-                  </Link>
-                  <Link to="/login" className="brainwave-mobile-nav-item" onClick={() => setMobileMenuOpen(false)}>
-                    STAR Coach
-                  </Link>
-                </div>
-                <div className="brainwave-mobile-menu-actions">
-                  <Link
-                    to="/login"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="brainwave-btn-outline"
-                    style={{ width: '100%', height: '44px', justifyContent: 'center', textDecoration: 'none' }}
-                  >
-                    Sign In
-                  </Link>
-                  <Link
-                    to="/register"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="brainwave-btn-glow"
-                    style={{ width: '100%', height: '44px', justifyContent: 'center', textDecoration: 'none' }}
-                  >
-                    Get Started Free
-                  </Link>
-                </div>
-              </div>
-            )}
-          </>
-        ) : (
-          <header className="saas-header">
-            <div className="saas-header-left">
-              <button 
-                className="saas-hamburger-trigger icon-button" 
-                onClick={() => setMobileMenuOpen(true)}
-                aria-label="Open Navigation Menu"
-              >
-                <Menu size={18} />
-              </button>
-
-              <nav className="saas-breadcrumbs" aria-label="Breadcrumb">
-                <span className="breadcrumb-root">Careerly</span>
-                <span className="breadcrumb-separator">/</span>
-                <span className="breadcrumb-active active">{tabTitles[activeTab] || 'Workspace'}</span>
-              </nav>
-            </div>
-
-            <div className="saas-header-right">
-              {activeTab === 'explore' && (
-                <button 
-                  className="saas-command-trigger"
+          <div className="flex items-center gap-3">
+            {activeTab === 'explore' && (
+              <div className="relative hidden sm:block">
+                <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <input 
+                  placeholder="Search opportunities..." 
+                  className="bg-secondary border border-border rounded-lg pl-8 pr-3 py-1.5 text-[12px] text-foreground placeholder-muted-foreground outline-none focus:border-primary w-48 sm:w-64 transition-all"
                   onClick={() => {
                     if (feedTopRef.current) feedTopRef.current.scrollIntoView({ behavior: 'smooth' });
                   }}
-                >
-                  <Search size={14} />
-                  <span>Search opportunities...</span>
-                  <span className="saas-kbd">⌘K</span>
-                </button>
-              )}
+                />
+              </div>
+            )}
 
-              <button 
-                className="icon-button" 
-                onClick={toggleTheme} 
-                aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-                title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-              >
-                {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-              </button>
+            <div 
+              className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-[11px] font-bold cursor-pointer shadow-sm"
+              style={{ background: '#2457FF' }}
+              onClick={() => navigate('/settings')}
+              title="Account Settings"
+            >
+              {userInitial}
             </div>
-          </header>
-        )}
+          </div>
+        </header>
 
         {/* Content Container */}
-        <div className={activeTab === 'landing' ? "landing-content-canvas" : "saas-content-canvas"}>
+        <div className="flex-1 overflow-y-auto bg-background">
           <main>
 
         {/* TAB: PUBLIC LANDING (UNAUTHENTICATED) */}
@@ -813,215 +625,35 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
           />
         )}
 
-        {/* TAB: DISCOVER & MATCH (SHARED GLOBAL OPPORTUNITY CATALOG) */}
+        {/* TAB: DISCOVER & MATCH (EXACT FIGMA DESIGN) */}
         {activeTab === 'explore' && (
-          <div>
-            <ConversationalHero 
-              onStartConversationalSearch={handleStartConversationalSearch}
-              isSearching={isSearchingPipeline}
-            />
-
-            <div className="content-container" ref={feedTopRef} style={{ marginTop: '2.5rem' }}>
-              
-              {/* Dedicated CV-to-Jobs Filter Banner */}
-              {cvMatchedContext && (
-                <div style={{
-                  background: 'linear-gradient(135deg, rgba(31, 228, 119, 0.14) 0%, rgba(56, 189, 248, 0.1) 100%)',
-                  border: '1.5px solid #1FE477',
-                  borderRadius: 'var(--radius-2xl)',
-                  padding: '1.15rem 1.5rem',
-                  marginBottom: '1.75rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: '1rem',
-                  flexWrap: 'wrap',
-                  boxShadow: '0 0 30px rgba(31, 228, 119, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.08)'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-                    <div style={{ width: '42px', height: '42px', borderRadius: '50%', background: '#1FE477', color: '#06070a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem', fontWeight: '900', flexShrink: 0, boxShadow: '0 0 16px rgba(31, 228, 119, 0.5)' }}>
-                      🎯
-                    </div>
-                    <div>
-                      <div style={{ fontWeight: '900', fontSize: '1.02rem', color: 'var(--foreground)', fontFamily: "'Space Grotesk', sans-serif" }}>
-                        Tailored Opportunities for CV: <span style={{ color: '#1FE477' }}>{cvMatchedContext.role}</span>
-                      </div>
-                      <div style={{ fontSize: '0.82rem', color: 'var(--muted-foreground)' }}>
-                        Verified positions matched to your extracted qualifications and career trajectory.
-                      </div>
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <button 
-                      className="btn btn-outline" 
-                      style={{ height: '36px', fontSize: '0.82rem', padding: '0 0.85rem' }}
-                      onClick={() => { setCvMatchedContext(null); setSearchSummaryBadge(''); fetchOpportunities(''); }}
-                    >
-                      Clear CV Filter
-                    </button>
-                    <button 
-                      className="btn btn-primary" 
-                      style={{ height: '36px', fontSize: '0.82rem', padding: '0 0.95rem' }}
-                      onClick={() => navigate('/cv-studio')}
-                    >
-                      Return to CV Studio
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* Active Search Summary Badge */}
-              {searchSummaryBadge && (
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'var(--card)', border: '1px solid var(--primary)', color: 'var(--foreground)', padding: '0.45rem 1.25rem', borderRadius: 'var(--radius-full)', fontSize: '0.84rem', fontWeight: '800', margin: '0 auto 1.75rem', boxShadow: 'var(--shadow-sm)' }}>
-                  <Sparkles size={15} color="var(--primary)" /> {searchSummaryBadge}
-                  <button 
-                    onClick={() => { setSearchSummaryBadge(''); setCvMatchedContext(null); fetchOpportunities(''); }} 
-                    style={{ background: 'transparent', border: 'none', color: 'var(--muted-foreground)', cursor: 'pointer', marginLeft: '0.45rem', fontSize: '0.9rem' }}
-                  >
-                    ✕
-                  </button>
-                </div>
-              )}
-
-              {/* Category Ribbon */}
-              <div className="category-ribbon">
-                <button 
-                  className={`cat-pill ${selectedPreset === 'all' ? 'active' : ''}`}
-                  onClick={() => setSelectedPreset('all')}
-                >
-                  <Sparkles size={14} /> All Offers
-                </button>
-                <button 
-                  className={`cat-pill ${selectedPreset === 'advertising' ? 'ad-active' : ''}`}
-                  onClick={() => setSelectedPreset(selectedPreset === 'advertising' ? 'all' : 'advertising')}
-                >
-                  <Megaphone size={14} /> Advertising & Marketing
-                </button>
-                <button 
-                  className={`cat-pill ${selectedPreset === 'internships' ? 'active' : ''}`}
-                  onClick={() => setSelectedPreset(selectedPreset === 'internships' ? 'all' : 'internships')}
-                >
-                  <Briefcase size={14} /> Internships & Traineeships
-                </button>
-                <button 
-                  className={`cat-pill ${selectedPreset === 'scholarships' ? 'active' : ''}`}
-                  onClick={() => setSelectedPreset(selectedPreset === 'scholarships' ? 'all' : 'scholarships')}
-                >
-                  <GraduationCap size={14} /> Global Scholarships
-                </button>
-                <button 
-                  className={`cat-pill ${selectedPreset === 'fellowships' ? 'active' : ''}`}
-                  onClick={() => setSelectedPreset(selectedPreset === 'fellowships' ? 'all' : 'fellowships')}
-                >
-                  <Award size={14} /> Fellowships & Grants
-                </button>
-                <button 
-                  className={`cat-pill ${selectedPreset === 'remote' ? 'active' : ''}`}
-                  onClick={() => setSelectedPreset(selectedPreset === 'remote' ? 'all' : 'remote')}
-                >
-                  <Globe size={14} /> Worldwide & Remote
-                </button>
-              </div>
-
-              {/* View Layout Controls & Stats */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', marginTop: '0.75rem', flexWrap: 'wrap', gap: '0.75rem' }}>
-                <div style={{ color: 'var(--text-secondary)', fontSize: '0.88rem', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                  <span>Showing</span>
-                  <span style={{ color: 'var(--text-primary)', fontWeight: '800', fontFamily: 'var(--font-mono)' }}>{filteredOpportunities.length}</span>
-                  <span>verified opportunities</span>
-                </div>
-
-                <div style={{ display: 'flex', gap: '0.35rem', background: 'var(--card)', padding: '3px', borderRadius: '8px', border: '1px solid var(--border-default)' }}>
-                  <button 
-                    onClick={() => setViewMode('grid')}
-                    className={`icon-button ${viewMode === 'grid' ? 'active' : ''}`}
-                    style={{ width: '32px', height: '32px', borderRadius: '6px' }}
-                    title="Grid View"
-                  >
-                    <LayoutGrid size={15} />
-                  </button>
-                  <button 
-                    onClick={() => setViewMode('list')}
-                    className={`icon-button ${viewMode === 'list' ? 'active' : ''}`}
-                    style={{ width: '32px', height: '32px', borderRadius: '6px' }}
-                    title="List View"
-                  >
-                    <List size={15} />
-                  </button>
-                </div>
-              </div>
-
-              {/* Feed Grid or List */}
-              {isLoading ? (
-                <div style={{ textAlign: 'center', padding: '5rem 0', color: 'var(--muted-foreground)' }}>
-                  <RefreshCw size={32} className="spin-slow" color="var(--primary)" style={{ margin: '0 auto 1rem' }} />
-                  <p style={{ fontWeight: '700' }}>Calibrating live opportunity matches...</p>
-                </div>
-              ) : viewMode === 'grid' ? (
-                <OpportunityGridView 
-                  opportunities={paginatedOpportunities}
-                  onSelectOp={(op) => { setDrawerOp(op); navigate(`/opportunities/${op.id}`); }}
-                  onToggleSave={(oppId) => toggleSaveApp(oppId)}
-                  onPrepareApplication={(op) => setPrepareAppOp(op)}
-                  onInspectEvidence={(op) => setInspectingEvidenceOp(op)}
-                  onRelaxConstraint={handleRelaxConstraint}
-                  savedIds={savedOppsList.map(s => s.id || s.opportunity_id)}
-                />
-              ) : (
-                <OpportunityListView 
-                  opportunities={paginatedOpportunities}
-                  onSelectOp={(op) => { setDrawerOp(op); navigate(`/opportunities/${op.id}`); }}
-                  onToggleSave={(oppId) => toggleSaveApp(oppId)}
-                  savedIds={savedOppsList.map(s => s.id || s.opportunity_id)}
-                  onAutoApply={(op) => setPrepareAppOp(op)}
-                  onEmailOutreach={(op) => setEmailOutreachOp(op)}
-                />
-              )}
-
-              {/* Pagination Controls */}
-              {totalPages > 1 && (
-                <div className="pagination-bar" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.65rem', marginTop: '2.5rem', paddingBottom: '3rem' }}>
-                  <button 
-                    className="action-btn-secondary"
-                    onClick={() => handlePageChange(currentPage - 1)}
-                    disabled={currentPage === 1}
-                    style={{ padding: '0.45rem 0.95rem', fontSize: '0.85rem' }}
-                  >
-                    <ChevronLeft size={15} /> Previous
-                  </button>
-                  <span style={{ fontSize: '0.88rem', fontWeight: '800', color: 'var(--foreground)', padding: '0 0.5rem' }}>
-                    Page {currentPage} of {totalPages}
-                  </span>
-                  <button 
-                    className="action-btn-secondary"
-                    onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                    style={{ padding: '0.45rem 0.95rem', fontSize: '0.85rem' }}
-                  >
-                    Next <ChevronRight size={15} />
-                  </button>
-                </div>
-              )}
-
-            </div>
-          </div>
+          <DiscoverScreen 
+            opportunities={opportunities}
+            isLoading={isLoading}
+            onSelectOpportunity={(op) => { setDrawerOp(op); navigate(`/opportunities/${op.id}`); }}
+            onPrepareKit={(op) => setPrepareAppOp(op)}
+            onToggleSave={(id) => toggleSaveApp(id)}
+            isSaved={(id) => isOpportunitySaved(id)}
+            triggerToast={triggerToast}
+          />
         )}
 
         {/* TAB: SAVED OPPORTUNITIES (USER-OWNED) */}
         {activeTab === 'saved' && (
-          <div className="content-container" style={{ maxWidth: '1280px', margin: '2rem auto', padding: '0 1.5rem' }}>
-            <div style={{ marginBottom: '2rem' }}>
-              <h1 className="type-h1" style={{ fontSize: '1.85rem' }}>Saved Opportunities ({savedOppsList.length})</h1>
-              <p className="type-body" style={{ marginTop: '0.2rem', color: 'var(--muted-foreground)' }}>
-                Your private bookmarks scored against your career profile.
+          <div className="w-full p-6 sm:p-8 space-y-6" style={{ fontFamily: 'var(--font-sans)' }}>
+            <div>
+              <h1 className="font-display text-[26px] sm:text-[30px] font-bold text-foreground leading-tight">
+                Saved Opportunities ({savedOppsList.length})
+              </h1>
+              <p className="text-[13px] text-muted-foreground mt-1">
+                Your private bookmarks calibrated against your career profile.
               </p>
             </div>
 
             {savedOppsList.length > 0 ? (
-              <div className="responsive-grid-3col">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                 {savedOppsList.map(opp => (
-                  <OpportunityCard
+                  <OpportunityCard 
                     key={opp.id || opp.opportunity_id}
                     opportunity={opp}
                     onSelectOp={(o) => { setDrawerOp(o); navigate(`/opportunities/${o.id}`); }}
@@ -1032,13 +664,19 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
                 ))}
               </div>
             ) : (
-              <div style={{ textAlign: 'center', padding: '4rem 1.5rem', background: 'var(--card)', borderRadius: 'var(--radius-2xl)', border: '1px solid var(--border-default)' }}>
-                <Bookmark size={36} color="var(--primary)" style={{ marginBottom: '0.85rem' }} />
-                <h3 className="type-h3">No saved opportunities yet</h3>
-                <p className="type-body" style={{ marginTop: '0.35rem', marginBottom: '1.5rem' }}>
+              <div className="bg-card border border-border rounded-2xl p-12 text-center max-w-md mx-auto space-y-4 shadow-sm">
+                <div className="w-12 h-12 rounded-2xl bg-secondary flex items-center justify-center text-primary mx-auto">
+                  <Bookmark size={24} />
+                </div>
+                <h3 className="font-display text-[18px] font-bold text-foreground">No saved opportunities yet</h3>
+                <p className="text-[13px] text-muted-foreground leading-relaxed">
                   Explore the catalog and bookmark opportunities you'd like to track or prepare applications for.
                 </p>
-                <button onClick={() => navigate('/opportunities')} className="action-btn-primary">
+                <button 
+                  onClick={() => navigate('/opportunities')}
+                  className="px-5 py-2.5 bg-primary text-white text-[13px] font-semibold rounded-lg hover:opacity-95 transition-all shadow-sm"
+                  style={{ background: '#2457FF' }}
+                >
                   Browse Opportunities Catalog
                 </button>
               </div>
@@ -1048,105 +686,64 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
 
         {/* TAB: APPLICATION TRACKER CRM BOARD (USER-OWNED) */}
         {activeTab === 'tracker' && (
-          <div className="tab-content-anim content-container" style={{ marginTop: '2rem', maxWidth: '1280px', padding: '0 1.5rem' }}>
-            <div style={{ marginBottom: '1.75rem' }}>
-              <h2 style={{ fontSize: '1.65rem', fontWeight: '900', color: 'var(--foreground)', marginBottom: '0.3rem' }}>
-                Application Pipeline CRM
-              </h2>
-              <p style={{ color: 'var(--muted-foreground)', fontSize: '0.9rem' }}>
-                Manage your active applications across Saved, Preparing, Applied, Interview, and Offer stages.
-              </p>
+          <div className="w-full p-6 sm:p-8 space-y-6" style={{ fontFamily: 'var(--font-sans)' }}>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h1 className="font-display text-[26px] sm:text-[30px] font-bold text-foreground leading-tight">
+                  Application Pipeline (CRM)
+                </h1>
+                <p className="text-[13px] text-muted-foreground mt-1">
+                  Manage your active applications across Saved, Preparing, Applied, Interview, and Offer stages.
+                </p>
+              </div>
+              <button 
+                onClick={() => navigate('/opportunities')}
+                className="flex items-center gap-1.5 px-4 py-2 bg-primary text-white text-[13px] font-semibold rounded-lg hover:opacity-95 transition-all self-start sm:self-auto shadow-sm"
+                style={{ background: '#2457FF' }}
+              >
+                <Compass size={14} /> Add Opportunities
+              </button>
             </div>
 
-            {applicationsList.length === 0 && (
-              <div style={{ background: 'var(--card)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-xl)', padding: '1.25rem 1.5rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                  <div style={{ width: '36px', height: '36px', borderRadius: 'var(--radius-md)', background: 'var(--primary-subtle)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <CheckSquare size={18} />
-                  </div>
-                  <div>
-                    <div style={{ fontWeight: '700', fontSize: '0.92rem', color: 'var(--foreground)' }}>Your CRM pipeline is ready</div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--muted-foreground)' }}>Save opportunities or launch application prep kits to track your multi-stage progress here.</div>
-                  </div>
-                </div>
-                <button onClick={() => navigate('/opportunities')} className="action-btn-primary" style={{ fontSize: '0.82rem', padding: '0.45rem 1rem' }}>
-                  Discover Opportunities
-                </button>
-              </div>
-            )}
-
-            <div className="crm-board">
+            {/* 6-Column Kanban Board */}
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-3.5 items-start">
               {[
                 { key: 'saved', label: 'Saved', color: '#94a3b8' },
-                { key: 'preparing', label: 'Preparing', color: 'var(--accent-purple)' },
-                { key: 'applied', label: 'Applied', color: 'var(--accent-blue)' },
-                { key: 'interview', label: 'Interview', color: 'var(--accent-amber)' },
-                { key: 'offer', label: 'Offer', color: 'var(--accent-emerald)' },
-                { key: 'rejected', label: 'Archived', color: 'var(--accent-danger)' }
+                { key: 'preparing', label: 'Preparing', color: '#F59E0B' },
+                { key: 'applied', label: 'Applied', color: '#2457FF' },
+                { key: 'interview', label: 'Interview', color: '#7C3AED' },
+                { key: 'offer', label: 'Offer', color: '#18A66A' },
+                { key: 'rejected', label: 'Archived', color: '#EF4444' }
               ].map(({ key: st, label, color }) => {
                 const colApps = applicationsList.filter(a => a.stage === st || (st === 'saved' && !a.stage));
                 return (
-                  <div key={st} className="crm-column">
-                    <div className="crm-col-header">
-                      <div className="crm-col-title">
-                        <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: color }} />
-                        <span>{label}</span>
+                  <div key={st} className="bg-secondary/40 border border-border rounded-xl p-3 flex flex-col min-h-[300px]">
+                    <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-border">
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-foreground">{label}</span>
                       </div>
-                      <span className="crm-col-count">{colApps.length}</span>
+                      <span className="text-[11px] font-mono font-bold bg-card border border-border px-1.5 py-0.5 rounded text-foreground">
+                        {colApps.length}
+                      </span>
                     </div>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+                    <div className="space-y-2 flex-1">
                       {colApps.map(app => (
-                        <div key={app.id} className="crm-card">
-                          <div style={{ fontWeight: '700', color: 'var(--text-primary)', fontSize: '0.88rem', marginBottom: '0.2rem', lineHeight: '1.3' }}>
-                            {app.title}
-                          </div>
-                          <div style={{ fontSize: '0.76rem', color: 'var(--text-muted)', marginBottom: '0.65rem' }}>
-                            {app.organization || app.company || 'Enterprise'}
-                          </div>
+                        <div key={app.id || app.opportunity_id} className="bg-card border border-border rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow space-y-2">
+                          <p className="text-[12px] font-semibold text-foreground leading-snug line-clamp-2">{app.title}</p>
+                          <p className="text-[10px] text-muted-foreground truncate">{app.organization || app.company || 'Enterprise'}</p>
                           
-                          <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap', marginBottom: '0.65rem' }}>
-                            {st !== 'applied' && (
-                              <button 
-                                className="btn btn-outline"
-                                style={{ fontSize: '0.72rem', height: '26px', padding: '0 0.5rem' }}
-                                onClick={() => handleUpdateAppStage(app.opportunity_id || app.id, 'applied')}
-                              >
-                                → Applied
-                              </button>
-                            )}
-                            {st !== 'interview' && (
-                              <button 
-                                className="btn btn-outline"
-                                style={{ fontSize: '0.72rem', height: '26px', padding: '0 0.5rem' }}
-                                onClick={() => handleUpdateAppStage(app.opportunity_id || app.id, 'interview')}
-                              >
-                                → Interview
-                              </button>
-                            )}
-                            {st !== 'offer' && (
-                              <button 
-                                className="btn btn-outline"
-                                style={{ fontSize: '0.72rem', height: '26px', padding: '0 0.5rem' }}
-                                onClick={() => handleUpdateAppStage(app.opportunity_id || app.id, 'offer')}
-                              >
-                                → Offer
-                              </button>
-                            )}
-                          </div>
-
-                          <div style={{ display: 'flex', gap: '0.45rem', paddingTop: '0.5rem', borderTop: '1px solid var(--border-subtle)' }}>
+                          <div className="flex items-center gap-1 pt-1.5 border-t border-border/50">
                             <button 
-                              className="btn btn-emerald"
-                              style={{ fontSize: '0.75rem', height: '28px', padding: '0 0.65rem', flex: 1 }}
                               onClick={() => setPrepareAppOp(app)}
+                              className="flex-1 py-1 bg-primary/10 text-primary text-[10px] font-semibold rounded hover:bg-primary hover:text-white transition-all text-center"
                             >
-                              <Zap size={12} /> Prep Kit
+                              Prep Kit
                             </button>
                             <button 
-                              className="btn btn-outline"
-                              style={{ fontSize: '0.75rem', height: '28px', padding: '0 0.65rem' }}
                               onClick={() => { setDrawerOp(app); navigate(`/opportunities/${app.opportunity_id || app.id}`); }}
+                              className="px-2 py-1 border border-border text-[10px] text-foreground font-medium rounded hover:bg-secondary transition-all"
                             >
                               Details
                             </button>
@@ -1176,57 +773,64 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
 
         {/* TAB: AI MOCK INTERVIEW COACH */}
         {activeTab === 'interview' && (
-          <div className="tab-content-anim">
+          <div className="tab-content-anim w-full">
             <InterviewCoach userProfile={careerProfile} triggerToast={triggerToast} />
           </div>
         )}
 
         {/* TAB: DEADLINES TIMELINE */}
         {activeTab === 'calendar' && (
-          <div className="content-container" style={{ maxWidth: '860px', margin: '2rem auto', padding: '0 1rem' }}>
-            <div style={{ marginBottom: '1.75rem' }}>
-              <h2 style={{ fontSize: '1.5rem', fontWeight: '900', color: 'var(--foreground)', marginBottom: '0.3rem' }}>
+          <div className="w-full p-6 sm:p-8 space-y-6" style={{ fontFamily: 'var(--font-sans)' }}>
+            <div>
+              <h1 className="font-display text-[26px] sm:text-[30px] font-bold text-foreground leading-tight">
                 Application Deadlines Timeline
-              </h2>
-              <p style={{ color: 'var(--muted-foreground)', fontSize: '0.9rem' }}>
+              </h1>
+              <p className="text-[13px] text-muted-foreground mt-1">
                 Chronological schedule of intake cut-offs and verified submission deadlines.
               </p>
             </div>
 
-            {opportunities.length > 0 ? (
-              opportunities.slice(0, 15).map(op => {
+            <div className="space-y-3">
+              {opportunities.slice(0, 15).map(op => {
                 const isRolling = !op.deadline_utc || op.deadline_utc.toLowerCase().includes('open') || op.deadline_utc.toLowerCase().includes('rolling');
                 return (
-                  <div key={op.id} className="bento-card" style={{ marginBottom: '0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
-                    <div>
-                      <div style={{ fontSize: '0.76rem', color: isRolling ? 'var(--accent-emerald)' : 'var(--accent-amber)', fontWeight: '700', marginBottom: '0.2rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                        <Clock size={13} /> {isRolling ? 'Rolling Intake / Open Submissions' : `Submission Deadline: ${op.deadline_utc}`}
+                  <div key={op.id} className="bg-card border border-border rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm hover:border-primary/40 transition-all">
+                    <div className="space-y-1 min-w-0">
+                      <div className="flex items-center gap-1.5 text-[11px] font-semibold">
+                        <span className={`w-2 h-2 rounded-full ${isRolling ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'}`} />
+                        <span className={isRolling ? 'text-emerald-700' : 'text-amber-700'}>
+                          {isRolling ? 'Rolling Intake / Open Submissions' : `Submission Deadline: ${op.deadline_utc}`}
+                        </span>
                       </div>
-                      <div style={{ fontWeight: '700', fontSize: '0.96rem', color: 'var(--text-primary)' }}>{op.title}</div>
-                      <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>{op.organization || op.company || 'Enterprise'} • {op.location_country || 'Global'}</div>
+                      <h3 className="text-[14px] font-semibold text-foreground truncate">{op.title}</h3>
+                      <p className="text-[11px] text-muted-foreground">{op.organization || op.company || 'Enterprise'} · {op.location_country || 'Global'}</p>
                     </div>
 
-                    <div style={{ display: 'flex', gap: '0.5rem' }}>
-                      <button className="btn btn-emerald" style={{ fontSize: '0.78rem', height: '32px' }} onClick={() => setPrepareAppOp(op)}>
-                        <Zap size={13} /> Prepare Kit
+                    <div className="flex items-center gap-2 self-end sm:self-center flex-shrink-0">
+                      <button 
+                        onClick={() => setPrepareAppOp(op)}
+                        className="px-3.5 py-1.5 bg-primary text-white text-[12px] font-semibold rounded-lg hover:opacity-95 transition-all shadow-sm"
+                        style={{ background: '#2457FF' }}
+                      >
+                        Prepare Kit
                       </button>
-                      <button className="btn btn-outline" style={{ fontSize: '0.78rem', height: '32px' }} onClick={() => { setDrawerOp(op); navigate(`/opportunities/${op.id}`); }}>
+                      <button 
+                        onClick={() => { setDrawerOp(op); navigate(`/opportunities/${op.id}`); }}
+                        className="px-3.5 py-1.5 border border-border text-foreground text-[12px] font-medium rounded-lg hover:bg-secondary transition-all"
+                      >
                         Inspect
                       </button>
                     </div>
                   </div>
                 );
-              })
-            ) : (
-              <div style={{ textAlign: 'center', padding: '3.5rem 1.5rem', background: 'var(--card)', borderRadius: 'var(--radius-2xl)', border: '1px solid var(--border-default)' }}>
-                <Calendar size={36} color="var(--primary)" style={{ marginBottom: '0.85rem' }} />
-                <h3 className="type-h3">No upcoming deadlines found</h3>
-                <p className="type-body" style={{ marginTop: '0.35rem' }}>
-                  Explore active opportunities to track upcoming deadlines and intake schedules.
-                </p>
-              </div>
-            )}
+              })}
+            </div>
           </div>
+        )}
+
+        {/* TAB: PROFILE VIEW */}
+        {activeTab === 'profile' && (
+          <ProfileView triggerToast={triggerToast} />
         )}
 
         {/* TAB: SETTINGS VIEW */}
@@ -1240,22 +844,6 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
         )}
 
       </main>
-
-      {/* Modern Careerly Footer */}
-      <Footer onNavigateTab={(tab) => { 
-        const routes = {
-          explore: '/opportunities',
-          saved: '/saved',
-          tracker: '/applications',
-          cv_studio: '/cv-studio',
-          interview: '/interview',
-          calendar: '/calendar',
-          settings: '/settings',
-          admin: '/admin/security'
-        };
-        navigate(routes[tab] || '/'); 
-        window.scrollTo({ top: 0, behavior: 'smooth' }); 
-      }} />
 
       </div> {/* saas-content-canvas */}
     </div> {/* saas-main */}
@@ -1317,7 +905,7 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
       )}
 
       {/* Floating 24/7 AI Career Copilot */}
-      {!drawerOp && !prepareAppOp && !emailOutreachOp && !inspectingEvidenceOp && !authModalOpen && !activeQuestion && (
+      {!drawerOp && !prepareAppOp && !emailOutreachOp && !inspectingEvidenceOp && !authModalOpen && !activeQuestion && activeTab !== 'landing' && (
         <AiCareerCopilot userProfile={careerProfile || {}} triggerToast={triggerToast} />
       )}
     </div>
@@ -1326,7 +914,9 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
 
 function HomeRoute({ theme, toggleTheme, triggerToast }) {
   const { isAuthenticated, isLoading, needsOnboarding } = useAuth();
-  if (isLoading) return null;
+  if (isLoading) {
+    return <LoadingScreen message="Launching Careerly" subMessage="Calibrating your career opportunities..." />;
+  }
   if (isAuthenticated) {
     if (needsOnboarding) return <Navigate to="/onboarding" replace />;
     return <Navigate to="/dashboard" replace />;
@@ -1440,7 +1030,7 @@ export default function App() {
           } />
           <Route path="/profile" element={
             <ProtectedRoute>
-              <CareerlyWorkspace activeTab="settings" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
+              <CareerlyWorkspace activeTab="profile" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
             </ProtectedRoute>
           } />
           <Route path="/settings" element={
@@ -1466,42 +1056,7 @@ export default function App() {
         </Routes>
 
         {/* Global Toast Notification */}
-        {toastMessage && (
-          <div 
-            role="status" 
-            aria-live="polite" 
-            className="toast-entrance-slide"
-            style={{
-              position: 'fixed',
-              bottom: '2rem',
-              left: '2rem',
-              background: 'var(--card)',
-              border: '1px solid var(--border-default)',
-              color: 'var(--foreground)',
-              padding: '0.75rem 1.15rem',
-              borderRadius: 'var(--radius-lg)',
-              boxShadow: 'var(--shadow-lg), 0 10px 30px rgba(0,0,0,0.3)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.65rem',
-              zIndex: 4000,
-              fontSize: '0.86rem',
-              fontWeight: '700',
-              backdropFilter: 'blur(16px)',
-              maxWidth: '90vw'
-            }}
-          >
-            <CheckCircle size={17} color="var(--accent-emerald)" style={{ flexShrink: 0 }} />
-            <span style={{ flex: 1 }}>{toastMessage}</span>
-            <button 
-              onClick={() => setToastMessage('')}
-              style={{ background: 'none', border: 'none', color: 'var(--muted-foreground)', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '2px', marginLeft: '0.25rem' }}
-              aria-label="Dismiss notification"
-            >
-              <X size={14} />
-            </button>
-          </div>
-        )}
+        <Toast message={toastMessage} onClose={() => setToastMessage('')} />
       </AuthProvider>
     </BrowserRouter>
   );
