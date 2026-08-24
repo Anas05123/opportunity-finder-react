@@ -134,25 +134,33 @@ export default function AuthScreen({ triggerToast }) {
             if (tokenResponse.error) {
               console.warn('[Google OAuth Error]:', tokenResponse.error);
               if (tokenResponse.error !== 'popup_closed_by_user') {
-                setErrorMsg('Google sign-in was cancelled or encountered an error.');
+                setErrorMsg('Google sign-in encountered an error: ' + tokenResponse.error);
               }
               return;
             }
             try {
               setIsSubmitting(true);
-              const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-                headers: { Authorization: `Bearer ${tokenResponse.access_token}` }
-              });
-              const profile = await userInfoRes.json();
+              let profile = null;
+              try {
+                const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+                  headers: { Authorization: `Bearer ${tokenResponse.access_token}` }
+                });
+                if (userInfoRes.ok) {
+                  profile = await userInfoRes.json();
+                }
+              } catch (fetchErr) {
+                console.warn('[Google UserInfo Client Fetch Note]:', fetchErr.message);
+              }
 
               const authData = await loginWithGoogle({
-                email: profile.email,
-                full_name: profile.name || profile.given_name || profile.email.split('@')[0],
-                google_id: profile.sub,
-                avatar_url: profile.picture
+                email: profile?.email,
+                full_name: profile?.name || profile?.given_name || (profile?.email ? profile.email.split('@')[0] : null),
+                google_id: profile?.sub,
+                avatar_url: profile?.picture,
+                access_token: tokenResponse.access_token
               });
 
-              if (triggerToast) triggerToast(`✓ Welcome back, ${authData.user?.full_name || profile.name}!`);
+              if (triggerToast) triggerToast(`✓ Welcome back, ${authData.user?.full_name || profile?.name || 'Innovator'}!`);
               if (authData.needsOnboarding) {
                 navigate('/onboarding', { replace: true });
               } else {

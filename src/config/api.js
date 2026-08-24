@@ -23,7 +23,17 @@ export const getApiBase = () => {
       return `${protocol}//${hostname}:5000`;
     }
 
-    // When deployed online on Render / Cloud service (Express serves frontend & API together on same origin)
+    // When running on Render (backend & frontend served on same origin)
+    if (hostname.includes('onrender.com')) {
+      return '';
+    }
+
+    // When frontend is hosted on Vercel / Netlify / GitHub Pages
+    if (hostname.includes('vercel.app') || hostname.includes('netlify.app') || hostname.includes('github.io')) {
+      return 'https://opportunity-finder-gsxr.onrender.com';
+    }
+
+    // Default same-origin relative
     return '';
   }
 
