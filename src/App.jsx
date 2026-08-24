@@ -512,34 +512,29 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
           </nav>
 
           {/* User Profile Footer */}
-          <div className="p-2.5 border-t border-border">
-            <div className="flex items-center justify-between p-2 rounded-lg bg-secondary/50">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-[11px] font-bold flex-shrink-0" style={{ background: '#2457FF' }}>
-                  {userInitial}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[12px] font-semibold text-foreground truncate">{displayName}</p>
-                  <p className="text-[10px] text-muted-foreground truncate">{displayEmail}</p>
-                </div>
+          <div className="p-2.5 border-t border-border space-y-2">
+            <div 
+              onClick={() => navigate('/settings')}
+              className="flex items-center gap-2.5 p-2 rounded-lg bg-secondary/50 hover:bg-secondary transition-colors cursor-pointer"
+            >
+              <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-[11px] font-bold flex-shrink-0" style={{ background: '#2457FF' }}>
+                {userInitial}
               </div>
-              <div className="flex items-center gap-0.5">
-                <button 
-                  onClick={toggleTheme} 
-                  className="w-7 h-7 flex items-center justify-center rounded text-muted-foreground hover:text-foreground"
-                  title="Toggle Theme"
-                >
-                  {theme === 'dark' ? <Sun size={13} /> : <Moon size={13} />}
-                </button>
-                <button 
-                  onClick={() => { logout(); navigate('/login'); triggerToast('Signed out of Careerly.'); }} 
-                  className="w-7 h-7 flex items-center justify-center rounded text-red-500 hover:bg-red-50"
-                  title="Sign Out"
-                >
-                  <LogOut size={13} />
-                </button>
+              <div className="flex-1 min-w-0">
+                <p className="text-[12px] font-semibold text-foreground truncate">{displayName}</p>
+                <p className="text-[10px] text-muted-foreground truncate">{displayEmail}</p>
               </div>
             </div>
+
+            {/* Big Prominent Sign Out Button */}
+            <button 
+              onClick={() => { logout(); navigate('/login'); triggerToast('Signed out of Careerly.'); }} 
+              className="w-full flex items-center justify-center gap-2 py-2 px-3 bg-red-50 text-red-600 border border-red-200 hover:bg-red-600 hover:text-white rounded-lg text-[12px] font-bold transition-all shadow-xs"
+              title="Sign Out of Account"
+            >
+              <LogOut size={13} />
+              <span>Sign Out</span>
+            </button>
           </div>
         </aside>
       )}
@@ -568,18 +563,11 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
               </div>
             )}
 
-            <button 
-              onClick={toggleTheme} 
-              className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary transition-colors"
-              aria-label="Toggle Theme"
-            >
-              {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
-            </button>
-
             <div 
               className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-[11px] font-bold cursor-pointer shadow-sm"
               style={{ background: '#2457FF' }}
               onClick={() => navigate('/settings')}
+              title="Account Settings"
             >
               {userInitial}
             </div>

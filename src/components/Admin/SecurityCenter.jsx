@@ -526,17 +526,17 @@ export default function SecurityCenter({ triggerToast }) {
                 borderRadius: 'var(--radius-full)',
                 fontSize: '0.84rem',
                 fontWeight: isActive ? '800' : '600',
-                background: isActive ? 'var(--primary)' : 'var(--bg-surface-elevated)',
-                color: isActive ? '#06070a' : 'var(--text-secondary)',
-                border: isActive ? '1px solid var(--primary)' : '1px solid var(--border-default)',
+                background: isActive ? '#2457FF' : 'var(--bg-surface-elevated)',
+                color: isActive ? '#ffffff' : 'var(--text-secondary)',
+                border: isActive ? '1px solid #2457FF' : '1px solid var(--border-default)',
                 cursor: 'pointer',
                 transition: 'all 0.15s cubic-bezier(0.16, 1, 0.3, 1)',
                 whiteSpace: 'nowrap',
-                boxShadow: isActive ? 'var(--shadow-sm)' : 'none',
+                boxShadow: isActive ? '0 1px 3px rgba(36, 87, 255, 0.3)' : 'none',
                 flexShrink: 0
               }}
             >
-              <Icon size={15} color={isActive ? '#06070a' : 'currentColor'} />
+              <Icon size={15} color={isActive ? '#ffffff' : 'currentColor'} />
               <span>{tab.label}</span>
             </button>
           );
