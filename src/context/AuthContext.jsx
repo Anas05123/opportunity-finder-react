@@ -317,11 +317,17 @@ export function AuthProvider({ children }) {
     return data;
   };
 
-  const resetPassword = async ({ email, code, token: resetToken, newPassword }) => {
+  const resetPassword = async (arg1, arg2) => {
+    let payload = {};
+    if (typeof arg1 === 'object' && arg1 !== null) {
+      payload = arg1;
+    } else {
+      payload = { token: arg1, code: arg1, newPassword: arg2 };
+    }
     const res = await fetch(`${API_BASE_URL}/auth/reset-password`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, code, token: resetToken, newPassword })
+      body: JSON.stringify(payload)
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Failed to reset password.');

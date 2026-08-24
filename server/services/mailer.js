@@ -1,6 +1,7 @@
 import nodemailer from 'nodemailer';
 
-const SMTP_USER = process.env.SMTP_USER || 'ayarianas79@gmail.com';
+export const PRIMARY_SENDER_EMAIL = 'ayarianas79@gmail.com';
+const SMTP_USER = process.env.SMTP_USER || PRIMARY_SENDER_EMAIL;
 const SMTP_PASS = process.env.SMTP_PASS || 'nmaanvradoafeuqt';
 const SMTP_HOST = process.env.SMTP_HOST || 'smtp.gmail.com';
 const SMTP_PORT = Number(process.env.SMTP_PORT) || 465;
@@ -25,14 +26,14 @@ export function isTestOrMockEmail(email = '') {
   );
 }
 
-// Configure SMTP transporter
+// Configure SMTP transporter explicitly using Gmail service and ayarianas79@gmail.com
 export const transporter = nodemailer.createTransport({
-  service: SMTP_HOST.includes('gmail') ? 'gmail' : undefined,
-  host: SMTP_HOST,
-  port: SMTP_PORT,
-  secure: SMTP_SECURE,
+  service: 'gmail',
+  host: 'smtp.gmail.com',
+  port: 465,
+  secure: true,
   auth: {
-    user: SMTP_USER,
+    user: PRIMARY_SENDER_EMAIL,
     pass: SMTP_PASS
   }
 });

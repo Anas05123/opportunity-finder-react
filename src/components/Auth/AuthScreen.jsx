@@ -57,8 +57,9 @@ export default function AuthScreen({ triggerToast }) {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [fullName, setFullName] = useState('');
 
-  // OTP Verification States
+  // OTP & Password Reset States
   const [otpDigits, setOtpDigits] = useState(['', '', '', '', '', '']);
+  const [resetCode, setResetCode] = useState(() => searchParams.get('token') || searchParams.get('code') || '');
 
   // Google Sign-In init & SSO State
   const googleButtonRef = useRef(null);
@@ -78,10 +79,7 @@ export default function AuthScreen({ triggerToast }) {
               try {
                 setIsSubmitting(true);
                 setErrorMsg('');
-                const authData = await loginWithGoogle({
-                  credential: response.credential,
-                  clientId: response.clientId
-                });
+                const authData = await loginWithGoogle({ credential: response.credential });
                 if (triggerToast) triggerToast(`Welcome back, ${authData.user?.full_name || 'Innovator'}!`);
                 if (authData.needsOnboarding) {
                   navigate('/onboarding', { replace: true });
@@ -193,7 +191,7 @@ export default function AuthScreen({ triggerToast }) {
     setErrorMsg('');
     setSuccessMsg('');
 
-    if (mode === 'signup' && password !== confirmPassword) {
+    if ((mode === 'signup' || mode === 'reset') && password !== confirmPassword) {
       setErrorMsg('Passwords do not match.');
       return;
     }
@@ -227,12 +225,27 @@ export default function AuthScreen({ triggerToast }) {
         navigate('/onboarding', { replace: true });
       } else if (mode === 'forgot') {
         await forgotPassword(email);
-        setSuccessMsg('A password reset link has been sent to your email address.');
+        setMode('reset');
+        setSuccessMsg(`✓ A 6-digit recovery code has been sent to ${email}. Please enter it below along with your new password.`);
       } else if (mode === 'reset') {
-        const resetToken = searchParams.get('token');
-        await resetPassword(resetToken, password);
-        setSuccessMsg('Your password has been successfully reset.');
-        setTimeout(() => navigate('/login', { replace: true }), 2000);
+        const codeToSend = resetCode.trim();
+        if (!codeToSend) {
+          setErrorMsg('Please enter the 6-digit recovery code sent to your email.');
+          setIsSubmitting(false);
+          return;
+        }
+        if (!password || password.length < 6) {
+          setErrorMsg('Password must be at least 6 characters long.');
+          setIsSubmitting(false);
+          return;
+        }
+        await resetPassword({ email, code: codeToSend, newPassword: password });
+        if (triggerToast) triggerToast('✓ Password successfully reset! You can now sign in.');
+        setSuccessMsg('Your password has been successfully reset! Redirecting to sign in...');
+        setTimeout(() => {
+          setMode('login');
+          window.history.replaceState(null, '', '/login');
+        }, 1500);
       }
     } catch (err) {
       setErrorMsg(err.message || 'Authentication request failed. Please check your credentials.');
@@ -338,8 +351,8 @@ export default function AuthScreen({ triggerToast }) {
               {mode === 'login' && 'Sign in to access your calibrated career intelligence.'}
               {mode === 'signup' && 'Start discovering 50,000+ verified opportunities tailored for you.'}
               {mode === 'verify' && `We sent a 6-digit code to ${email}.`}
-              {mode === 'forgot' && 'Enter your email address and we will send you a reset link.'}
-              {mode === 'reset' && 'Enter your new password below.'}
+              {mode === 'forgot' && 'Enter your email address to receive a 6-digit recovery code.'}
+              {mode === 'reset' && `Enter the 6-digit code sent to ${email || 'your email'} and set your new password.`}
             </p>
           </div>
 
@@ -449,17 +462,42 @@ export default function AuthScreen({ triggerToast }) {
               </div>
             )}
 
+            {/* Recovery Code (Reset Mode) */}
+            {mode === 'reset' && (
+              <div>
+                <label className="text-[11.5px] font-bold text-foreground uppercase tracking-wider block mb-1">
+                  6-Digit Recovery Code
+                </label>
+                <div className="relative">
+                  <Key size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                  <input 
+                    type="text" 
+                    required
+                    maxLength={6}
+                    value={resetCode} 
+                    onChange={e => setResetCode(e.target.value.replace(/\D/g, ''))} 
+                    placeholder="123456"
+                    className="w-full bg-card border border-border rounded-xl py-2.5 pl-10 pr-3.5 text-[14px] font-mono tracking-widest text-foreground placeholder-muted-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all shadow-xs" 
+                  />
+                </div>
+              </div>
+            )}
+
             {/* Password */}
             {(isAuthMode || mode === 'reset') && (
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <label className="text-[11.5px] font-bold text-foreground uppercase tracking-wider">
-                    Password
+                    {mode === 'reset' ? 'New Password' : 'Password'}
                   </label>
                   {mode === 'login' && (
-                    <Link to="/forgot-password" className="text-[11.5px] text-primary hover:underline font-semibold">
+                    <button
+                      type="button"
+                      onClick={() => switchMode('forgot')}
+                      className="text-[11.5px] text-primary hover:underline font-semibold"
+                    >
                       Forgot password?
-                    </Link>
+                    </button>
                   )}
                 </div>
                 <div className="relative">
@@ -483,18 +521,18 @@ export default function AuthScreen({ triggerToast }) {
               </div>
             )}
 
-            {/* Confirm Password field (smooth accordion transition) */}
+            {/* Confirm Password field (smooth accordion transition for signup and reset) */}
             <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
-              mode === 'signup' ? 'max-h-24 opacity-100' : 'max-h-0 opacity-0 pointer-events-none'
+              mode === 'signup' || mode === 'reset' ? 'max-h-24 opacity-100' : 'max-h-0 opacity-0 pointer-events-none'
             }`}>
               <label className="text-[11.5px] font-bold text-foreground uppercase tracking-wider block mb-1">
-                Confirm Password
+                {mode === 'reset' ? 'Confirm New Password' : 'Confirm Password'}
               </label>
               <div className="relative">
                 <Lock size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <input 
                   type="password" 
-                  required={mode === 'signup'}
+                  required={mode === 'signup' || mode === 'reset'}
                   value={confirmPassword} 
                   onChange={e => setConfirmPassword(e.target.value)} 
                   placeholder="••••••••"
@@ -534,7 +572,7 @@ export default function AuthScreen({ triggerToast }) {
                   {mode === 'login' && 'Sign In'}
                   {mode === 'signup' && 'Create Account'}
                   {mode === 'verify' && 'Verify & Continue'}
-                  {mode === 'forgot' && 'Send Reset Link'}
+                  {mode === 'forgot' && 'Send Reset Code'}
                   {mode === 'reset' && 'Update Password'}
                   <ArrowRight size={15} />
                 </>
@@ -559,6 +597,19 @@ export default function AuthScreen({ triggerToast }) {
                 className="text-foreground font-bold hover:text-primary transition-colors underline ml-1"
               >
                 {mode === 'login' ? 'Register now' : 'Sign In'}
+              </button>
+            </p>
+          )}
+
+          {(mode === 'forgot' || mode === 'reset') && (
+            <p className="text-center text-[12.5px] text-muted-foreground mt-3.5">
+              Remember your password?{' '}
+              <button 
+                type="button"
+                onClick={() => switchMode('login')}
+                className="text-foreground font-bold hover:text-primary transition-colors underline ml-1"
+              >
+                Back to Sign In
               </button>
             </p>
           )}
