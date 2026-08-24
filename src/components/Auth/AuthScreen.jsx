@@ -96,7 +96,7 @@ export default function AuthScreen({ triggerToast }) {
           window.google.accounts.id.renderButton(googleButtonRef.current, {
             theme: 'outline',
             size: 'large',
-            width: 380,
+            width: 360,
             text: mode === 'signup' ? 'signup_with' : 'signin_with',
             shape: 'rectangular'
           });
@@ -192,90 +192,90 @@ export default function AuthScreen({ triggerToast }) {
   const isAuthMode = mode === 'login' || mode === 'signup';
 
   return (
-    <div className="min-h-screen bg-background flex" style={{ fontFamily: 'var(--font-sans)' }}>
+    <div className="h-screen w-screen max-h-screen bg-background flex overflow-hidden" style={{ fontFamily: 'var(--font-sans)' }}>
       
       {/* ── Left Branding Panel ────────────────────────────────────────── */}
-      <div className="hidden lg:flex flex-col justify-between w-[480px] flex-shrink-0 bg-primary p-12 text-white" style={{ background: '#2457FF' }}>
+      <div className="hidden lg:flex flex-col justify-between w-[440px] flex-shrink-0 bg-primary p-8 text-white h-full" style={{ background: '#2457FF' }}>
         <div>
-          <div className="flex items-center gap-3 mb-14">
-            <Link to="/" className="flex items-center gap-3 text-white no-underline">
-              <div className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center shadow-xs">
-                <span className="text-white text-[14px] font-bold">C</span>
+          <div className="flex items-center gap-2.5 mb-8">
+            <Link to="/" className="flex items-center gap-2.5 text-white no-underline">
+              <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center shadow-xs">
+                <span className="text-white text-[13px] font-bold">C</span>
               </div>
-              <span className="text-white text-[19px] font-bold tracking-tight">Careerly</span>
+              <span className="text-white text-[18px] font-bold tracking-tight">Careerly</span>
             </Link>
           </div>
 
-          <h2 className="font-display text-[38px] font-bold text-white leading-[1.14] mb-5">
+          <h2 className="font-display text-[32px] xl:text-[36px] font-bold text-white leading-[1.12] mb-3">
             Land your next<br />
             <span className="italic text-blue-200">opportunity</span><br />
             with confidence.
           </h2>
 
-          <p className="text-[15px] text-white/80 leading-relaxed max-w-[340px]">
-            Join 120,000+ professionals discovering their dream roles through intelligent matching, AI-tailored CVs, and STAR interview coaching.
+          <p className="text-[13.5px] text-white/80 leading-relaxed max-w-[320px]">
+            Join 120,000+ professionals discovering dream roles through intelligent matching, AI CV studio, and STAR interview coaching.
           </p>
         </div>
 
         {/* Testimonial Quote */}
-        <div className="bg-white/10 border border-white/15 rounded-2xl p-6 backdrop-blur-sm shadow-sm space-y-4">
-          <p className="text-[14px] text-white/95 leading-relaxed italic">
+        <div className="bg-white/10 border border-white/15 rounded-xl p-4 backdrop-blur-sm shadow-xs space-y-2.5">
+          <p className="text-[12.5px] text-white/95 leading-relaxed italic">
             "Careerly helped me go from zero callbacks to four offers in six weeks. The match scoring alone saved me hours of wasted applications."
           </p>
-          <div className="flex items-center gap-3 pt-2 border-t border-white/10">
-            <div className="w-9 h-9 rounded-full bg-white/25 flex items-center justify-center text-white text-[12px] font-bold">
+          <div className="flex items-center gap-2.5 pt-2 border-t border-white/10">
+            <div className="w-7 h-7 rounded-full bg-white/25 flex items-center justify-center text-white text-[11px] font-bold">
               SM
             </div>
             <div>
-              <p className="text-[13px] font-semibold text-white">Sarah Mitchell</p>
-              <p className="text-[11px] text-white/70">Product Manager at Atlassian</p>
+              <p className="text-[12px] font-semibold text-white leading-tight">Sarah Mitchell</p>
+              <p className="text-[10px] text-white/70">Product Manager at Atlassian</p>
             </div>
           </div>
         </div>
 
         {/* Live Metrics */}
-        <div className="flex items-center justify-between pt-5 border-t border-white/15">
+        <div className="flex items-center justify-between pt-3 border-t border-white/15">
           {[
             ["50K+", "Opportunities"],
             ["120K+", "Users"],
             ["87%", "Success Rate"]
           ].map(([n, l]) => (
             <div key={l}>
-              <p className="text-[19px] font-bold font-mono text-white leading-none">{n}</p>
-              <p className="text-[11px] text-white/70 mt-1">{l}</p>
+              <p className="text-[17px] font-bold font-mono text-white leading-none">{n}</p>
+              <p className="text-[10px] text-white/70 mt-0.5">{l}</p>
             </div>
           ))}
         </div>
       </div>
 
       {/* ── Right Form Panel ─────────────────────────────────────────── */}
-      <div className="flex-1 flex flex-col justify-between px-6 py-10 sm:px-14 overflow-y-auto">
+      <div className="flex-1 flex flex-col justify-between px-6 py-5 sm:px-12 h-full overflow-hidden">
         <div>
-          <Link to="/" className="inline-flex items-center gap-2 text-[13px] font-semibold text-muted-foreground hover:text-foreground transition-colors">
-            <ArrowLeft size={16} /> Back to home
+          <Link to="/" className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-muted-foreground hover:text-foreground transition-colors">
+            <ArrowLeft size={14} /> Back to home
           </Link>
         </div>
 
-        <div className="w-full max-w-[440px] mx-auto py-8">
+        <div className="w-full max-w-[400px] mx-auto my-auto py-1">
           
           {/* Mobile Logo */}
-          <div className="flex items-center gap-3 mb-8 lg:hidden">
-            <div className="w-8 h-8 bg-primary rounded-xl flex items-center justify-center text-white font-bold text-sm" style={{ background: '#2457FF' }}>
+          <div className="flex items-center gap-2.5 mb-4 lg:hidden">
+            <div className="w-7 h-7 bg-primary rounded-lg flex items-center justify-center text-white font-bold text-xs" style={{ background: '#2457FF' }}>
               C
             </div>
-            <span className="text-foreground text-[18px] font-bold">Careerly</span>
+            <span className="text-foreground text-[16px] font-bold">Careerly</span>
           </div>
 
-          {/* Heading with smooth crossfade */}
-          <div className="mb-8 min-h-[74px]">
-            <h1 className="font-display text-[28px] sm:text-[32px] font-bold text-foreground mb-2 leading-tight transition-all duration-200">
+          {/* Heading */}
+          <div className="mb-4">
+            <h1 className="font-display text-[24px] sm:text-[26px] font-bold text-foreground mb-1 leading-tight">
               {mode === 'login' && 'Welcome back'}
               {mode === 'signup' && 'Create your account'}
               {mode === 'verify' && 'Verify your email'}
               {mode === 'forgot' && 'Reset your password'}
               {mode === 'reset' && 'Set new password'}
             </h1>
-            <p className="text-[14px] text-muted-foreground leading-normal transition-all duration-200">
+            <p className="text-[12.5px] text-muted-foreground leading-normal">
               {mode === 'login' && 'Sign in to access your calibrated career intelligence.'}
               {mode === 'signup' && 'Start discovering 50,000+ verified opportunities tailored for you.'}
               {mode === 'verify' && `We sent a 6-digit code to ${email}.`}
@@ -286,18 +286,18 @@ export default function AuthScreen({ triggerToast }) {
 
           {/* Mode Switcher Pill with smooth sliding indicator */}
           {isAuthMode && (
-            <div className="relative flex bg-secondary/80 rounded-xl p-1.5 mb-6 border border-border/40 select-none">
+            <div className="relative flex bg-secondary/80 rounded-xl p-1 mb-3.5 border border-border/40 select-none">
               {/* Animated active background pill */}
               <div 
-                className={`absolute top-1.5 bottom-1.5 w-[calc(50%-6px)] bg-card rounded-lg shadow-xs transition-transform duration-300 ease-out ${
-                  mode === 'signup' ? 'translate-x-[calc(100%+6px)]' : 'translate-x-0'
+                className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-card rounded-lg shadow-xs transition-transform duration-300 ease-out ${
+                  mode === 'signup' ? 'translate-x-[calc(100%+4px)]' : 'translate-x-0'
                 }`} 
               />
 
               <button 
                 type="button"
                 onClick={() => switchMode('login')}
-                className={`relative z-10 flex-1 py-2.5 rounded-lg text-[14px] font-semibold transition-colors duration-200 text-center ${
+                className={`relative z-10 flex-1 py-1.5 rounded-lg text-[13px] font-semibold transition-colors duration-200 text-center ${
                   mode === 'login' 
                     ? 'text-foreground' 
                     : 'text-muted-foreground hover:text-foreground'
@@ -308,7 +308,7 @@ export default function AuthScreen({ triggerToast }) {
               <button 
                 type="button"
                 onClick={() => switchMode('signup')}
-                className={`relative z-10 flex-1 py-2.5 rounded-lg text-[14px] font-semibold transition-colors duration-200 text-center ${
+                className={`relative z-10 flex-1 py-1.5 rounded-lg text-[13px] font-semibold transition-colors duration-200 text-center ${
                   mode === 'signup' 
                     ? 'text-foreground' 
                     : 'text-muted-foreground hover:text-foreground'
@@ -326,9 +326,9 @@ export default function AuthScreen({ triggerToast }) {
                 type="button"
                 onClick={handleGoogleCustomClick}
                 disabled={isSubmitting}
-                className="w-full flex items-center justify-center gap-3 py-3 px-4 bg-card border border-border hover:bg-secondary text-foreground font-semibold text-[14px] rounded-xl transition-all shadow-xs hover:shadow-sm"
+                className="w-full flex items-center justify-center gap-2.5 py-2.5 px-4 bg-card border border-border hover:bg-secondary text-foreground font-semibold text-[13px] rounded-xl transition-all shadow-xs hover:shadow-sm"
               >
-                <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
                   <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
                   <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
@@ -339,33 +339,33 @@ export default function AuthScreen({ triggerToast }) {
 
               <div ref={googleButtonRef} className="hidden" />
 
-              <div className="flex items-center gap-3 my-5">
+              <div className="flex items-center gap-3 my-3">
                 <div className="flex-1 h-px bg-border" />
-                <span className="text-[12px] text-muted-foreground font-semibold uppercase tracking-wider">or with email</span>
+                <span className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider">or with email</span>
                 <div className="flex-1 h-px bg-border" />
               </div>
             </>
           )}
 
           {/* Form Fields with Smooth Expansions */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-2.5">
             
             {/* Full Name field (smooth accordion transition) */}
             <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
-              mode === 'signup' ? 'max-h-24 opacity-100' : 'max-h-0 opacity-0 pointer-events-none'
+              mode === 'signup' ? 'max-h-20 opacity-100' : 'max-h-0 opacity-0 pointer-events-none'
             }`}>
-              <label className="text-[12px] font-bold text-foreground uppercase tracking-wider block mb-1.5">
+              <label className="text-[11px] font-bold text-foreground uppercase tracking-wider block mb-1">
                 Full Name
               </label>
               <div className="relative">
-                <User size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <User size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <input 
                   type="text" 
                   required={mode === 'signup'}
                   value={fullName} 
                   onChange={e => setFullName(e.target.value)} 
                   placeholder="Alex Kim"
-                  className="w-full bg-card border border-border rounded-xl py-3 pl-10 pr-3.5 text-[14px] text-foreground placeholder-muted-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all shadow-xs" 
+                  className="w-full bg-card border border-border rounded-xl py-2 pl-9 pr-3 text-[13px] text-foreground placeholder-muted-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all shadow-xs" 
                 />
               </div>
             </div>
@@ -373,18 +373,18 @@ export default function AuthScreen({ triggerToast }) {
             {/* Email Address */}
             {(isAuthMode || mode === 'forgot') && (
               <div>
-                <label className="text-[12px] font-bold text-foreground uppercase tracking-wider block mb-1.5">
+                <label className="text-[11px] font-bold text-foreground uppercase tracking-wider block mb-1">
                   Email Address
                 </label>
                 <div className="relative">
-                  <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                  <Mail size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                   <input 
                     type="email" 
                     required
                     value={email} 
                     onChange={e => setEmail(e.target.value)} 
                     placeholder="alex@example.com"
-                    className="w-full bg-card border border-border rounded-xl py-3 pl-10 pr-3.5 text-[14px] text-foreground placeholder-muted-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all shadow-xs" 
+                    className="w-full bg-card border border-border rounded-xl py-2 pl-9 pr-3 text-[13px] text-foreground placeholder-muted-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all shadow-xs" 
                   />
                 </div>
               </div>
@@ -393,32 +393,32 @@ export default function AuthScreen({ triggerToast }) {
             {/* Password */}
             {(isAuthMode || mode === 'reset') && (
               <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-[12px] font-bold text-foreground uppercase tracking-wider">
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-[11px] font-bold text-foreground uppercase tracking-wider">
                     Password
                   </label>
                   {mode === 'login' && (
-                    <Link to="/forgot-password" className="text-[12px] text-primary hover:underline font-semibold">
+                    <Link to="/forgot-password" className="text-[11px] text-primary hover:underline font-semibold">
                       Forgot password?
                     </Link>
                   )}
                 </div>
                 <div className="relative">
-                  <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                  <Lock size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                   <input 
                     type={showPassword ? "text" : "password"} 
                     required
                     value={password} 
                     onChange={e => setPassword(e.target.value)} 
                     placeholder="••••••••"
-                    className="w-full bg-card border border-border rounded-xl py-3 pl-10 pr-10 text-[14px] text-foreground placeholder-muted-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all shadow-xs" 
+                    className="w-full bg-card border border-border rounded-xl py-2 pl-9 pr-9 text-[13px] text-foreground placeholder-muted-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all shadow-xs" 
                   />
                   <button 
                     type="button"
                     onClick={() => setShowPassword(!showPassword)} 
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1"
                   >
-                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
                   </button>
                 </div>
               </div>
@@ -426,36 +426,36 @@ export default function AuthScreen({ triggerToast }) {
 
             {/* Confirm Password field (smooth accordion transition) */}
             <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
-              mode === 'signup' ? 'max-h-24 opacity-100' : 'max-h-0 opacity-0 pointer-events-none'
+              mode === 'signup' ? 'max-h-20 opacity-100' : 'max-h-0 opacity-0 pointer-events-none'
             }`}>
-              <label className="text-[12px] font-bold text-foreground uppercase tracking-wider block mb-1.5">
+              <label className="text-[11px] font-bold text-foreground uppercase tracking-wider block mb-1">
                 Confirm Password
               </label>
               <div className="relative">
-                <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <Lock size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <input 
                   type="password" 
                   required={mode === 'signup'}
                   value={confirmPassword} 
                   onChange={e => setConfirmPassword(e.target.value)} 
                   placeholder="••••••••"
-                  className="w-full bg-card border border-border rounded-xl py-3 pl-10 pr-3.5 text-[14px] text-foreground placeholder-muted-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all shadow-xs" 
+                  className="w-full bg-card border border-border rounded-xl py-2 pl-9 pr-3 text-[13px] text-foreground placeholder-muted-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all shadow-xs" 
                 />
               </div>
             </div>
 
             {/* Error Message */}
             {errorMsg && (
-              <div className="flex items-center gap-2.5 p-3.5 bg-red-500/10 border border-red-500/30 rounded-xl text-red-700 dark:text-red-400 text-[13px] animate-fadeIn">
-                <AlertCircle size={16} className="flex-shrink-0 text-red-500" />
+              <div className="flex items-center gap-2 p-2.5 bg-red-500/10 border border-red-500/30 rounded-xl text-red-700 dark:text-red-400 text-[12px] animate-fadeIn">
+                <AlertCircle size={15} className="flex-shrink-0 text-red-500" />
                 <span>{errorMsg}</span>
               </div>
             )}
 
             {/* Success Message */}
             {successMsg && (
-              <div className="flex items-center gap-2.5 p-3.5 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-700 dark:text-emerald-400 text-[13px] animate-fadeIn">
-                <CheckCircle2 size={16} className="flex-shrink-0 text-emerald-500" />
+              <div className="flex items-center gap-2 p-2.5 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-700 dark:text-emerald-400 text-[12px] animate-fadeIn">
+                <CheckCircle2 size={15} className="flex-shrink-0 text-emerald-500" />
                 <span>{successMsg}</span>
               </div>
             )}
@@ -463,12 +463,12 @@ export default function AuthScreen({ triggerToast }) {
             <button 
               type="submit" 
               disabled={isSubmitting}
-              className="w-full mt-2 py-3.5 bg-primary text-white text-[14px] font-bold rounded-xl hover:opacity-95 transition-all shadow-md flex items-center justify-center gap-2 disabled:opacity-50"
+              className="w-full mt-1.5 py-2.5 bg-primary text-white text-[13.5px] font-bold rounded-xl hover:opacity-95 transition-all shadow-sm flex items-center justify-center gap-2 disabled:opacity-50"
               style={{ background: '#2457FF' }}
             >
               {isSubmitting ? (
                 <>
-                  <RefreshCw size={16} className="animate-spin" /> Processing...
+                  <RefreshCw size={15} className="animate-spin" /> Processing...
                 </>
               ) : (
                 <>
@@ -477,14 +477,14 @@ export default function AuthScreen({ triggerToast }) {
                   {mode === 'verify' && 'Verify & Continue'}
                   {mode === 'forgot' && 'Send Reset Link'}
                   {mode === 'reset' && 'Update Password'}
-                  <ArrowRight size={16} />
+                  <ArrowRight size={15} />
                 </>
               )}
             </button>
           </form>
 
           {mode === 'signup' && (
-            <p className="text-center text-[12px] text-muted-foreground mt-4 leading-relaxed transition-all duration-200">
+            <p className="text-center text-[11px] text-muted-foreground mt-2.5 leading-tight">
               By creating an account you agree to our{' '}
               <a href="#" className="text-foreground font-semibold hover:underline">Terms</a> and{' '}
               <a href="#" className="text-foreground font-semibold hover:underline">Privacy Policy</a>.
@@ -492,12 +492,12 @@ export default function AuthScreen({ triggerToast }) {
           )}
 
           {isAuthMode && (
-            <p className="text-center text-[13px] text-muted-foreground mt-6">
+            <p className="text-center text-[12px] text-muted-foreground mt-3">
               {mode === 'login' ? "Don't have an account? " : "Already have an account? "}
               <button 
                 type="button"
                 onClick={() => switchMode(mode === 'login' ? 'signup' : 'login')}
-                className="text-foreground font-bold hover:text-primary transition-colors underline ml-1"
+                className="text-foreground font-bold hover:text-primary transition-colors underline ml-0.5"
               >
                 {mode === 'login' ? 'Register now' : 'Sign In'}
               </button>
@@ -506,7 +506,7 @@ export default function AuthScreen({ triggerToast }) {
 
         </div>
 
-        <div className="text-center text-[12px] text-muted-foreground">
+        <div className="text-center text-[11px] text-muted-foreground py-1">
           © 2024 Careerly Intelligence. All rights reserved.
         </div>
       </div>
