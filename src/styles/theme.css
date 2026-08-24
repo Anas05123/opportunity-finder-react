@@ -39,9 +39,21 @@
   --sidebar-primary: #1C2B3A;
   --sidebar-primary-foreground: #F5F4EF;
   --sidebar-accent: #F0EFEA;
-  --sidebar-accent-foreground: #1C2B3A;
   --sidebar-border: rgba(28, 43, 58, 0.1);
   --sidebar-ring: #2457FF;
+  --accent-emerald: #18A66A;
+  --accent-amber: #F59E0B;
+  --accent-rose: #EF4444;
+  --accent-cyan: #0891B2;
+  --accent-blue: #2457FF;
+  --bg-card: #ffffff;
+  --text-headings: #10213D;
+  --text-primary: #10213D;
+  --text-secondary: #667085;
+  --text-tertiary: #94A3B8;
+  --bg-surface: #ffffff;
+  --bg-surface-elevated: #EEF4FF;
+  --border-default: rgba(16, 33, 61, 0.1);
 }
 
 .dark {

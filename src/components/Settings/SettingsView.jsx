@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { 
   User, Shield, Lock, Trash2, CheckCircle2, AlertCircle, 
-  Save, KeyRound, Globe, Award, Briefcase, GraduationCap, RefreshCw 
+  Save, KeyRound, Globe, Award, Briefcase, GraduationCap, RefreshCw, 
+  Sparkles, Mail, Phone, MapPin, ExternalLink, Link2, CheckCircle,
+  Sliders, ShieldCheck, Download, LogOut
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { API_BASE_URL } from '../../config/api.js';
@@ -9,7 +11,7 @@ import { API_BASE_URL } from '../../config/api.js';
 export default function SettingsView({ triggerToast }) {
   const { user, careerProfile, searchProfile, updateCareerProfile, updateSearchPreferences, logout } = useAuth();
 
-  const [activeTab, setActiveTab] = useState('career'); // 'career' | 'search' | 'security' | 'danger'
+  const [activeTab, setActiveTab] = useState('profile'); // 'profile' | 'preferences' | 'security' | 'danger'
   const [isSaving, setIsSaving] = useState(false);
   const [feedback, setFeedback] = useState({ type: '', text: '' });
 
@@ -19,9 +21,9 @@ export default function SettingsView({ triggerToast }) {
   const [phone, setPhone] = useState(careerProfile?.phone || '');
   const [degreeLevel, setDegreeLevel] = useState(careerProfile?.degree_level || 'undergrad');
   const [degreeTitle, setDegreeTitle] = useState(careerProfile?.degree_title || 'Bachelor of Science (BSc)');
-  const [major, setMajor] = useState(careerProfile?.field_of_study || 'Computer Science');
-  const [university, setUniversity] = useState(careerProfile?.university || '');
-  const [gpa, setGpa] = useState(careerProfile?.gpa || 3.5);
+  const [major, setMajor] = useState(careerProfile?.field_of_study || 'Software Engineering');
+  const [university, setUniversity] = useState(careerProfile?.university || 'Asia Pacific University');
+  const [gpa, setGpa] = useState(careerProfile?.gpa || 3.85);
   const [skills, setSkills] = useState((careerProfile?.skills || []).join(', '));
   const [portfolioUrl, setPortfolioUrl] = useState(careerProfile?.portfolio_url || '');
   const [linkedinUrl, setLinkedinUrl] = useState(careerProfile?.linkedin_url || '');
@@ -29,10 +31,10 @@ export default function SettingsView({ triggerToast }) {
   const [noIelts, setNoIelts] = useState(careerProfile?.no_ielts_preference ?? 1);
 
   // Search Preferences Form State
-  const [targetRoles, setTargetRoles] = useState((searchProfile?.target_roles || []).join(', '));
-  const [requiredLocations, setRequiredLocations] = useState((searchProfile?.required_locations || []).join(', '));
+  const [targetRoles, setTargetRoles] = useState((searchProfile?.target_roles || ['Senior Product Designer', 'Frontend Engineer']).join(', '));
+  const [requiredLocations, setRequiredLocations] = useState((searchProfile?.required_locations || ['Remote', 'Worldwide']).join(', '));
   const [remoteOnly, setRemoteOnly] = useState(Boolean(searchProfile?.remote_only));
-  const [minSalary, setMinSalary] = useState(searchProfile?.min_salary || '');
+  const [minSalary, setMinSalary] = useState(searchProfile?.min_salary || '$120,000');
   const [visaSponsorship, setVisaSponsorship] = useState(Boolean(searchProfile?.visa_sponsorship_required));
 
   // Security Form State
@@ -104,20 +106,20 @@ export default function SettingsView({ triggerToast }) {
     }
   };
 
-  const handleSaveSearchPrefs = async (e) => {
+  const handleSavePreferences = async (e) => {
     e.preventDefault();
     setIsSaving(true);
     setFeedback({ type: '', text: '' });
 
     try {
       const rolesArray = targetRoles.split(',').map(r => r.trim()).filter(Boolean);
-      const locationsArray = requiredLocations.split(',').map(l => l.trim()).filter(Boolean);
+      const locsArray = requiredLocations.split(',').map(l => l.trim()).filter(Boolean);
 
       await updateSearchPreferences({
         target_roles: rolesArray,
-        required_locations: locationsArray,
+        required_locations: locsArray,
         remote_only: remoteOnly ? 1 : 0,
-        min_salary: minSalary ? Number(minSalary) : 0,
+        min_salary: minSalary ? Number(minSalary.replace(/[^0-9]/g, '')) : 0,
         visa_sponsorship_required: visaSponsorship ? 1 : 0
       });
 
@@ -169,454 +171,401 @@ export default function SettingsView({ triggerToast }) {
     }
   };
 
-  const handleDeleteAccount = async () => {
-    if (!window.confirm('Are you absolutely sure you want to permanently delete your Careerly account? All saved opportunities and applications will be erased.')) {
-      return;
-    }
-
-    try {
-      const res = await fetch(`${API_BASE_URL}/user/account`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      if (res.ok) {
-        logout();
-        if (triggerToast) triggerToast('Your account has been deleted.');
-      }
-    } catch (err) {
-      if (triggerToast) triggerToast('Error deleting account: ' + err.message);
-    }
-  };
-
   return (
-    <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '1.5rem 1.5rem 4rem' }}>
+    <div className="p-6 sm:p-8 max-w-[1000px] mx-auto space-y-7" style={{ fontFamily: 'var(--font-sans)' }}>
       
-      {/* Settings Header */}
-      <div style={{ marginBottom: '2rem' }}>
-        <h1 className="type-h1" style={{ fontSize: '1.85rem' }}>Account & Career Settings</h1>
-        <p className="type-body" style={{ marginTop: '0.2rem', color: 'var(--muted-foreground)' }}>
+      {/* Header */}
+      <div>
+        <h1 className="font-display text-[26px] sm:text-[30px] font-bold text-foreground leading-tight">
+          Account & Career Settings
+        </h1>
+        <p className="text-[13px] text-muted-foreground mt-1">
           Manage your academic credentials, 7-factor matching preferences, and account security.
         </p>
       </div>
 
-      {/* Tabs Navigation */}
-      <div style={{ display: 'flex', gap: '0.5rem', borderBottom: '1px solid var(--border-default)', marginBottom: '2rem', overflowX: 'auto' }}>
-        <button
-          onClick={() => { setActiveTab('career'); setFeedback({ type: '', text: '' }); }}
-          style={{
-            padding: '0.75rem 1.25rem',
-            border: 'none',
-            background: 'none',
-            borderBottom: activeTab === 'career' ? '2px solid var(--primary)' : '2px solid transparent',
-            color: activeTab === 'career' ? 'var(--primary)' : 'var(--muted-foreground)',
-            fontWeight: activeTab === 'career' ? '700' : '500',
-            cursor: 'pointer',
-            fontSize: '0.92rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.4rem',
-            whiteSpace: 'nowrap'
-          }}
-        >
-          <GraduationCap size={16} />
-          <span>Academic & Career Profile</span>
-        </button>
-
-        <button
-          onClick={() => { setActiveTab('search'); setFeedback({ type: '', text: '' }); }}
-          style={{
-            padding: '0.75rem 1.25rem',
-            border: 'none',
-            background: 'none',
-            borderBottom: activeTab === 'search' ? '2px solid var(--primary)' : '2px solid transparent',
-            color: activeTab === 'search' ? 'var(--primary)' : 'var(--muted-foreground)',
-            fontWeight: activeTab === 'search' ? '700' : '500',
-            cursor: 'pointer',
-            fontSize: '0.92rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.4rem',
-            whiteSpace: 'nowrap'
-          }}
-        >
-          <Briefcase size={16} />
-          <span>Search & Match Preferences</span>
-        </button>
-
-        <button
-          onClick={() => { setActiveTab('security'); setFeedback({ type: '', text: '' }); }}
-          style={{
-            padding: '0.75rem 1.25rem',
-            border: 'none',
-            background: 'none',
-            borderBottom: activeTab === 'security' ? '2px solid var(--primary)' : '2px solid transparent',
-            color: activeTab === 'security' ? 'var(--primary)' : 'var(--muted-foreground)',
-            fontWeight: activeTab === 'security' ? '700' : '500',
-            cursor: 'pointer',
-            fontSize: '0.92rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.4rem',
-            whiteSpace: 'nowrap'
-          }}
-        >
-          <Shield size={16} />
-          <span>Password & Security</span>
-        </button>
-
-        <button
-          onClick={() => { setActiveTab('danger'); setFeedback({ type: '', text: '' }); }}
-          style={{
-            padding: '0.75rem 1.25rem',
-            border: 'none',
-            background: 'none',
-            borderBottom: activeTab === 'danger' ? '2px solid #ef4444' : '2px solid transparent',
-            color: activeTab === 'danger' ? '#ef4444' : 'var(--muted-foreground)',
-            fontWeight: activeTab === 'danger' ? '700' : '500',
-            cursor: 'pointer',
-            fontSize: '0.92rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.4rem',
-            whiteSpace: 'nowrap'
-          }}
-        >
-          <Trash2 size={16} />
-          <span>Danger Zone</span>
-        </button>
+      {/* Tabs */}
+      <div className="flex items-center gap-2 border-b border-border pb-1 overflow-x-auto">
+        {[
+          { id: 'profile', label: 'Academic & Career Profile', icon: GraduationCap },
+          { id: 'preferences', label: 'Search & Match Preferences', icon: Sliders },
+          { id: 'security', label: 'Password & Security', icon: Lock },
+          { id: 'danger', label: 'Danger Zone', icon: Trash2 }
+        ].map(({ id, label, icon: Icon }) => (
+          <button
+            key={id}
+            onClick={() => { setActiveTab(id); setFeedback({ type: '', text: '' }); }}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-[13px] font-semibold transition-all whitespace-nowrap ${
+              activeTab === id
+                ? 'bg-primary text-white shadow-sm'
+                : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+            }`}
+            style={activeTab === id ? { background: '#2457FF' } : {}}
+          >
+            <Icon size={15} /> {label}
+          </button>
+        ))}
       </div>
 
-      {/* Inline Feedback Banner */}
+      {/* Feedback Banner */}
       {feedback.text && (
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.5rem',
-          padding: '0.75rem 1rem',
-          borderRadius: 'var(--radius-lg)',
-          marginBottom: '1.5rem',
-          background: feedback.type === 'success' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-          border: feedback.type === 'success' ? '1px solid rgba(16, 185, 129, 0.25)' : '1px solid rgba(239, 68, 68, 0.25)',
-          color: feedback.type === 'success' ? '#10b981' : '#ef4444',
-          fontSize: '0.86rem'
-        }}>
+        <div className={`flex items-center gap-2 p-3.5 rounded-xl text-[13px] ${
+          feedback.type === 'success'
+            ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+            : 'bg-red-50 text-red-800 border border-red-200'
+        }`}>
           {feedback.type === 'success' ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
           <span>{feedback.text}</span>
         </div>
       )}
 
-      {/* TAB 1: Academic & Career Profile */}
-      {activeTab === 'career' && (
-        <form onSubmit={handleSaveProfile} style={{ background: 'var(--card)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-2xl)', padding: '2rem', boxShadow: 'var(--shadow-sm)' }}>
-          <h3 className="type-h3" style={{ marginBottom: '1.25rem' }}>Personal & Academic Credentials</h3>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            <div className="responsive-grid-2col">
-              <div>
-                <label className="filter-label">Full Name</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                />
-              </div>
-              <div>
-                <label className="filter-label">Phone Number</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  placeholder="+1 (555) 000-0000"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                />
-              </div>
-            </div>
-
+      {/* ── TAB 1: ACADEMIC & CAREER PROFILE ─────────────────────────── */}
+      {activeTab === 'profile' && (
+        <form onSubmit={handleSaveProfile} className="bg-card border border-border rounded-2xl p-6 sm:p-7 shadow-sm space-y-6">
+          <div className="flex items-center justify-between pb-4 border-b border-border">
             <div>
-              <label className="filter-label">Professional Headline</label>
-              <input
-                type="text"
-                className="form-input"
-                placeholder="e.g. Final Year AI Scholar & Software Engineer"
-                value={headline}
-                onChange={(e) => setHeadline(e.target.value)}
-              />
+              <h2 className="text-[15px] font-semibold text-foreground">Personal & Academic Credentials</h2>
+              <p className="text-[12px] text-muted-foreground mt-0.5">Used by our deterministic matching engine to calculate fit scores.</p>
             </div>
-
-            <div className="responsive-grid-2col">
-              <div>
-                <label className="filter-label">Degree Level</label>
-                <select
-                  className="form-input"
-                  value={degreeLevel}
-                  onChange={(e) => setDegreeLevel(e.target.value)}
-                >
-                  <option value="undergrad">Undergraduate (BSc / BA / BBA)</option>
-                  <option value="masters">Master's (MSc / MA / MBA)</option>
-                  <option value="phd">Doctorate / PhD</option>
-                  <option value="fresh_grad">Recent Graduate</option>
-                </select>
-              </div>
-              <div>
-                <label className="filter-label">Degree Title</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  value={degreeTitle}
-                  onChange={(e) => setDegreeTitle(e.target.value)}
-                />
-              </div>
+            <div className="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm">
+              {fullName.charAt(0) || 'A'}
             </div>
+          </div>
 
-            <div className="responsive-grid-2col">
-              <div>
-                <label className="filter-label">Major / Field of Study</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  value={major}
-                  onChange={(e) => setMajor(e.target.value)}
-                />
-              </div>
-              <div>
-                <label className="filter-label">Cumulative GPA (Out of 4.0)</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  min="2.0"
-                  max="4.0"
-                  className="form-input"
-                  value={gpa}
-                  onChange={(e) => setGpa(e.target.value)}
-                />
-              </div>
-            </div>
-
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div>
-              <label className="filter-label">University / College</label>
-              <input
-                type="text"
-                className="form-input"
-                value={university}
-                onChange={(e) => setUniversity(e.target.value)}
+              <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">Full Name</label>
+              <input 
+                type="text" 
+                value={fullName} 
+                onChange={e => setFullName(e.target.value)} 
+                className="w-full bg-secondary/60 border border-border rounded-lg px-3.5 py-2.5 text-[13px] text-foreground outline-none focus:border-primary transition-all"
+                placeholder="Alex Kim"
               />
             </div>
 
             <div>
-              <label className="filter-label">Skills (Comma-separated)</label>
-              <input
-                type="text"
-                className="form-input"
-                placeholder="React, TypeScript, Node.js, Python, Figma"
-                value={skills}
-                onChange={(e) => setSkills(e.target.value)}
+              <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">Phone Number</label>
+              <input 
+                type="text" 
+                value={phone} 
+                onChange={e => setPhone(e.target.value)} 
+                className="w-full bg-secondary/60 border border-border rounded-lg px-3.5 py-2.5 text-[13px] text-foreground outline-none focus:border-primary transition-all"
+                placeholder="+1 (555) 000-0000"
               />
             </div>
 
-            <div className="responsive-grid-2col">
-              <div>
-                <label className="filter-label">LinkedIn Profile URL</label>
-                <input
-                  type="url"
-                  className="form-input"
-                  placeholder="https://linkedin.com/in/username"
-                  value={linkedinUrl}
-                  onChange={(e) => setLinkedinUrl(e.target.value)}
-                />
-              </div>
-              <div>
-                <label className="filter-label">GitHub or Portfolio URL</label>
-                <input
-                  type="url"
-                  className="form-input"
-                  placeholder="https://github.com/username"
-                  value={githubUrl}
-                  onChange={(e) => setGithubUrl(e.target.value)}
-                />
-              </div>
+            <div className="sm:col-span-2">
+              <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">Professional Headline</label>
+              <input 
+                type="text" 
+                value={headline} 
+                onChange={e => setHeadline(e.target.value)} 
+                className="w-full bg-secondary/60 border border-border rounded-lg px-3.5 py-2.5 text-[13px] text-foreground outline-none focus:border-primary transition-all"
+                placeholder="Senior Product Designer & Systems Architect"
+              />
             </div>
 
-            <div style={{ marginTop: '0.5rem' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', cursor: 'pointer' }}>
-                <input
-                  type="checkbox"
-                  checked={Boolean(noIelts)}
-                  onChange={(e) => setNoIelts(e.target.checked ? 1 : 0)}
-                  style={{ width: '16px', height: '16px', accentColor: 'var(--primary)' }}
-                />
-                <span style={{ fontSize: '0.88rem', color: 'var(--foreground)' }}>
-                  Prefer English Medium of Instruction waiver (No IELTS required)
-                </span>
+            <div>
+              <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">Degree Level</label>
+              <select 
+                value={degreeLevel} 
+                onChange={e => setDegreeLevel(e.target.value)}
+                className="w-full bg-secondary/60 border border-border rounded-lg px-3.5 py-2.5 text-[13px] text-foreground outline-none focus:border-primary transition-all"
+              >
+                <option value="undergrad">Undergraduate (BSc / BA / BBA)</option>
+                <option value="postgrad">Postgraduate (MSc / MA / MBA)</option>
+                <option value="doctorate">Doctorate (PhD)</option>
+                <option value="diploma">Diploma / Associate Degree</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">Degree Title</label>
+              <input 
+                type="text" 
+                value={degreeTitle} 
+                onChange={e => setDegreeTitle(e.target.value)} 
+                className="w-full bg-secondary/60 border border-border rounded-lg px-3.5 py-2.5 text-[13px] text-foreground outline-none focus:border-primary transition-all"
+                placeholder="Bachelor of Science (BSc)"
+              />
+            </div>
+
+            <div>
+              <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">Major / Field of Study</label>
+              <input 
+                type="text" 
+                value={major} 
+                onChange={e => setMajor(e.target.value)} 
+                className="w-full bg-secondary/60 border border-border rounded-lg px-3.5 py-2.5 text-[13px] text-foreground outline-none focus:border-primary transition-all"
+                placeholder="Software Engineering"
+              />
+            </div>
+
+            <div>
+              <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">Cumulative GPA (Out of 4.0)</label>
+              <input 
+                type="number" 
+                step="0.01" 
+                max="4.0" 
+                min="0"
+                value={gpa} 
+                onChange={e => setGpa(e.target.value)} 
+                className="w-full bg-secondary/60 border border-border rounded-lg px-3.5 py-2.5 text-[13px] text-foreground outline-none focus:border-primary transition-all font-mono"
+                placeholder="3.85"
+              />
+            </div>
+
+            <div className="sm:col-span-2">
+              <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">University / College</label>
+              <input 
+                type="text" 
+                value={university} 
+                onChange={e => setUniversity(e.target.value)} 
+                className="w-full bg-secondary/60 border border-border rounded-lg px-3.5 py-2.5 text-[13px] text-foreground outline-none focus:border-primary transition-all"
+                placeholder="Asia Pacific University of Technology & Innovation"
+              />
+            </div>
+
+            <div className="sm:col-span-2">
+              <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">Skills (Comma-separated)</label>
+              <input 
+                type="text" 
+                value={skills} 
+                onChange={e => setSkills(e.target.value)} 
+                className="w-full bg-secondary/60 border border-border rounded-lg px-3.5 py-2.5 text-[13px] text-foreground outline-none focus:border-primary transition-all"
+                placeholder="Figma, React, Design Systems, TypeScript, User Research"
+              />
+            </div>
+
+            <div>
+              <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">LinkedIn Profile URL</label>
+              <input 
+                type="text" 
+                value={linkedinUrl} 
+                onChange={e => setLinkedinUrl(e.target.value)} 
+                className="w-full bg-secondary/60 border border-border rounded-lg px-3.5 py-2.5 text-[13px] text-foreground outline-none focus:border-primary transition-all"
+                placeholder="https://linkedin.com/in/alexkim"
+              />
+            </div>
+
+            <div>
+              <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">GitHub / Portfolio URL</label>
+              <input 
+                type="text" 
+                value={portfolioUrl || githubUrl} 
+                onChange={e => { setPortfolioUrl(e.target.value); setGithubUrl(e.target.value); }} 
+                className="w-full bg-secondary/60 border border-border rounded-lg px-3.5 py-2.5 text-[13px] text-foreground outline-none focus:border-primary transition-all"
+                placeholder="https://alexkim.design"
+              />
+            </div>
+
+            <div className="sm:col-span-2 flex items-center gap-2.5 pt-2">
+              <input 
+                type="checkbox" 
+                id="noIeltsCheck"
+                checked={Boolean(noIelts)} 
+                onChange={e => setNoIelts(e.target.checked ? 1 : 0)}
+                className="w-4 h-4 rounded accent-primary"
+              />
+              <label htmlFor="noIeltsCheck" className="text-[13px] text-foreground font-medium cursor-pointer">
+                Prefer English Medium of Instruction waiver (No IELTS required for international fellowships)
               </label>
             </div>
+          </div>
 
-            <div style={{ marginTop: '1.25rem' }}>
-              <button
-                type="submit"
-                disabled={isSaving}
-                className="btn btn-primary"
-                style={{ height: '42px', padding: '0 1.5rem', fontWeight: '700' }}
-              >
-                {isSaving ? <RefreshCw size={16} className="spin-slow" /> : <Save size={16} />}
-                <span>Save Profile Changes</span>
-              </button>
-            </div>
+          <div className="pt-4 border-t border-border flex justify-end">
+            <button 
+              type="submit" 
+              disabled={isSaving}
+              className="flex items-center gap-2 px-6 py-2.5 bg-primary text-white text-[13px] font-semibold rounded-lg hover:opacity-95 transition-all disabled:opacity-50 shadow-sm"
+              style={{ background: '#2457FF' }}
+            >
+              {isSaving ? <RefreshCw size={14} className="animate-spin" /> : <Save size={14} />}
+              Save Profile Changes
+            </button>
           </div>
         </form>
       )}
 
-      {/* TAB 2: Search Preferences */}
-      {activeTab === 'search' && (
-        <form onSubmit={handleSaveSearchPrefs} style={{ background: 'var(--card)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-2xl)', padding: '2rem', boxShadow: 'var(--shadow-sm)' }}>
-          <h3 className="type-h3" style={{ marginBottom: '1.25rem' }}>Opportunity Match Calibration</h3>
+      {/* ── TAB 2: SEARCH PREFERENCES ────────────────────────────────── */}
+      {activeTab === 'preferences' && (
+        <form onSubmit={handleSavePreferences} className="bg-card border border-border rounded-2xl p-6 sm:p-7 shadow-sm space-y-6">
+          <div>
+            <h2 className="text-[15px] font-semibold text-foreground">Discovery & Search Filters</h2>
+            <p className="text-[12px] text-muted-foreground mt-0.5">Control which opportunities appear on your personalized dashboard feed.</p>
+          </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          <div className="space-y-4">
             <div>
-              <label className="filter-label">Target Role Titles (Comma-separated)</label>
-              <input
-                type="text"
-                className="form-input"
-                placeholder="Software Engineer, Product Manager, Brand Strategist"
-                value={targetRoles}
-                onChange={(e) => setTargetRoles(e.target.value)}
+              <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">Target Roles (Comma-separated)</label>
+              <input 
+                type="text" 
+                value={targetRoles} 
+                onChange={e => setTargetRoles(e.target.value)} 
+                className="w-full bg-secondary/60 border border-border rounded-lg px-3.5 py-2.5 text-[13px] text-foreground outline-none focus:border-primary transition-all"
+                placeholder="Product Designer, Senior Frontend Engineer, UX Researcher"
               />
             </div>
 
             <div>
-              <label className="filter-label">Target Countries & Metros (Comma-separated)</label>
-              <input
-                type="text"
-                className="form-input"
-                placeholder="Netherlands, Germany, United Kingdom, Singapore, Remote"
-                value={requiredLocations}
-                onChange={(e) => setRequiredLocations(e.target.value)}
+              <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">Preferred Locations</label>
+              <input 
+                type="text" 
+                value={requiredLocations} 
+                onChange={e => setRequiredLocations(e.target.value)} 
+                className="w-full bg-secondary/60 border border-border rounded-lg px-3.5 py-2.5 text-[13px] text-foreground outline-none focus:border-primary transition-all"
+                placeholder="Remote, San Francisco, London, Singapore"
               />
             </div>
 
-            <div className="responsive-grid-2col">
-              <div>
-                <label className="filter-label">Minimum Monthly Compensation (USD)</label>
-                <input
-                  type="number"
-                  className="form-input"
-                  placeholder="e.g. 1500"
-                  value={minSalary}
-                  onChange={(e) => setMinSalary(e.target.value)}
+            <div>
+              <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">Minimum Desired Compensation / Salary</label>
+              <input 
+                type="text" 
+                value={minSalary} 
+                onChange={e => setMinSalary(e.target.value)} 
+                className="w-full bg-secondary/60 border border-border rounded-lg px-3.5 py-2.5 text-[13px] text-foreground outline-none focus:border-primary transition-all font-mono"
+                placeholder="$120,000 / year"
+              />
+            </div>
+
+            <div className="flex flex-col gap-3 pt-2">
+              <label className="flex items-center gap-2.5 cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  checked={remoteOnly} 
+                  onChange={e => setRemoteOnly(e.target.checked)}
+                  className="w-4 h-4 rounded accent-primary"
                 />
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '0.5rem', marginTop: '1.5rem' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', cursor: 'pointer' }}>
-                  <input
-                    type="checkbox"
-                    checked={remoteOnly}
-                    onChange={(e) => setRemoteOnly(e.target.checked)}
-                    style={{ width: '16px', height: '16px', accentColor: 'var(--primary)' }}
-                  />
-                  <span style={{ fontSize: '0.88rem', color: 'var(--foreground)' }}>
-                    Only show Verified Global Remote roles
-                  </span>
-                </label>
-              </div>
-            </div>
+                <span className="text-[13px] text-foreground font-medium">Remote opportunities only</span>
+              </label>
 
-            <div style={{ marginTop: '1.25rem' }}>
-              <button
-                type="submit"
-                disabled={isSaving}
-                className="btn btn-primary"
-                style={{ height: '42px', padding: '0 1.5rem', fontWeight: '700' }}
-              >
-                {isSaving ? <RefreshCw size={16} className="spin-slow" /> : <Save size={16} />}
-                <span>Save Search Criteria</span>
-              </button>
+              <label className="flex items-center gap-2.5 cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  checked={visaSponsorship} 
+                  onChange={e => setVisaSponsorship(e.target.checked)}
+                  className="w-4 h-4 rounded accent-primary"
+                />
+                <span className="text-[13px] text-foreground font-medium">Require Visa Sponsorship / Relocation support</span>
+              </label>
             </div>
+          </div>
+
+          <div className="pt-4 border-t border-border flex justify-end">
+            <button 
+              type="submit" 
+              disabled={isSaving}
+              className="flex items-center gap-2 px-6 py-2.5 bg-primary text-white text-[13px] font-semibold rounded-lg hover:opacity-95 transition-all disabled:opacity-50 shadow-sm"
+              style={{ background: '#2457FF' }}
+            >
+              {isSaving ? <RefreshCw size={14} className="animate-spin" /> : <Save size={14} />}
+              Save Preferences
+            </button>
           </div>
         </form>
       )}
 
-      {/* TAB 3: Password & Security */}
+      {/* ── TAB 3: PASSWORD & SECURITY ───────────────────────────────── */}
       {activeTab === 'security' && (
-        <form onSubmit={handleChangePassword} style={{ background: 'var(--card)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-2xl)', padding: '2rem', boxShadow: 'var(--shadow-sm)' }}>
-          <h3 className="type-h3" style={{ marginBottom: '1.25rem' }}>Change Account Password</h3>
+        <form onSubmit={handleChangePassword} className="bg-card border border-border rounded-2xl p-6 sm:p-7 shadow-sm space-y-6">
+          <div>
+            <h2 className="text-[15px] font-semibold text-foreground">Update Password</h2>
+            <p className="text-[12px] text-muted-foreground mt-0.5">Ensure your account is protected with a strong, unique password.</p>
+          </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', maxWidth: '480px' }}>
+          <div className="space-y-4 max-w-md">
             <div>
-              <label className="filter-label">Current Password</label>
-              <input
-                type="password"
+              <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">Current Password</label>
+              <input 
+                type="password" 
                 required
-                className="form-input"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
+                value={currentPassword} 
+                onChange={e => setCurrentPassword(e.target.value)} 
+                className="w-full bg-secondary/60 border border-border rounded-lg px-3.5 py-2.5 text-[13px] text-foreground outline-none focus:border-primary transition-all"
+                placeholder="••••••••"
               />
             </div>
 
             <div>
-              <label className="filter-label">New Password (Min 6 characters)</label>
-              <input
-                type="password"
+              <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">New Password</label>
+              <input 
+                type="password" 
                 required
-                className="form-input"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
+                value={newPassword} 
+                onChange={e => setNewPassword(e.target.value)} 
+                className="w-full bg-secondary/60 border border-border rounded-lg px-3.5 py-2.5 text-[13px] text-foreground outline-none focus:border-primary transition-all"
+                placeholder="••••••••"
               />
             </div>
 
             <div>
-              <label className="filter-label">Confirm New Password</label>
-              <input
-                type="password"
+              <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block mb-1.5">Confirm New Password</label>
+              <input 
+                type="password" 
                 required
-                className="form-input"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                value={confirmPassword} 
+                onChange={e => setConfirmPassword(e.target.value)} 
+                className="w-full bg-secondary/60 border border-border rounded-lg px-3.5 py-2.5 text-[13px] text-foreground outline-none focus:border-primary transition-all"
+                placeholder="••••••••"
               />
             </div>
+          </div>
 
-            <div style={{ marginTop: '1.25rem' }}>
-              <button
-                type="submit"
-                disabled={isSaving}
-                className="btn btn-primary"
-                style={{ height: '42px', padding: '0 1.5rem', fontWeight: '700' }}
-              >
-                {isSaving ? <RefreshCw size={16} className="spin-slow" /> : <KeyRound size={16} />}
-                <span>Update Password</span>
-              </button>
-            </div>
+          <div className="pt-4 border-t border-border flex justify-end">
+            <button 
+              type="submit" 
+              disabled={isSaving}
+              className="flex items-center gap-2 px-6 py-2.5 bg-primary text-white text-[13px] font-semibold rounded-lg hover:opacity-95 transition-all disabled:opacity-50 shadow-sm"
+              style={{ background: '#2457FF' }}
+            >
+              {isSaving ? <RefreshCw size={14} className="animate-spin" /> : <KeyRound size={14} />}
+              Update Password
+            </button>
           </div>
         </form>
       )}
 
-      {/* TAB 4: Danger Zone */}
+      {/* ── TAB 4: DANGER ZONE ───────────────────────────────────────── */}
       {activeTab === 'danger' && (
-        <div style={{ background: 'var(--card)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: 'var(--radius-2xl)', padding: '2rem', boxShadow: 'var(--shadow-sm)' }}>
-          <h3 className="type-h3" style={{ color: '#ef4444', marginBottom: '0.5rem' }}>Permanently Delete Account</h3>
-          <p className="type-body" style={{ color: 'var(--muted-foreground)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
-            Once you delete your account, there is no going back. All of your personalized matches, saved opportunities, customized application kits, and CRM tracking records will be permanently removed.
-          </p>
+        <div className="bg-card border border-red-200 rounded-2xl p-6 sm:p-7 shadow-sm space-y-5">
+          <div>
+            <h2 className="text-[15px] font-semibold text-red-700">Danger Zone</h2>
+            <p className="text-[12px] text-muted-foreground mt-0.5">Actions here are irreversible. Please proceed with caution.</p>
+          </div>
 
-          <button
-            type="button"
-            onClick={handleDeleteAccount}
-            style={{
-              padding: '0.75rem 1.5rem',
-              background: '#ef4444',
-              color: '#ffffff',
-              border: 'none',
-              borderRadius: 'var(--radius-lg)',
-              fontWeight: '700',
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.5rem'
-            }}
-          >
-            <Trash2 size={16} />
-            <span>Delete My Careerly Account</span>
-          </button>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between p-4 bg-red-50/50 border border-red-200 rounded-xl">
+              <div>
+                <p className="text-[13px] font-semibold text-foreground">Sign out of all devices</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">Invalidate all active sessions across browsers.</p>
+              </div>
+              <button 
+                onClick={() => { logout(); triggerToast('Signed out of all devices.'); }}
+                className="flex items-center gap-1.5 px-4 py-2 border border-red-200 text-red-600 bg-white rounded-lg text-[12px] font-semibold hover:bg-red-50 transition-all"
+              >
+                <LogOut size={13} /> Sign Out All
+              </button>
+            </div>
+
+            <div className="flex items-center justify-between p-4 bg-red-50 border border-red-200 rounded-xl">
+              <div>
+                <p className="text-[13px] font-semibold text-red-800">Delete Account & Data</p>
+                <p className="text-[11px] text-red-600/80 mt-0.5">Permanently erase your calibrated profile, applications, and saved roles.</p>
+              </div>
+              <button 
+                onClick={() => {
+                  if (window.confirm('Are you sure you want to permanently delete your Careerly account?')) {
+                    logout();
+                  }
+                }}
+                className="flex items-center gap-1.5 px-4 py-2 bg-red-600 text-white rounded-lg text-[12px] font-semibold hover:bg-red-700 transition-all shadow-sm"
+              >
+                <Trash2 size={13} /> Delete Account
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

@@ -10,145 +10,84 @@ export default function Footer({ onNavigateTab }) {
   };
 
   return (
-    <footer className="careerly-footer">
-      <div className="footer-inner">
+    <footer className="border-t border-border bg-card text-foreground py-12 px-6" style={{ fontFamily: 'var(--font-sans)' }}>
+      <div className="max-w-[1200px] mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
         
-        {/* Top Grid */}
-        <div className="footer-grid">
-          
-          {/* Column 1: Brand Info */}
-          <div className="footer-col-brand">
-            <div className="footer-brand-header">
-              <div className="footer-logo-box">
-                <img src="/careerly-logo.png" alt="Careerly Logo" />
-              </div>
-              <span className="footer-brand-title">Careerly</span>
+        {/* Brand */}
+        <div className="space-y-3 md:col-span-2">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 bg-primary rounded-lg flex items-center justify-center text-white font-bold text-xs" style={{ background: '#2457FF' }}>
+              C
             </div>
-            
-            <p className="footer-tagline">
-              Discover. Match. Succeed.
-            </p>
-            
-            <p className="footer-desc">
-              AI-powered real-time opportunity discovery, ATS tailoring, and career intelligence. Deterministic scoring with zero fabrication.
-            </p>
-
-            <div className="footer-status-pill">
-              <span className="footer-live-dot" />
-              <span>48+ Global Scrapers & Serper Live Feed Active</span>
-            </div>
+            <span className="text-[16px] font-bold text-foreground">Careerly</span>
+            <span className="text-[10px] font-mono font-bold bg-primary/10 text-primary px-2 py-0.5 rounded-full uppercase">
+              Intelligence
+            </span>
           </div>
-
-          {/* Column 2: Platform Features */}
-          <div className="footer-col">
-            <h4 className="footer-col-heading">Platform</h4>
-            <ul className="footer-links-list">
-              <li>
-                <button type="button" onClick={() => { onNavigateTab('explore'); scrollToTop(); }}>
-                  <Compass size={13} /> Discover & Match
-                </button>
-              </li>
-              <li>
-                <button type="button" onClick={() => { onNavigateTab('cv_studio'); scrollToTop(); }}>
-                  <FileText size={13} /> AI CV Studio
-                </button>
-              </li>
-              <li>
-                <button type="button" onClick={() => { onNavigateTab('interview'); scrollToTop(); }}>
-                  <Mic size={13} /> Interview Coach
-                </button>
-              </li>
-              <li>
-                <button type="button" onClick={() => { onNavigateTab('tracker'); scrollToTop(); }}>
-                  <CheckSquare size={13} /> Application CRM
-                </button>
-              </li>
-              <li>
-                <button type="button" onClick={() => { onNavigateTab('calendar'); scrollToTop(); }}>
-                  <Calendar size={13} /> Intake Deadlines
-                </button>
-              </li>
-            </ul>
+          <p className="text-[12px] text-muted-foreground max-w-sm leading-relaxed">
+            AI-powered real-time opportunity discovery, ATS CV tailoring, and STAR interview coaching. Deterministic scoring with zero hallucinations.
+          </p>
+          <div className="flex items-center gap-2 text-[11px] text-emerald-600 font-medium">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span>48+ Global Scrapers & Serper Live Feed Active</span>
           </div>
-
-          {/* Column 3: Opportunity Sectors */}
-          <div className="footer-col">
-            <h4 className="footer-col-heading">Opportunities</h4>
-            <ul className="footer-links-list">
-              <li>
-                <button type="button" onClick={() => { onNavigateTab('explore'); scrollToTop(); }}>
-                  ⚡ Internships (KL & Remote)
-                </button>
-              </li>
-              <li>
-                <button type="button" onClick={() => { onNavigateTab('explore'); scrollToTop(); }}>
-                  💼 Graduate & Full-Time Jobs
-                </button>
-              </li>
-              <li>
-                <button type="button" onClick={() => { onNavigateTab('explore'); scrollToTop(); }}>
-                  🎓 Fully Funded Scholarships
-                </button>
-              </li>
-              <li>
-                <button type="button" onClick={() => { onNavigateTab('explore'); scrollToTop(); }}>
-                  🌐 Remote Worldwide Roles
-                </button>
-              </li>
-              <li>
-                <button type="button" onClick={() => { onNavigateTab('explore'); scrollToTop(); }}>
-                  🏷️ English Medium Waiver Roles
-                </button>
-              </li>
-            </ul>
-          </div>
-
-          {/* Column 4: Verification & Trust */}
-          <div className="footer-col">
-            <h4 className="footer-col-heading">Trust & Intelligence</h4>
-            <ul className="footer-links-list">
-              <li>
-                <span className="footer-static-item">
-                  <ShieldCheck size={13} color="var(--accent-emerald)" /> Zero-Fabrication Engine
-                </span>
-              </li>
-              <li>
-                <span className="footer-static-item">
-                  <Zap size={13} color="var(--primary)" /> 8-Factor Math Scoring
-                </span>
-              </li>
-              <li>
-                <span className="footer-static-item">
-                  <Globe size={13} color="var(--accent-blue)" /> Serper Real-Time ATS
-                </span>
-              </li>
-              <li>
-                <button type="button" onClick={() => { onNavigateTab('admin'); scrollToTop(); }}>
-                  <ShieldCheck size={13} /> Scraper Ops Dashboard
-                </button>
-              </li>
-            </ul>
-          </div>
-
         </div>
 
-        {/* Bottom Bar */}
-        <div className="footer-bottom-bar">
-          <div className="footer-copyright">
-            © {new Date().getFullYear()} <strong>Careerly</strong>. All rights reserved. Built with precision for career acceleration.
-          </div>
-
-          <button 
-            type="button" 
-            className="footer-back-to-top"
-            onClick={scrollToTop}
-            aria-label="Back to Top"
-          >
-            <span>Back to Top</span>
-            <ArrowUp size={14} />
-          </button>
+        {/* Platform Links */}
+        <div>
+          <h4 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-3">Platform</h4>
+          <ul className="space-y-2 text-[13px]">
+            <li>
+              <button onClick={() => { onNavigateTab('explore'); scrollToTop(); }} className="text-muted-foreground hover:text-primary transition-colors">
+                Discover Opportunities
+              </button>
+            </li>
+            <li>
+              <button onClick={() => { onNavigateTab('cv_studio'); scrollToTop(); }} className="text-muted-foreground hover:text-primary transition-colors">
+                AI CV Studio & ATS
+              </button>
+            </li>
+            <li>
+              <button onClick={() => { onNavigateTab('interview'); scrollToTop(); }} className="text-muted-foreground hover:text-primary transition-colors">
+                STAR Interview Coach
+              </button>
+            </li>
+            <li>
+              <button onClick={() => { onNavigateTab('tracker'); scrollToTop(); }} className="text-muted-foreground hover:text-primary transition-colors">
+                Application CRM
+              </button>
+            </li>
+          </ul>
         </div>
 
+        {/* Security & System */}
+        <div>
+          <h4 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-3">Security</h4>
+          <ul className="space-y-2 text-[13px]">
+            <li>
+              <button onClick={() => { onNavigateTab('admin'); scrollToTop(); }} className="text-muted-foreground hover:text-primary transition-colors">
+                Security Operations Center
+              </button>
+            </li>
+            <li>
+              <button onClick={() => { onNavigateTab('settings'); scrollToTop(); }} className="text-muted-foreground hover:text-primary transition-colors">
+                Academic & Profile Calibration
+              </button>
+            </li>
+            <li className="text-[12px] text-muted-foreground pt-2">
+              Protected by Multi-Tenant IDOR Isolation & OWASP ASVS 5.0
+            </li>
+          </ul>
+        </div>
+
+      </div>
+
+      <div className="max-w-[1200px] mx-auto mt-8 pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between text-[11px] text-muted-foreground gap-3">
+        <p>© 2026 Careerly Inc. All rights reserved.</p>
+        <button onClick={scrollToTop} className="flex items-center gap-1 hover:text-foreground transition-colors">
+          <span>Back to top</span>
+          <ArrowUp size={12} />
+        </button>
       </div>
     </footer>
   );

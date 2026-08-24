@@ -824,16 +824,18 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
 
         {/* TAB: SAVED OPPORTUNITIES (USER-OWNED) */}
         {activeTab === 'saved' && (
-          <div className="content-container" style={{ maxWidth: '1280px', margin: '2rem auto', padding: '0 1.5rem' }}>
-            <div style={{ marginBottom: '2rem' }}>
-              <h1 className="type-h1" style={{ fontSize: '1.85rem' }}>Saved Opportunities ({savedOppsList.length})</h1>
-              <p className="type-body" style={{ marginTop: '0.2rem', color: 'var(--muted-foreground)' }}>
-                Your private bookmarks scored against your career profile.
+          <div className="p-6 sm:p-8 max-w-[1280px] mx-auto space-y-6" style={{ fontFamily: 'var(--font-sans)' }}>
+            <div>
+              <h1 className="font-display text-[26px] sm:text-[30px] font-bold text-foreground leading-tight">
+                Saved Opportunities ({savedOppsList.length})
+              </h1>
+              <p className="text-[13px] text-muted-foreground mt-1">
+                Your private bookmarks calibrated against your career profile.
               </p>
             </div>
 
             {savedOppsList.length > 0 ? (
-              <div className="responsive-grid-3col">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 {savedOppsList.map(opp => (
                   <OpportunityCard
                     key={opp.id || opp.opportunity_id}
@@ -846,13 +848,19 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
                 ))}
               </div>
             ) : (
-              <div style={{ textAlign: 'center', padding: '4rem 1.5rem', background: 'var(--card)', borderRadius: 'var(--radius-2xl)', border: '1px solid var(--border-default)' }}>
-                <Bookmark size={36} color="var(--primary)" style={{ marginBottom: '0.85rem' }} />
-                <h3 className="type-h3">No saved opportunities yet</h3>
-                <p className="type-body" style={{ marginTop: '0.35rem', marginBottom: '1.5rem' }}>
+              <div className="bg-card border border-border rounded-2xl p-12 text-center max-w-md mx-auto space-y-4 shadow-sm">
+                <div className="w-12 h-12 rounded-2xl bg-secondary flex items-center justify-center text-primary mx-auto">
+                  <Bookmark size={24} />
+                </div>
+                <h3 className="font-display text-[18px] font-bold text-foreground">No saved opportunities yet</h3>
+                <p className="text-[13px] text-muted-foreground leading-relaxed">
                   Explore the catalog and bookmark opportunities you'd like to track or prepare applications for.
                 </p>
-                <button onClick={() => navigate('/opportunities')} className="action-btn-primary">
+                <button 
+                  onClick={() => navigate('/opportunities')}
+                  className="px-5 py-2.5 bg-primary text-white text-[13px] font-semibold rounded-lg hover:opacity-95 transition-all shadow-sm"
+                  style={{ background: '#2457FF' }}
+                >
                   Browse Opportunities Catalog
                 </button>
               </div>
@@ -862,105 +870,64 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
 
         {/* TAB: APPLICATION TRACKER CRM BOARD (USER-OWNED) */}
         {activeTab === 'tracker' && (
-          <div className="tab-content-anim content-container" style={{ marginTop: '2rem', maxWidth: '1280px', padding: '0 1.5rem' }}>
-            <div style={{ marginBottom: '1.75rem' }}>
-              <h2 style={{ fontSize: '1.65rem', fontWeight: '900', color: 'var(--foreground)', marginBottom: '0.3rem' }}>
-                Application Pipeline CRM
-              </h2>
-              <p style={{ color: 'var(--muted-foreground)', fontSize: '0.9rem' }}>
-                Manage your active applications across Saved, Preparing, Applied, Interview, and Offer stages.
-              </p>
+          <div className="p-6 sm:p-8 max-w-[1400px] mx-auto space-y-6" style={{ fontFamily: 'var(--font-sans)' }}>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h1 className="font-display text-[26px] sm:text-[30px] font-bold text-foreground leading-tight">
+                  Application Pipeline (CRM)
+                </h1>
+                <p className="text-[13px] text-muted-foreground mt-1">
+                  Manage your active applications across Saved, Preparing, Applied, Interview, and Offer stages.
+                </p>
+              </div>
+              <button 
+                onClick={() => navigate('/opportunities')}
+                className="flex items-center gap-1.5 px-4 py-2 bg-primary text-white text-[13px] font-semibold rounded-lg hover:opacity-95 transition-all self-start sm:self-auto shadow-sm"
+                style={{ background: '#2457FF' }}
+              >
+                <Compass size={14} /> Add Opportunities
+              </button>
             </div>
 
-            {applicationsList.length === 0 && (
-              <div style={{ background: 'var(--card)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-xl)', padding: '1.25rem 1.5rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                  <div style={{ width: '36px', height: '36px', borderRadius: 'var(--radius-md)', background: 'var(--primary-subtle)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <CheckSquare size={18} />
-                  </div>
-                  <div>
-                    <div style={{ fontWeight: '700', fontSize: '0.92rem', color: 'var(--foreground)' }}>Your CRM pipeline is ready</div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--muted-foreground)' }}>Save opportunities or launch application prep kits to track your multi-stage progress here.</div>
-                  </div>
-                </div>
-                <button onClick={() => navigate('/opportunities')} className="action-btn-primary" style={{ fontSize: '0.82rem', padding: '0.45rem 1rem' }}>
-                  Discover Opportunities
-                </button>
-              </div>
-            )}
-
-            <div className="crm-board">
+            {/* 6-Column Kanban Board */}
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-3.5 items-start">
               {[
                 { key: 'saved', label: 'Saved', color: '#94a3b8' },
-                { key: 'preparing', label: 'Preparing', color: 'var(--accent-purple)' },
-                { key: 'applied', label: 'Applied', color: 'var(--accent-blue)' },
-                { key: 'interview', label: 'Interview', color: 'var(--accent-amber)' },
-                { key: 'offer', label: 'Offer', color: 'var(--accent-emerald)' },
-                { key: 'rejected', label: 'Archived', color: 'var(--accent-danger)' }
+                { key: 'preparing', label: 'Preparing', color: '#F59E0B' },
+                { key: 'applied', label: 'Applied', color: '#2457FF' },
+                { key: 'interview', label: 'Interview', color: '#7C3AED' },
+                { key: 'offer', label: 'Offer', color: '#18A66A' },
+                { key: 'rejected', label: 'Archived', color: '#EF4444' }
               ].map(({ key: st, label, color }) => {
                 const colApps = applicationsList.filter(a => a.stage === st || (st === 'saved' && !a.stage));
                 return (
-                  <div key={st} className="crm-column">
-                    <div className="crm-col-header">
-                      <div className="crm-col-title">
-                        <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: color }} />
-                        <span>{label}</span>
+                  <div key={st} className="bg-secondary/40 border border-border rounded-xl p-3 flex flex-col min-h-[300px]">
+                    <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-border">
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-foreground">{label}</span>
                       </div>
-                      <span className="crm-col-count">{colApps.length}</span>
+                      <span className="text-[11px] font-mono font-bold bg-card border border-border px-1.5 py-0.5 rounded text-foreground">
+                        {colApps.length}
+                      </span>
                     </div>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+                    <div className="space-y-2 flex-1">
                       {colApps.map(app => (
-                        <div key={app.id} className="crm-card">
-                          <div style={{ fontWeight: '700', color: 'var(--text-primary)', fontSize: '0.88rem', marginBottom: '0.2rem', lineHeight: '1.3' }}>
-                            {app.title}
-                          </div>
-                          <div style={{ fontSize: '0.76rem', color: 'var(--text-muted)', marginBottom: '0.65rem' }}>
-                            {app.organization || app.company || 'Enterprise'}
-                          </div>
+                        <div key={app.id || app.opportunity_id} className="bg-card border border-border rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow space-y-2">
+                          <p className="text-[12px] font-semibold text-foreground leading-snug line-clamp-2">{app.title}</p>
+                          <p className="text-[10px] text-muted-foreground truncate">{app.organization || app.company || 'Enterprise'}</p>
                           
-                          <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap', marginBottom: '0.65rem' }}>
-                            {st !== 'applied' && (
-                              <button 
-                                className="btn btn-outline"
-                                style={{ fontSize: '0.72rem', height: '26px', padding: '0 0.5rem' }}
-                                onClick={() => handleUpdateAppStage(app.opportunity_id || app.id, 'applied')}
-                              >
-                                → Applied
-                              </button>
-                            )}
-                            {st !== 'interview' && (
-                              <button 
-                                className="btn btn-outline"
-                                style={{ fontSize: '0.72rem', height: '26px', padding: '0 0.5rem' }}
-                                onClick={() => handleUpdateAppStage(app.opportunity_id || app.id, 'interview')}
-                              >
-                                → Interview
-                              </button>
-                            )}
-                            {st !== 'offer' && (
-                              <button 
-                                className="btn btn-outline"
-                                style={{ fontSize: '0.72rem', height: '26px', padding: '0 0.5rem' }}
-                                onClick={() => handleUpdateAppStage(app.opportunity_id || app.id, 'offer')}
-                              >
-                                → Offer
-                              </button>
-                            )}
-                          </div>
-
-                          <div style={{ display: 'flex', gap: '0.45rem', paddingTop: '0.5rem', borderTop: '1px solid var(--border-subtle)' }}>
+                          <div className="flex items-center gap-1 pt-1.5 border-t border-border/50">
                             <button 
-                              className="btn btn-emerald"
-                              style={{ fontSize: '0.75rem', height: '28px', padding: '0 0.65rem', flex: 1 }}
                               onClick={() => setPrepareAppOp(app)}
+                              className="flex-1 py-1 bg-primary/10 text-primary text-[10px] font-semibold rounded hover:bg-primary hover:text-white transition-all text-center"
                             >
-                              <Zap size={12} /> Prep Kit
+                              Prep Kit
                             </button>
                             <button 
-                              className="btn btn-outline"
-                              style={{ fontSize: '0.75rem', height: '28px', padding: '0 0.65rem' }}
                               onClick={() => { setDrawerOp(app); navigate(`/opportunities/${app.opportunity_id || app.id}`); }}
+                              className="px-2 py-1 border border-border text-[10px] text-foreground font-medium rounded hover:bg-secondary transition-all"
                             >
                               Details
                             </button>
@@ -997,49 +964,51 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
 
         {/* TAB: DEADLINES TIMELINE */}
         {activeTab === 'calendar' && (
-          <div className="content-container" style={{ maxWidth: '860px', margin: '2rem auto', padding: '0 1rem' }}>
-            <div style={{ marginBottom: '1.75rem' }}>
-              <h2 style={{ fontSize: '1.5rem', fontWeight: '900', color: 'var(--foreground)', marginBottom: '0.3rem' }}>
+          <div className="p-6 sm:p-8 max-w-[1000px] mx-auto space-y-6" style={{ fontFamily: 'var(--font-sans)' }}>
+            <div>
+              <h1 className="font-display text-[26px] sm:text-[30px] font-bold text-foreground leading-tight">
                 Application Deadlines Timeline
-              </h2>
-              <p style={{ color: 'var(--muted-foreground)', fontSize: '0.9rem' }}>
+              </h1>
+              <p className="text-[13px] text-muted-foreground mt-1">
                 Chronological schedule of intake cut-offs and verified submission deadlines.
               </p>
             </div>
 
-            {opportunities.length > 0 ? (
-              opportunities.slice(0, 15).map(op => {
+            <div className="space-y-3">
+              {opportunities.slice(0, 15).map(op => {
                 const isRolling = !op.deadline_utc || op.deadline_utc.toLowerCase().includes('open') || op.deadline_utc.toLowerCase().includes('rolling');
                 return (
-                  <div key={op.id} className="bento-card" style={{ marginBottom: '0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
-                    <div>
-                      <div style={{ fontSize: '0.76rem', color: isRolling ? 'var(--accent-emerald)' : 'var(--accent-amber)', fontWeight: '700', marginBottom: '0.2rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                        <Clock size={13} /> {isRolling ? 'Rolling Intake / Open Submissions' : `Submission Deadline: ${op.deadline_utc}`}
+                  <div key={op.id} className="bg-card border border-border rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm hover:border-primary/40 transition-all">
+                    <div className="space-y-1 min-w-0">
+                      <div className="flex items-center gap-1.5 text-[11px] font-semibold">
+                        <span className={`w-2 h-2 rounded-full ${isRolling ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'}`} />
+                        <span className={isRolling ? 'text-emerald-700' : 'text-amber-700'}>
+                          {isRolling ? 'Rolling Intake / Open Submissions' : `Submission Deadline: ${op.deadline_utc}`}
+                        </span>
                       </div>
-                      <div style={{ fontWeight: '700', fontSize: '0.96rem', color: 'var(--text-primary)' }}>{op.title}</div>
-                      <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>{op.organization || op.company || 'Enterprise'} • {op.location_country || 'Global'}</div>
+                      <h3 className="text-[14px] font-semibold text-foreground truncate">{op.title}</h3>
+                      <p className="text-[11px] text-muted-foreground">{op.organization || op.company || 'Enterprise'} · {op.location_country || 'Global'}</p>
                     </div>
 
-                    <div style={{ display: 'flex', gap: '0.5rem' }}>
-                      <button className="btn btn-emerald" style={{ fontSize: '0.78rem', height: '32px' }} onClick={() => setPrepareAppOp(op)}>
-                        <Zap size={13} /> Prepare Kit
+                    <div className="flex items-center gap-2 self-end sm:self-center flex-shrink-0">
+                      <button 
+                        onClick={() => setPrepareAppOp(op)}
+                        className="px-3.5 py-1.5 bg-primary text-white text-[12px] font-semibold rounded-lg hover:opacity-95 transition-all shadow-sm"
+                        style={{ background: '#2457FF' }}
+                      >
+                        Prepare Kit
                       </button>
-                      <button className="btn btn-outline" style={{ fontSize: '0.78rem', height: '32px' }} onClick={() => { setDrawerOp(op); navigate(`/opportunities/${op.id}`); }}>
+                      <button 
+                        onClick={() => { setDrawerOp(op); navigate(`/opportunities/${op.id}`); }}
+                        className="px-3.5 py-1.5 border border-border text-foreground text-[12px] font-medium rounded-lg hover:bg-secondary transition-all"
+                      >
                         Inspect
                       </button>
                     </div>
                   </div>
                 );
-              })
-            ) : (
-              <div style={{ textAlign: 'center', padding: '3.5rem 1.5rem', background: 'var(--card)', borderRadius: 'var(--radius-2xl)', border: '1px solid var(--border-default)' }}>
-                <Calendar size={36} color="var(--primary)" style={{ marginBottom: '0.85rem' }} />
-                <h3 className="type-h3">No upcoming deadlines found</h3>
-                <p className="type-body" style={{ marginTop: '0.35rem' }}>
-                  Explore active opportunities to track upcoming deadlines and intake schedules.
-                </p>
-              </div>
-            )}
+              })}
+            </div>
           </div>
         )}
 
@@ -1054,24 +1023,6 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
         )}
 
       </main>
-
-        {/* Modern Careerly Footer (Only for non-landing views) */}
-        {activeTab !== 'landing' && (
-          <Footer onNavigateTab={(tab) => { 
-            const routes = {
-              explore: '/opportunities',
-              saved: '/saved',
-              tracker: '/applications',
-              cv_studio: '/cv-studio',
-              interview: '/interview',
-              calendar: '/calendar',
-              settings: '/settings',
-              admin: '/admin/security'
-            };
-            navigate(routes[tab] || '/'); 
-            window.scrollTo({ top: 0, behavior: 'smooth' }); 
-          }} />
-        )}
 
       </div> {/* saas-content-canvas */}
     </div> {/* saas-main */}
