@@ -1,8 +1,8 @@
 import nodemailer from 'nodemailer';
 
-export const PRIMARY_SENDER_EMAIL = 'ayarianas79@gmail.com';
+export const PRIMARY_SENDER_EMAIL = process.env.SMTP_USER || 'ayarianas79@gmail.com';
 const SMTP_USER = process.env.SMTP_USER || PRIMARY_SENDER_EMAIL;
-const SMTP_PASS = process.env.SMTP_PASS || 'nmaanvradoafeuqt';
+const SMTP_PASS = process.env.SMTP_PASS || '';
 const SMTP_HOST = process.env.SMTP_HOST || 'smtp.gmail.com';
 const SMTP_PORT = Number(process.env.SMTP_PORT) || 465;
 const SMTP_SECURE = process.env.SMTP_SECURE !== 'false';

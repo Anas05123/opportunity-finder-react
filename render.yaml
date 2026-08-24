@@ -23,7 +23,7 @@ services:
       - key: SMTP_USER
         value: ayarianas79@gmail.com
       - key: SMTP_PASS
-        value: nmaanvradoafeuqt
+        sync: false
       - key: VITE_GOOGLE_CLIENT_ID
         value: 483326712949-d6d0p5rg49a32bu80i443293kk916u8p.apps.googleusercontent.com
       - key: GEMINI_API_KEY
