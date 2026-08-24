@@ -403,378 +403,190 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
     admin: 'Enterprise Security Operations'
   };
 
+  const navCls = (tabKey) => {
+    const isActive = activeTab === tabKey;
+    return `w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-medium transition-all text-left ${
+      isActive 
+        ? 'bg-primary text-primary-foreground font-semibold shadow-sm' 
+        : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+    }`;
+  };
+
+  if (activeTab === 'landing') {
+    return (
+      <div className="min-h-screen bg-background overflow-x-hidden" style={{ fontFamily: 'var(--font-sans)' }}>
+        <PublicLandingView 
+          onOpenAuth={(mode) => navigate(mode === 'signup' ? '/register' : '/login')}
+          sampleOpportunities={opportunities}
+          onSelectOpportunity={(op) => { setDrawerOp(op); navigate(`/opportunities/${op.id}`); }}
+          onPrepareKit={(op) => setPrepareAppOp(op)}
+          onSaveOpportunity={(opId) => toggleSaveApp(opId)}
+          isSaved={isOpportunitySaved}
+          triggerToast={triggerToast}
+        />
+        
+        {/* Drawers and Modals if active */}
+        {drawerOp && (
+          <OpportunityDrawer 
+            opportunity={drawerOp}
+            onClose={() => { setDrawerOp(null); if (routeOpportunityId) navigate('/opportunities'); }}
+            onToggleSave={(id) => toggleSaveApp(id)}
+            isSaved={isOpportunitySaved(drawerOp.id)}
+            onAutoApply={(op) => { setPrepareAppOp(op); setDrawerOp(null); }}
+            onEmailOutreach={(op) => { setEmailOutreachOp(op); setDrawerOp(null); }}
+            triggerToast={triggerToast}
+          />
+        )}
+      </div>
+    );
+  }
+
   return (
-    <div className="saas-workspace">
+    <div className="flex h-screen bg-background overflow-hidden" style={{ fontFamily: 'var(--font-sans)' }}>
       {/* 1. SIDEBAR (AUTHENTICATED) */}
       {isAuthenticated && (
-        <>
-          {mobileMenuOpen && (
-            <div className="sidebar-backdrop" onClick={() => setMobileMenuOpen(false)} />
-          )}
+        <aside className="w-56 flex-shrink-0 h-screen flex flex-col border-r border-border bg-card">
+          {/* Header / Brand */}
+          <div className="h-14 flex items-center px-4 border-b border-border">
+            <Link to="/dashboard" className="flex items-center gap-2.5 no-underline">
+              <div className="w-7 h-7 bg-primary rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm" style={{ background: '#2457FF' }}>
+                <span className="text-white text-[12px] font-bold leading-none">C</span>
+              </div>
+              <span className="text-[15px] font-semibold text-foreground tracking-tight">Careerly</span>
+            </Link>
+          </div>
 
-          <aside className={`saas-sidebar ${mobileMenuOpen ? 'mobile-open' : ''}`}>
-            {/* Sidebar Header */}
-            <div className="sidebar-header">
-              <Link to="/dashboard" className="sidebar-brand">
-                <div className="sidebar-logo">
-                  <img src="/careerly-logo.png" alt="Careerly Logo" />
-                </div>
-                <div className="sidebar-brand-name">
-                  Careerly
-                  <span className="sidebar-plan-tag">SAAS</span>
-                </div>
-              </Link>
+          {/* Navigation Links */}
+          <nav className="flex-1 p-3 overflow-y-auto space-y-1">
+            <div className="space-y-0.5">
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-2.5 py-1">Workspace</p>
+              <button onClick={() => navigate('/dashboard')} className={navCls('dashboard')}>
+                <LayoutGrid size={15} /> Dashboard
+              </button>
+              <button onClick={() => navigate('/opportunities')} className={navCls('explore')}>
+                <Compass size={15} /> Discover
+              </button>
+              <button onClick={() => navigate('/applications')} className={navCls('tracker')}>
+                <CheckSquare size={15} /> Applications
+                {applicationsList.length > 0 && (
+                  <span className="ml-auto text-[10px] font-mono font-bold bg-secondary text-foreground px-1.5 py-0.5 rounded">
+                    {applicationsList.length}
+                  </span>
+                )}
+              </button>
+            </div>
 
-              {mobileMenuOpen && (
-                <button 
-                  className="icon-button" 
-                  onClick={() => setMobileMenuOpen(false)}
-                  style={{ width: '28px', height: '28px' }}
-                >
-                  <X size={15} />
+            <div className="pt-2.5 border-t border-border mt-2 space-y-0.5">
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-2.5 py-1">Tools</p>
+              <button onClick={() => navigate('/saved')} className={navCls('saved')}>
+                <Bookmark size={15} /> Saved
+                {savedOppsList.length > 0 && (
+                  <span className="ml-auto text-[10px] font-mono font-bold bg-secondary text-foreground px-1.5 py-0.5 rounded">
+                    {savedOppsList.length}
+                  </span>
+                )}
+              </button>
+              <button onClick={() => navigate('/cv-studio')} className={navCls('cv_studio')}>
+                <FileText size={15} /> CV Studio
+              </button>
+              <button onClick={() => navigate('/interview')} className={navCls('interview')}>
+                <Mic size={15} /> Interview Coach
+              </button>
+              <button onClick={() => navigate('/calendar')} className={navCls('calendar')}>
+                <Calendar size={15} /> Calendar
+              </button>
+            </div>
+
+            <div className="pt-2.5 border-t border-border mt-2 space-y-0.5">
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-2.5 py-1">Account</p>
+              <button onClick={() => navigate('/settings')} className={navCls('settings')}>
+                <User size={15} /> Profile & Settings
+              </button>
+              {isAdmin && (
+                <button onClick={() => navigate('/admin/security')} className={navCls('admin')}>
+                  <ShieldCheck size={15} /> Security Ops
                 </button>
               )}
             </div>
+          </nav>
 
-            {/* Sidebar Navigation Sections */}
-            <div className="sidebar-content">
-              
-              {/* WORKSPACE */}
-              <div>
-                <div className="sidebar-section-title">Workspace</div>
-                <div className="sidebar-nav-list">
-                  <button 
-                    className={`sidebar-nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
-                    onClick={() => { navigate('/dashboard'); setMobileMenuOpen(false); }}
-                  >
-                    <div className="sidebar-nav-item-left">
-                      <Sparkles size={17} />
-                      <span>Overview</span>
-                    </div>
-                  </button>
-
-                  <button 
-                    className={`sidebar-nav-item ${activeTab === 'explore' ? 'active' : ''}`}
-                    onClick={() => { navigate('/opportunities'); setMobileMenuOpen(false); }}
-                  >
-                    <div className="sidebar-nav-item-left">
-                      <Compass size={17} />
-                      <span>Opportunities</span>
-                    </div>
-                  </button>
-
-                  <button 
-                    className={`sidebar-nav-item ${activeTab === 'saved' ? 'active' : ''}`}
-                    onClick={() => { navigate('/saved'); setMobileMenuOpen(false); }}
-                  >
-                    <div className="sidebar-nav-item-left">
-                      <Bookmark size={17} />
-                      <span>Saved</span>
-                    </div>
-                    {savedOppsList.length > 0 && (
-                      <span className="sidebar-badge">{savedOppsList.length}</span>
-                    )}
-                  </button>
-
-                  <button 
-                    className={`sidebar-nav-item ${activeTab === 'tracker' ? 'active' : ''}`}
-                    onClick={() => { navigate('/applications'); setMobileMenuOpen(false); }}
-                  >
-                    <div className="sidebar-nav-item-left">
-                      <CheckSquare size={17} />
-                      <span>Applications</span>
-                    </div>
-                    {applicationsList.length > 0 && (
-                      <span className="sidebar-badge">{applicationsList.length}</span>
-                    )}
-                  </button>
-
-                  <button 
-                    className={`sidebar-nav-item ${activeTab === 'calendar' ? 'active' : ''}`}
-                    onClick={() => { navigate('/calendar'); setMobileMenuOpen(false); }}
-                  >
-                    <div className="sidebar-nav-item-left">
-                      <Calendar size={17} />
-                      <span>Deadlines</span>
-                    </div>
-                  </button>
-                </div>
-              </div>
-
-              {/* CAREER TOOLS */}
-              <div>
-                <div className="sidebar-section-title">Career Tools</div>
-                <div className="sidebar-nav-list">
-                  <button 
-                    className={`sidebar-nav-item ${activeTab === 'cv_studio' ? 'active' : ''}`}
-                    onClick={() => { navigate('/cv-studio'); setMobileMenuOpen(false); }}
-                  >
-                    <div className="sidebar-nav-item-left">
-                      <FileText size={17} />
-                      <span>CV Studio & ATS</span>
-                    </div>
-                  </button>
-
-                  <button 
-                    className={`sidebar-nav-item ${activeTab === 'interview' ? 'active' : ''}`}
-                    onClick={() => { navigate('/interview'); setMobileMenuOpen(false); }}
-                  >
-                    <div className="sidebar-nav-item-left">
-                      <Mic size={17} />
-                      <span>Interview Coach</span>
-                    </div>
-                  </button>
-                </div>
-              </div>
-
-              {/* ACCOUNT & SECURITY */}
-              <div>
-                <div className="sidebar-section-title">Account</div>
-                <div className="sidebar-nav-list">
-                  <button 
-                    className={`sidebar-nav-item ${activeTab === 'settings' ? 'active' : ''}`}
-                    onClick={() => { navigate('/settings'); setMobileMenuOpen(false); }}
-                  >
-                    <div className="sidebar-nav-item-left">
-                      <Settings size={17} />
-                      <span>Profile & Settings</span>
-                    </div>
-                  </button>
-
-                  {isAdmin && (
-                    <button 
-                      className={`sidebar-nav-item ${activeTab === 'admin' ? 'active' : ''}`}
-                      onClick={() => { navigate('/admin/security'); setMobileMenuOpen(false); }}
-                    >
-                      <div className="sidebar-nav-item-left">
-                        <ShieldCheck size={17} color="var(--primary)" />
-                        <span>Security Operations</span>
-                      </div>
-                    </button>
-                  )}
-                </div>
-              </div>
-
-            </div>
-
-            {/* Sidebar User Footer */}
-            <div className="sidebar-footer">
-              <div 
-                className="sidebar-user-pill"
-                onClick={() => { navigate('/settings'); setMobileMenuOpen(false); }}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    navigate('/settings');
-                    setMobileMenuOpen(false);
-                  }
-                }}
-                title="Account Settings"
-                style={{ cursor: 'pointer' }}
-              >
-                <div className="sidebar-user-avatar">
+          {/* User Profile Footer */}
+          <div className="p-2.5 border-t border-border">
+            <div className="flex items-center justify-between p-2 rounded-lg bg-secondary/50">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-[11px] font-bold flex-shrink-0" style={{ background: '#2457FF' }}>
                   {userInitial}
                 </div>
-                <div className="sidebar-user-meta">
-                  <span className="sidebar-user-name">{displayName}</span>
-                  <span className="sidebar-user-email">{displayEmail}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[12px] font-semibold text-foreground truncate">{displayName}</p>
+                  <p className="text-[10px] text-muted-foreground truncate">{displayEmail}</p>
                 </div>
               </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+              <div className="flex items-center gap-0.5">
                 <button 
-                  className="icon-button" 
                   onClick={toggleTheme} 
-                  title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-                  style={{ width: '28px', height: '28px' }}
+                  className="w-7 h-7 flex items-center justify-center rounded text-muted-foreground hover:text-foreground"
+                  title="Toggle Theme"
                 >
-                  {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
+                  {theme === 'dark' ? <Sun size={13} /> : <Moon size={13} />}
                 </button>
                 <button 
-                  className="icon-button" 
                   onClick={() => { logout(); navigate('/login'); triggerToast('Signed out of Careerly.'); }} 
+                  className="w-7 h-7 flex items-center justify-center rounded text-red-500 hover:bg-red-50"
                   title="Sign Out"
-                  style={{ width: '28px', height: '28px', color: '#ef4444' }}
                 >
-                  <LogOut size={14} />
+                  <LogOut size={13} />
                 </button>
               </div>
             </div>
-
-          </aside>
-        </>
+          </div>
+        </aside>
       )}
 
       {/* 2. MAIN WORKSPACE CANVAS */}
-      <div className="saas-main">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         
-        {/* Top Header Bar (Only rendered for non-landing views) */}
-        {activeTab !== 'landing' && (
-          !isAuthenticated ? (
-            <>
-              <header className="brainwave-navbar">
-                <Link to="/" style={{ textDecoration: 'none' }}>
-                  <div className="sidebar-brand" style={{ cursor: 'pointer' }}>
-                    <div className="sidebar-logo">
-                      <img src="/careerly-logo.png" alt="Careerly Logo" />
-                    </div>
-                    <div className="sidebar-brand-name" style={{ fontSize: '1.15rem', fontWeight: '800', letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>
-                      Careerly
-                      <span className="sidebar-plan-tag" style={{ marginLeft: '0.4rem' }}>
-                        INTELLIGENCE
-                      </span>
-                    </div>
-                  </div>
-                </Link>
+        {/* Top Header Bar */}
+        <header className="h-14 flex items-center justify-between px-6 border-b border-border bg-card flex-shrink-0">
+          <div>
+            <h1 className="text-[15px] font-semibold text-foreground leading-none">{tabTitles[activeTab] || 'Workspace'}</h1>
+            <p className="text-[11px] text-muted-foreground mt-1">Calibrated Career Intelligence</p>
+          </div>
 
-                {/* Modern Centered Navigation Links */}
-                <nav className="brainwave-nav-center">
-                  <Link to="/opportunities" className="brainwave-nav-link" style={{ textDecoration: 'none' }}>
-                    Browse Catalog
-                  </Link>
-                  <button 
-                    className="brainwave-nav-link" 
-                    onClick={() => {
-                      navigate('/');
-                      setTimeout(() => {
-                        const el = document.getElementById('features-section');
-                        if (el) el.scrollIntoView({ behavior: 'smooth' });
-                      }, 100);
-                    }}
-                  >
-                    Features
-                  </button>
-                  <Link to="/register" className="brainwave-nav-link" style={{ textDecoration: 'none' }}>
-                    AI CV Studio
-                  </Link>
-                  <Link to="/register" className="brainwave-nav-link" style={{ textDecoration: 'none' }}>
-                    STAR Coach
-                  </Link>
-                </nav>
-
-                {/* Right Side Actions & Mobile Menu Toggle */}
-                <div className="brainwave-nav-actions">
-                  <button 
-                    className="icon-button" 
-                    onClick={toggleTheme} 
-                    aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-                    title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-                    style={{ width: '40px', height: '40px' }}
-                  >
-                    {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-                  </button>
-
-                  <Link
-                    to="/login"
-                    className="brainwave-btn-outline brainwave-desktop-only"
-                    style={{ height: '42px', padding: '0 1.4rem', fontSize: '0.86rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
-                  >
-                    Sign In
-                  </Link>
-
-                  <Link
-                    to="/register"
-                    className="brainwave-btn-glow brainwave-nav-cta"
-                    style={{ height: '42px', padding: '0 1.4rem', fontSize: '0.86rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
-                  >
-                    <span>Get Started</span>
-                    <ArrowRight size={15} className="btn-arrow-icon" />
-                  </Link>
-
-                  <button
-                    className="brainwave-hamburger-btn"
-                    onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                    aria-label="Toggle Navigation"
-                  >
-                    {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
-                  </button>
-                </div>
-              </header>
-
-              {/* Mobile Navigation Dropdown */}
-              {mobileMenuOpen && (
-                <div className="brainwave-mobile-menu">
-                  <div className="brainwave-mobile-nav-list">
-                    <Link to="/opportunities" className="brainwave-mobile-nav-item" onClick={() => setMobileMenuOpen(false)}>
-                      Browse Catalog
-                    </Link>
-                    <Link to="/login" className="brainwave-mobile-nav-item" onClick={() => setMobileMenuOpen(false)}>
-                      AI CV Studio
-                    </Link>
-                    <Link to="/login" className="brainwave-mobile-nav-item" onClick={() => setMobileMenuOpen(false)}>
-                      STAR Coach
-                    </Link>
-                  </div>
-                  <div className="brainwave-mobile-menu-actions">
-                    <Link
-                      to="/login"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="brainwave-btn-outline"
-                      style={{ width: '100%', height: '44px', justifyContent: 'center', textDecoration: 'none' }}
-                    >
-                      Sign In
-                    </Link>
-                    <Link
-                      to="/register"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="brainwave-btn-glow"
-                      style={{ width: '100%', height: '44px', justifyContent: 'center', textDecoration: 'none' }}
-                    >
-                      Get Started Free
-                    </Link>
-                  </div>
-                </div>
-              )}
-            </>
-          ) : (
-            <header className="saas-header">
-              <div className="saas-header-left">
-                <button 
-                  className="saas-hamburger-trigger icon-button" 
-                  onClick={() => setMobileMenuOpen(true)}
-                  aria-label="Open Navigation Menu"
-                >
-                  <Menu size={18} />
-                </button>
-
-                <nav className="saas-breadcrumbs" aria-label="Breadcrumb">
-                  <span className="breadcrumb-root">Careerly</span>
-                  <span className="breadcrumb-separator">/</span>
-                  <span className="breadcrumb-active active">{tabTitles[activeTab] || 'Workspace'}</span>
-                </nav>
+          <div className="flex items-center gap-3">
+            {activeTab === 'explore' && (
+              <div className="relative hidden sm:block">
+                <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <input 
+                  placeholder="Search opportunities..." 
+                  className="bg-secondary border border-border rounded-lg pl-8 pr-3 py-1.5 text-[12px] text-foreground placeholder-muted-foreground outline-none focus:border-primary w-48 sm:w-64 transition-all"
+                  onClick={() => {
+                    if (feedTopRef.current) feedTopRef.current.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                />
               </div>
+            )}
 
-              <div className="saas-header-right">
-                {activeTab === 'explore' && (
-                  <button 
-                    className="saas-command-trigger"
-                    onClick={() => {
-                      if (feedTopRef.current) feedTopRef.current.scrollIntoView({ behavior: 'smooth' });
-                    }}
-                  >
-                    <Search size={14} />
-                    <span>Search opportunities...</span>
-                    <span className="saas-kbd">⌘K</span>
-                  </button>
-                )}
+            <button 
+              onClick={toggleTheme} 
+              className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary transition-colors"
+              aria-label="Toggle Theme"
+            >
+              {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
+            </button>
 
-                <button 
-                  className="icon-button" 
-                  onClick={toggleTheme} 
-                  aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-                  title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-                >
-                  {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-                </button>
-              </div>
-            </header>
-          )
-        )}
+            <div 
+              className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-[11px] font-bold cursor-pointer shadow-sm"
+              style={{ background: '#2457FF' }}
+              onClick={() => navigate('/settings')}
+            >
+              {userInitial}
+            </div>
+          </div>
+        </header>
 
         {/* Content Container */}
-        <div className={activeTab === 'landing' ? "landing-content-canvas" : "saas-content-canvas"}>
+        <div className="flex-1 overflow-y-auto bg-background">
           <main>
 
         {/* TAB: PUBLIC LANDING (UNAUTHENTICATED) */}
