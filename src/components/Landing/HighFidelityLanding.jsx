@@ -452,10 +452,12 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
 
   // Floating hero card positions
   const cardPositions = [
-    { top:"8%",   left:"-4%",  floatDir:1,  floatAmp:14, floatDur:4.6 },
-    { top:"55%",  right:"-5%", floatDir:-1, floatAmp:12, floatDur:5.3 },
-    { top:"-2%",  right:"8%",  floatDir:1,  floatAmp:9,  floatDur:3.9 },
-    { top:"78%",  left:"5%",   floatDir:-1, floatAmp:10, floatDur:4.8 },
+  // Floating hero card positions
+  const cardPositions = [
+    { top:"6%",   left:"-2%",  floatDir:1,  floatAmp:14, floatDur:4.6 },
+    { top:"56%",  right:"-3%", floatDir:-1, floatAmp:12, floatDur:5.3 },
+    { top:"-4%",  right:"10%", floatDir:1,  floatAmp:9,  floatDur:3.9 },
+    { top:"76%",  left:"8%",   floatDir:-1, floatAmp:10, floatDur:4.8 },
   ];
   const parallaxXArr = [c0x, c1x, c2x, c3x];
   const parallaxYArr = [c0y, c1y, c2y, c3y];
@@ -463,35 +465,58 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
   return (
     <div className="min-h-screen overflow-x-hidden" style={{ background:C.bg, fontFamily:"var(--font-sans)", color:C.text }}>
 
-      {/* ── Navigation ─────────────────────────────────────────── */}
+      {/* ── Navigation (Full-width edge-to-edge) ──────────────────── */}
       <nav className="sticky top-0 z-50 backdrop-blur-md" style={{ background:"rgba(248,247,243,0.96)", borderBottom:`1px solid ${C.border}` }}>
-        <div className="max-w-[1180px] mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-6 min-w-0">
-            <div className="flex items-center gap-2 cursor-pointer flex-shrink-0" onClick={()=>nav("landing")}>
-              <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background:C.primary }}>
-                <span className="text-white text-[11px] font-bold">C</span>
+        <div className="w-full px-6 sm:px-10 lg:px-14 h-20 flex items-center justify-between gap-6">
+          <div className="flex items-center gap-8 min-w-0">
+            {/* Logo pinned all the way to the left */}
+            <div className="flex items-center gap-3 cursor-pointer flex-shrink-0" onClick={()=>nav("landing")}>
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm" style={{ background:C.primary }}>
+                <span className="text-white text-[15px] font-extrabold tracking-tight">C</span>
               </div>
-              <span className="text-[15px] font-semibold tracking-[-0.015em]" style={{ color:C.text }}>Careerly</span>
+              <span className="text-[20px] font-bold tracking-tight" style={{ color:C.text }}>Careerly</span>
             </div>
-            <div className="hidden md:flex items-center gap-5">
-              {["Product","Opportunities","Pricing","About"].map(item => (
-                <button key={item} className="text-[13px] transition-colors"
+
+            {/* Nav links */}
+            <div className="hidden lg:flex items-center gap-6">
+              {[
+                { name: "Opportunities", action: () => nav("discovery") },
+                { name: "CV Studio", action: () => nav("cv") },
+                { name: "Interview Coach", action: () => nav("coach") },
+                { name: "Pipeline CRM", action: () => nav("crm") },
+                { name: "Pricing", action: () => {
+                  const el = document.getElementById("pricing-section");
+                  if (el) el.scrollIntoView({ behavior: "smooth" });
+                }},
+                { name: "About", action: () => {
+                  const el = document.getElementById("journey-section");
+                  if (el) el.scrollIntoView({ behavior: "smooth" });
+                }}
+              ].map(item => (
+                <button 
+                  key={item.name} 
+                  onClick={item.action} 
+                  className="text-[14.5px] font-medium transition-colors cursor-pointer"
                   style={{ color:C.muted }}
                   onMouseEnter={e=>(e.currentTarget.style.color=C.text)}
-                  onMouseLeave={e=>(e.currentTarget.style.color=C.muted)}>{item}</button>
+                  onMouseLeave={e=>(e.currentTarget.style.color=C.muted)}
+                >
+                  {item.name}
+                </button>
               ))}
             </div>
           </div>
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <button onClick={()=>nav("signin")} className="hidden sm:block text-[13px] px-2 py-1.5 transition-colors whitespace-nowrap" style={{ color:C.muted }}
+
+          <div className="flex items-center gap-3 flex-shrink-0">
+            <button onClick={()=>nav("signin")} className="hidden sm:block text-[14.5px] font-semibold px-3.5 py-2 transition-colors whitespace-nowrap cursor-pointer" style={{ color:C.muted }}
               onMouseEnter={e=>(e.currentTarget.style.color=C.text)}
               onMouseLeave={e=>(e.currentTarget.style.color=C.muted)}>Sign In</button>
-            <motion.button onClick={()=>nav("signin")} whileHover={{ scale:1.05, y:-1 }} whileTap={{ scale:0.96 }}
-              className="text-[13px] font-semibold px-3.5 py-2 rounded-lg text-white whitespace-nowrap"
-              style={{ background:C.primary, boxShadow:`0 2px 12px ${C.primary}40` }}
+            <motion.button onClick={()=>nav("signin")} whileHover={{ scale:1.03, y:-1 }} whileTap={{ scale:0.96 }}
+              className="text-[14px] font-bold px-5 py-2.5 rounded-xl text-white whitespace-nowrap shadow-md cursor-pointer"
+              style={{ background:C.primary, boxShadow:`0 4px 14px ${C.primary}40` }}
               onMouseEnter={e=>{ e.currentTarget.style.boxShadow=`0 6px 24px ${C.primary}60`; e.currentTarget.style.background=C.bright; }}
-              onMouseLeave={e=>{ e.currentTarget.style.boxShadow=`0 2px 12px ${C.primary}40`; e.currentTarget.style.background=C.primary; }}>
-              Get Started <ArrowRight size={12} className="inline ml-0.5 -mt-0.5"/>
+              onMouseLeave={e=>{ e.currentTarget.style.boxShadow=`0 4px 14px ${C.primary}40`; e.currentTarget.style.background=C.primary; }}>
+              Get Started <ArrowRight size={14} className="inline ml-1 -mt-0.5"/>
             </motion.button>
           </div>
         </div>
@@ -510,8 +535,8 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
         <div className="absolute pointer-events-none" style={{ bottom:"0%", left:"3%", width:380, height:380, borderRadius:"50%", background:`radial-gradient(circle,${C.bright}18 0%,transparent 70%)`, filter:"blur(55px)" }}/>
         <div className="absolute pointer-events-none" style={{ top:"35%", left:"30%", width:300, height:300, borderRadius:"50%", background:`radial-gradient(circle,${C.primary}10 0%,transparent 70%)`, filter:"blur(45px)" }}/>
 
-        <div className="relative z-10 max-w-[1180px] mx-auto px-4 sm:px-6 py-14 sm:py-20 flex items-center sm:min-h-[calc(90vh-56px)]">
-          <div className="grid grid-cols-1 lg:grid-cols-[450px_1fr] gap-10 items-center w-full">
+        <div className="relative z-10 w-full px-6 sm:px-10 lg:px-14 py-16 sm:py-20 lg:py-24 flex items-center min-h-[calc(90vh-80px)]">
+          <div className="grid grid-cols-1 lg:grid-cols-[480px_1fr] xl:grid-cols-[540px_1fr] gap-12 xl:gap-24 items-center w-full">
 
             {/* LEFT */}
             <div>
@@ -527,32 +552,32 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
               <motion.h1 initial={{ opacity:0, y:30 }} animate={{ opacity:1, y:0 }}
                 transition={{ duration:0.7, delay:0.08, ease:[0.16,1,0.3,1] }}
                 className="font-display font-bold leading-[1.02] tracking-[-0.03em] text-white mb-6 break-words"
-                style={{ fontSize:"clamp(48px,10vw,84px)" }}>
+                style={{ fontSize:"clamp(48px,9vw,82px)" }}>
                 Every career<br/>opportunity,<br/>
                 <em style={{ color:`${C.bright}`, fontStyle:"italic" }}>managed.</em>
               </motion.h1>
 
               <motion.p initial={{ opacity:0, y:18 }} animate={{ opacity:1, y:0 }}
                 transition={{ duration:0.55, delay:0.18, ease:[0.16,1,0.3,1] }}
-                className="text-[16px] leading-[1.78] mb-10 max-w-[400px]" style={{ color:"rgba(255,255,255,0.42)" }}>
+                className="text-[16px] leading-[1.78] mb-10 max-w-[430px]" style={{ color:"rgba(255,255,255,0.5)" }}>
                 Discover jobs, internships, scholarships and fellowships. Match, prepare, apply and succeed — all in one intelligent workspace.
               </motion.p>
 
               <motion.div initial={{ opacity:0, y:14 }} animate={{ opacity:1, y:0 }}
                 transition={{ duration:0.5, delay:0.27, ease:[0.16,1,0.3,1] }}
-                className="flex flex-wrap items-center gap-3 mb-8 sm:mb-14">
-                <motion.button onClick={()=>nav("signin")} whileHover={{ scale:1.05, y:-2 }} whileTap={{ scale:0.96 }}
-                  className="flex items-center gap-2 px-6 py-3 text-white text-[14px] font-semibold rounded-xl"
+                className="flex flex-wrap items-center gap-3.5 mb-8 sm:mb-14">
+                <motion.button onClick={()=>nav("signin")} whileHover={{ scale:1.04, y:-2 }} whileTap={{ scale:0.96 }}
+                  className="flex items-center gap-2 px-6 py-3.5 text-white text-[14.5px] font-bold rounded-xl cursor-pointer"
                   style={{ background:C.primary, boxShadow:`0 4px 22px ${C.primary}55` }}
                   onMouseEnter={e=>{ e.currentTarget.style.background=C.bright; e.currentTarget.style.boxShadow=`0 8px 36px ${C.primary}70`; }}
                   onMouseLeave={e=>{ e.currentTarget.style.background=C.primary; e.currentTarget.style.boxShadow=`0 4px 22px ${C.primary}55`; }}>
                   Get Started Free <ArrowRight size={14}/>
                 </motion.button>
                 <motion.button onClick={()=>nav("discovery")} whileHover={{ scale:1.03, y:-1 }} whileTap={{ scale:0.97 }}
-                  className="flex items-center gap-2 px-6 py-3 text-[14px] font-medium rounded-xl transition-all"
-                  style={{ color:"rgba(255,255,255,0.55)", border:"1px solid rgba(255,255,255,0.1)" }}
-                  onMouseEnter={e=>{ e.currentTarget.style.color="rgba(255,255,255,0.9)"; e.currentTarget.style.borderColor="rgba(255,255,255,0.2)"; }}
-                  onMouseLeave={e=>{ e.currentTarget.style.color="rgba(255,255,255,0.55)"; e.currentTarget.style.borderColor="rgba(255,255,255,0.1)"; }}>
+                  className="flex items-center gap-2 px-6 py-3.5 text-[14.5px] font-semibold rounded-xl transition-all cursor-pointer"
+                  style={{ color:"rgba(255,255,255,0.75)", border:"1px solid rgba(255,255,255,0.15)" }}
+                  onMouseEnter={e=>{ e.currentTarget.style.color="rgba(255,255,255,1)"; e.currentTarget.style.borderColor="rgba(255,255,255,0.3)"; }}
+                  onMouseLeave={e=>{ e.currentTarget.style.color="rgba(255,255,255,0.75)"; e.currentTarget.style.borderColor="rgba(255,255,255,0.15)"; }}>
                   Explore Opportunities
                 </motion.button>
               </motion.div>
@@ -563,7 +588,7 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
                   <motion.div key={l} initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }}
                     transition={{ duration:0.4, delay:0.48+i*0.07 }}>
                     <p className="text-[20px] sm:text-[22px] font-bold font-mono text-white leading-none">{n}</p>
-                    <p className="text-[11px] mt-1" style={{ color:"rgba(255,255,255,0.3)" }}>{l}</p>
+                    <p className="text-[11px] mt-1" style={{ color:"rgba(255,255,255,0.4)" }}>{l}</p>
                   </motion.div>
                 ))}
               </motion.div>
