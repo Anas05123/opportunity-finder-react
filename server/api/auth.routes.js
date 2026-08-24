@@ -288,7 +288,25 @@ router.post('/resend-verification', async (req, res) => {
  */
 router.post('/google', async (req, res) => {
   try {
-    let { email, full_name, google_id, avatar_url, credential } = req.body;
+    let { email, full_name, google_id, avatar_url, credential, access_token } = req.body;
+
+    // 1. If access_token provided, verify with Google UserInfo API on backend
+    if (access_token && (!email || !google_id)) {
+      try {
+        const gRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: { Authorization: `Bearer ${access_token}` }
+        });
+        if (gRes.ok) {
+          const profile = await gRes.json();
+          if (profile.email) email = profile.email;
+          if (profile.name || profile.given_name) full_name = profile.name || profile.given_name;
+          if (profile.sub) google_id = profile.sub;
+          if (profile.picture) avatar_url = profile.picture;
+        }
+      } catch (err) {
+        console.warn('[Google Auth Backend userinfo]:', err.message);
+      }
+    }
 
     if (credential && typeof credential === 'string') {
       try {

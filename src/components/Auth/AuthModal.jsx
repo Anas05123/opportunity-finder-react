@@ -181,19 +181,27 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login', trig
             }
             try {
               setIsSubmitting(true);
-              const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-                headers: { Authorization: `Bearer ${tokenResponse.access_token}` }
-              });
-              const profile = await userInfoRes.json();
+              let profile = null;
+              try {
+                const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+                  headers: { Authorization: `Bearer ${tokenResponse.access_token}` }
+                });
+                if (userInfoRes.ok) {
+                  profile = await userInfoRes.json();
+                }
+              } catch (fetchErr) {
+                console.warn('[Google UserInfo Client Fetch Note]:', fetchErr.message);
+              }
 
               await loginWithGoogle({
-                email: profile.email,
-                full_name: profile.name || profile.given_name || profile.email.split('@')[0],
-                google_id: profile.sub,
-                avatar_url: profile.picture
+                email: profile?.email,
+                full_name: profile?.name || profile?.given_name || (profile?.email ? profile.email.split('@')[0] : null),
+                google_id: profile?.sub,
+                avatar_url: profile?.picture,
+                access_token: tokenResponse.access_token
               });
 
-              if (triggerToast) triggerToast(`✓ Signed in with Google as ${profile.email}`);
+              if (triggerToast) triggerToast(`✓ Signed in with Google!`);
               onClose();
             } catch (err) {
               setErrorMsg(err.message || 'Failed to authenticate with Google.');
