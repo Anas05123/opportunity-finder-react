@@ -1,5 +1,6 @@
 import React from 'react';
-import LandingPage from './LandingPage.jsx';
+import { useNavigate } from 'react-router-dom';
+import { LandingPage } from './HighFidelityLanding.tsx';
 
 export default function PublicLandingView({ 
   onOpenAuth, 
@@ -10,20 +11,37 @@ export default function PublicLandingView({
   isSaved, 
   triggerToast 
 }) {
+  const navigate = useNavigate();
+
+  const handleNav = (screen) => {
+    if (screen === 'signin') {
+      if (typeof onOpenAuth === 'function') {
+        onOpenAuth('login');
+      } else {
+        navigate('/login');
+      }
+      return;
+    }
+
+    const routeMap = {
+      landing: '/',
+      discovery: '/opportunities',
+      details: '/opportunities',
+      crm: '/applications',
+      saved: '/saved',
+      cv: '/cv-studio',
+      coach: '/interview',
+      calendar: '/calendar',
+      profile: '/profile',
+      dashboard: '/dashboard',
+      settings: '/settings'
+    };
+
+    const targetRoute = routeMap[screen] || '/opportunities';
+    navigate(targetRoute);
+  };
+
   return (
-    <LandingPage 
-      onOpenAuth={() => {
-        if (typeof onOpenAuth === 'function') onOpenAuth('login');
-      }}
-      onExplorePlatform={() => {
-        if (typeof onOpenAuth === 'function') {
-          // If public user clicks explore, navigate to opportunities or prompt registration
-          const token = localStorage.getItem('careerly_token');
-          if (!token) {
-            onOpenAuth('register');
-          }
-        }
-      }}
-    />
+    <LandingPage nav={handleNav} />
   );
 }

@@ -610,165 +610,167 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
       {/* 2. MAIN WORKSPACE CANVAS */}
       <div className="saas-main">
         
-        {/* Top Header Bar */}
-        {!isAuthenticated ? (
-          <>
-            <header className="brainwave-navbar">
-              <Link to="/" style={{ textDecoration: 'none' }}>
-                <div className="sidebar-brand" style={{ cursor: 'pointer' }}>
-                  <div className="sidebar-logo">
-                    <img src="/careerly-logo.png" alt="Careerly Logo" />
+        {/* Top Header Bar (Only rendered for non-landing views) */}
+        {activeTab !== 'landing' && (
+          !isAuthenticated ? (
+            <>
+              <header className="brainwave-navbar">
+                <Link to="/" style={{ textDecoration: 'none' }}>
+                  <div className="sidebar-brand" style={{ cursor: 'pointer' }}>
+                    <div className="sidebar-logo">
+                      <img src="/careerly-logo.png" alt="Careerly Logo" />
+                    </div>
+                    <div className="sidebar-brand-name" style={{ fontSize: '1.15rem', fontWeight: '800', letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>
+                      Careerly
+                      <span className="sidebar-plan-tag" style={{ marginLeft: '0.4rem' }}>
+                        INTELLIGENCE
+                      </span>
+                    </div>
                   </div>
-                  <div className="sidebar-brand-name" style={{ fontSize: '1.15rem', fontWeight: '800', letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>
-                    Careerly
-                    <span className="sidebar-plan-tag" style={{ marginLeft: '0.4rem' }}>
-                      INTELLIGENCE
-                    </span>
+                </Link>
+
+                {/* Modern Centered Navigation Links */}
+                <nav className="brainwave-nav-center">
+                  <Link to="/opportunities" className="brainwave-nav-link" style={{ textDecoration: 'none' }}>
+                    Browse Catalog
+                  </Link>
+                  <button 
+                    className="brainwave-nav-link" 
+                    onClick={() => {
+                      navigate('/');
+                      setTimeout(() => {
+                        const el = document.getElementById('features-section');
+                        if (el) el.scrollIntoView({ behavior: 'smooth' });
+                      }, 100);
+                    }}
+                  >
+                    Features
+                  </button>
+                  <Link to="/register" className="brainwave-nav-link" style={{ textDecoration: 'none' }}>
+                    AI CV Studio
+                  </Link>
+                  <Link to="/register" className="brainwave-nav-link" style={{ textDecoration: 'none' }}>
+                    STAR Coach
+                  </Link>
+                </nav>
+
+                {/* Right Side Actions & Mobile Menu Toggle */}
+                <div className="brainwave-nav-actions">
+                  <button 
+                    className="icon-button" 
+                    onClick={toggleTheme} 
+                    aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+                    title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+                    style={{ width: '40px', height: '40px' }}
+                  >
+                    {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+                  </button>
+
+                  <Link
+                    to="/login"
+                    className="brainwave-btn-outline brainwave-desktop-only"
+                    style={{ height: '42px', padding: '0 1.4rem', fontSize: '0.86rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
+                  >
+                    Sign In
+                  </Link>
+
+                  <Link
+                    to="/register"
+                    className="brainwave-btn-glow brainwave-nav-cta"
+                    style={{ height: '42px', padding: '0 1.4rem', fontSize: '0.86rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
+                  >
+                    <span>Get Started</span>
+                    <ArrowRight size={15} className="btn-arrow-icon" />
+                  </Link>
+
+                  <button
+                    className="brainwave-hamburger-btn"
+                    onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                    aria-label="Toggle Navigation"
+                  >
+                    {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+                  </button>
+                </div>
+              </header>
+
+              {/* Mobile Navigation Dropdown */}
+              {mobileMenuOpen && (
+                <div className="brainwave-mobile-menu">
+                  <div className="brainwave-mobile-nav-list">
+                    <Link to="/opportunities" className="brainwave-mobile-nav-item" onClick={() => setMobileMenuOpen(false)}>
+                      Browse Catalog
+                    </Link>
+                    <Link to="/login" className="brainwave-mobile-nav-item" onClick={() => setMobileMenuOpen(false)}>
+                      AI CV Studio
+                    </Link>
+                    <Link to="/login" className="brainwave-mobile-nav-item" onClick={() => setMobileMenuOpen(false)}>
+                      STAR Coach
+                    </Link>
+                  </div>
+                  <div className="brainwave-mobile-menu-actions">
+                    <Link
+                      to="/login"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="brainwave-btn-outline"
+                      style={{ width: '100%', height: '44px', justifyContent: 'center', textDecoration: 'none' }}
+                    >
+                      Sign In
+                    </Link>
+                    <Link
+                      to="/register"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="brainwave-btn-glow"
+                      style={{ width: '100%', height: '44px', justifyContent: 'center', textDecoration: 'none' }}
+                    >
+                      Get Started Free
+                    </Link>
                   </div>
                 </div>
-              </Link>
-
-              {/* Modern Centered Navigation Links */}
-              <nav className="brainwave-nav-center">
-                <Link to="/opportunities" className="brainwave-nav-link" style={{ textDecoration: 'none' }}>
-                  Browse Catalog
-                </Link>
+              )}
+            </>
+          ) : (
+            <header className="saas-header">
+              <div className="saas-header-left">
                 <button 
-                  className="brainwave-nav-link" 
-                  onClick={() => {
-                    navigate('/');
-                    setTimeout(() => {
-                      const el = document.getElementById('features-section');
-                      if (el) el.scrollIntoView({ behavior: 'smooth' });
-                    }, 100);
-                  }}
+                  className="saas-hamburger-trigger icon-button" 
+                  onClick={() => setMobileMenuOpen(true)}
+                  aria-label="Open Navigation Menu"
                 >
-                  Features
+                  <Menu size={18} />
                 </button>
-                <Link to="/register" className="brainwave-nav-link" style={{ textDecoration: 'none' }}>
-                  AI CV Studio
-                </Link>
-                <Link to="/register" className="brainwave-nav-link" style={{ textDecoration: 'none' }}>
-                  STAR Coach
-                </Link>
-              </nav>
 
-              {/* Right Side Actions & Mobile Menu Toggle */}
-              <div className="brainwave-nav-actions">
+                <nav className="saas-breadcrumbs" aria-label="Breadcrumb">
+                  <span className="breadcrumb-root">Careerly</span>
+                  <span className="breadcrumb-separator">/</span>
+                  <span className="breadcrumb-active active">{tabTitles[activeTab] || 'Workspace'}</span>
+                </nav>
+              </div>
+
+              <div className="saas-header-right">
+                {activeTab === 'explore' && (
+                  <button 
+                    className="saas-command-trigger"
+                    onClick={() => {
+                      if (feedTopRef.current) feedTopRef.current.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                  >
+                    <Search size={14} />
+                    <span>Search opportunities...</span>
+                    <span className="saas-kbd">⌘K</span>
+                  </button>
+                )}
+
                 <button 
                   className="icon-button" 
                   onClick={toggleTheme} 
                   aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
                   title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-                  style={{ width: '40px', height: '40px' }}
                 >
-                  {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-                </button>
-
-                <Link
-                  to="/login"
-                  className="brainwave-btn-outline brainwave-desktop-only"
-                  style={{ height: '42px', padding: '0 1.4rem', fontSize: '0.86rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
-                >
-                  Sign In
-                </Link>
-
-                <Link
-                  to="/register"
-                  className="brainwave-btn-glow brainwave-nav-cta"
-                  style={{ height: '42px', padding: '0 1.4rem', fontSize: '0.86rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
-                >
-                  <span>Get Started</span>
-                  <ArrowRight size={15} className="btn-arrow-icon" />
-                </Link>
-
-                <button
-                  className="brainwave-hamburger-btn"
-                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                  aria-label="Toggle Navigation"
-                >
-                  {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+                  {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
                 </button>
               </div>
             </header>
-
-            {/* Mobile Navigation Dropdown */}
-            {mobileMenuOpen && (
-              <div className="brainwave-mobile-menu">
-                <div className="brainwave-mobile-nav-list">
-                  <Link to="/opportunities" className="brainwave-mobile-nav-item" onClick={() => setMobileMenuOpen(false)}>
-                    Browse Catalog
-                  </Link>
-                  <Link to="/login" className="brainwave-mobile-nav-item" onClick={() => setMobileMenuOpen(false)}>
-                    AI CV Studio
-                  </Link>
-                  <Link to="/login" className="brainwave-mobile-nav-item" onClick={() => setMobileMenuOpen(false)}>
-                    STAR Coach
-                  </Link>
-                </div>
-                <div className="brainwave-mobile-menu-actions">
-                  <Link
-                    to="/login"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="brainwave-btn-outline"
-                    style={{ width: '100%', height: '44px', justifyContent: 'center', textDecoration: 'none' }}
-                  >
-                    Sign In
-                  </Link>
-                  <Link
-                    to="/register"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="brainwave-btn-glow"
-                    style={{ width: '100%', height: '44px', justifyContent: 'center', textDecoration: 'none' }}
-                  >
-                    Get Started Free
-                  </Link>
-                </div>
-              </div>
-            )}
-          </>
-        ) : (
-          <header className="saas-header">
-            <div className="saas-header-left">
-              <button 
-                className="saas-hamburger-trigger icon-button" 
-                onClick={() => setMobileMenuOpen(true)}
-                aria-label="Open Navigation Menu"
-              >
-                <Menu size={18} />
-              </button>
-
-              <nav className="saas-breadcrumbs" aria-label="Breadcrumb">
-                <span className="breadcrumb-root">Careerly</span>
-                <span className="breadcrumb-separator">/</span>
-                <span className="breadcrumb-active active">{tabTitles[activeTab] || 'Workspace'}</span>
-              </nav>
-            </div>
-
-            <div className="saas-header-right">
-              {activeTab === 'explore' && (
-                <button 
-                  className="saas-command-trigger"
-                  onClick={() => {
-                    if (feedTopRef.current) feedTopRef.current.scrollIntoView({ behavior: 'smooth' });
-                  }}
-                >
-                  <Search size={14} />
-                  <span>Search opportunities...</span>
-                  <span className="saas-kbd">⌘K</span>
-                </button>
-              )}
-
-              <button 
-                className="icon-button" 
-                onClick={toggleTheme} 
-                aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-                title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-              >
-                {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-              </button>
-            </div>
-          </header>
+          )
         )}
 
         {/* Content Container */}
@@ -1241,21 +1243,23 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
 
       </main>
 
-      {/* Modern Careerly Footer */}
-      <Footer onNavigateTab={(tab) => { 
-        const routes = {
-          explore: '/opportunities',
-          saved: '/saved',
-          tracker: '/applications',
-          cv_studio: '/cv-studio',
-          interview: '/interview',
-          calendar: '/calendar',
-          settings: '/settings',
-          admin: '/admin/security'
-        };
-        navigate(routes[tab] || '/'); 
-        window.scrollTo({ top: 0, behavior: 'smooth' }); 
-      }} />
+        {/* Modern Careerly Footer (Only for non-landing views) */}
+        {activeTab !== 'landing' && (
+          <Footer onNavigateTab={(tab) => { 
+            const routes = {
+              explore: '/opportunities',
+              saved: '/saved',
+              tracker: '/applications',
+              cv_studio: '/cv-studio',
+              interview: '/interview',
+              calendar: '/calendar',
+              settings: '/settings',
+              admin: '/admin/security'
+            };
+            navigate(routes[tab] || '/'); 
+            window.scrollTo({ top: 0, behavior: 'smooth' }); 
+          }} />
+        )}
 
       </div> {/* saas-content-canvas */}
     </div> {/* saas-main */}
@@ -1317,7 +1321,7 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
       )}
 
       {/* Floating 24/7 AI Career Copilot */}
-      {!drawerOp && !prepareAppOp && !emailOutreachOp && !inspectingEvidenceOp && !authModalOpen && !activeQuestion && (
+      {!drawerOp && !prepareAppOp && !emailOutreachOp && !inspectingEvidenceOp && !authModalOpen && !activeQuestion && activeTab !== 'landing' && (
         <AiCareerCopilot userProfile={careerProfile || {}} triggerToast={triggerToast} />
       )}
     </div>
