@@ -19,6 +19,7 @@ import AuthScreen from './components/Auth/AuthScreen.jsx';
 import OnboardingWizard from './components/Onboarding/OnboardingWizard.jsx';
 import PublicLandingView from './components/Landing/PublicLandingView.jsx';
 import PersonalizedDashboard from './components/Dashboard/PersonalizedDashboard.jsx';
+import DiscoverScreen from './components/Discovery/DiscoverScreen.jsx';
 import SettingsView from './components/Settings/SettingsView.jsx';
 import NotFoundPage from './components/NotFoundPage.jsx';
 
@@ -627,199 +628,17 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
           />
         )}
 
-        {/* TAB: DISCOVER & MATCH (SHARED GLOBAL OPPORTUNITY CATALOG) */}
+        {/* TAB: DISCOVER & MATCH (EXACT FIGMA DESIGN) */}
         {activeTab === 'explore' && (
-          <div>
-            <ConversationalHero 
-              onStartConversationalSearch={handleStartConversationalSearch}
-              isSearching={isSearchingPipeline}
-            />
-
-            <div className="content-container" ref={feedTopRef} style={{ marginTop: '2.5rem' }}>
-              
-              {/* Dedicated CV-to-Jobs Filter Banner */}
-              {cvMatchedContext && (
-                <div style={{
-                  background: 'linear-gradient(135deg, rgba(31, 228, 119, 0.14) 0%, rgba(56, 189, 248, 0.1) 100%)',
-                  border: '1.5px solid #1FE477',
-                  borderRadius: 'var(--radius-2xl)',
-                  padding: '1.15rem 1.5rem',
-                  marginBottom: '1.75rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: '1rem',
-                  flexWrap: 'wrap',
-                  boxShadow: '0 0 30px rgba(31, 228, 119, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.08)'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-                    <div style={{ width: '42px', height: '42px', borderRadius: '50%', background: '#1FE477', color: '#06070a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem', fontWeight: '900', flexShrink: 0, boxShadow: '0 0 16px rgba(31, 228, 119, 0.5)' }}>
-                      🎯
-                    </div>
-                    <div>
-                      <div style={{ fontWeight: '900', fontSize: '1.02rem', color: 'var(--foreground)', fontFamily: "'Space Grotesk', sans-serif" }}>
-                        Tailored Opportunities for CV: <span style={{ color: '#1FE477' }}>{cvMatchedContext.role}</span>
-                      </div>
-                      <div style={{ fontSize: '0.82rem', color: 'var(--muted-foreground)' }}>
-                        Verified positions matched to your extracted qualifications and career trajectory.
-                      </div>
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <button 
-                      className="btn btn-outline" 
-                      style={{ height: '36px', fontSize: '0.82rem', padding: '0 0.85rem' }}
-                      onClick={() => { setCvMatchedContext(null); setSearchSummaryBadge(''); fetchOpportunities(''); }}
-                    >
-                      Clear CV Filter
-                    </button>
-                    <button 
-                      className="btn btn-primary" 
-                      style={{ height: '36px', fontSize: '0.82rem', padding: '0 0.95rem' }}
-                      onClick={() => navigate('/cv-studio')}
-                    >
-                      Return to CV Studio
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* Active Search Summary Badge */}
-              {searchSummaryBadge && (
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'var(--card)', border: '1px solid var(--primary)', color: 'var(--foreground)', padding: '0.45rem 1.25rem', borderRadius: 'var(--radius-full)', fontSize: '0.84rem', fontWeight: '800', margin: '0 auto 1.75rem', boxShadow: 'var(--shadow-sm)' }}>
-                  <Sparkles size={15} color="var(--primary)" /> {searchSummaryBadge}
-                  <button 
-                    onClick={() => { setSearchSummaryBadge(''); setCvMatchedContext(null); fetchOpportunities(''); }} 
-                    style={{ background: 'transparent', border: 'none', color: 'var(--muted-foreground)', cursor: 'pointer', marginLeft: '0.45rem', fontSize: '0.9rem' }}
-                  >
-                    ✕
-                  </button>
-                </div>
-              )}
-
-              {/* Category Ribbon */}
-              <div className="category-ribbon">
-                <button 
-                  className={`cat-pill ${selectedPreset === 'all' ? 'active' : ''}`}
-                  onClick={() => setSelectedPreset('all')}
-                >
-                  <Sparkles size={14} /> All Offers
-                </button>
-                <button 
-                  className={`cat-pill ${selectedPreset === 'advertising' ? 'ad-active' : ''}`}
-                  onClick={() => setSelectedPreset(selectedPreset === 'advertising' ? 'all' : 'advertising')}
-                >
-                  <Megaphone size={14} /> Advertising & Marketing
-                </button>
-                <button 
-                  className={`cat-pill ${selectedPreset === 'internships' ? 'active' : ''}`}
-                  onClick={() => setSelectedPreset(selectedPreset === 'internships' ? 'all' : 'internships')}
-                >
-                  <Briefcase size={14} /> Internships & Traineeships
-                </button>
-                <button 
-                  className={`cat-pill ${selectedPreset === 'scholarships' ? 'active' : ''}`}
-                  onClick={() => setSelectedPreset(selectedPreset === 'scholarships' ? 'all' : 'scholarships')}
-                >
-                  <GraduationCap size={14} /> Global Scholarships
-                </button>
-                <button 
-                  className={`cat-pill ${selectedPreset === 'fellowships' ? 'active' : ''}`}
-                  onClick={() => setSelectedPreset(selectedPreset === 'fellowships' ? 'all' : 'fellowships')}
-                >
-                  <Award size={14} /> Fellowships & Grants
-                </button>
-                <button 
-                  className={`cat-pill ${selectedPreset === 'remote' ? 'active' : ''}`}
-                  onClick={() => setSelectedPreset(selectedPreset === 'remote' ? 'all' : 'remote')}
-                >
-                  <Globe size={14} /> Worldwide & Remote
-                </button>
-              </div>
-
-              {/* View Layout Controls & Stats */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', marginTop: '0.75rem', flexWrap: 'wrap', gap: '0.75rem' }}>
-                <div style={{ color: 'var(--text-secondary)', fontSize: '0.88rem', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                  <span>Showing</span>
-                  <span style={{ color: 'var(--text-primary)', fontWeight: '800', fontFamily: 'var(--font-mono)' }}>{filteredOpportunities.length}</span>
-                  <span>verified opportunities</span>
-                </div>
-
-                <div style={{ display: 'flex', gap: '0.35rem', background: 'var(--card)', padding: '3px', borderRadius: '8px', border: '1px solid var(--border-default)' }}>
-                  <button 
-                    onClick={() => setViewMode('grid')}
-                    className={`icon-button ${viewMode === 'grid' ? 'active' : ''}`}
-                    style={{ width: '32px', height: '32px', borderRadius: '6px' }}
-                    title="Grid View"
-                  >
-                    <LayoutGrid size={15} />
-                  </button>
-                  <button 
-                    onClick={() => setViewMode('list')}
-                    className={`icon-button ${viewMode === 'list' ? 'active' : ''}`}
-                    style={{ width: '32px', height: '32px', borderRadius: '6px' }}
-                    title="List View"
-                  >
-                    <List size={15} />
-                  </button>
-                </div>
-              </div>
-
-              {/* Feed Grid or List */}
-              {isLoading ? (
-                <div style={{ textAlign: 'center', padding: '5rem 0', color: 'var(--muted-foreground)' }}>
-                  <RefreshCw size={32} className="spin-slow" color="var(--primary)" style={{ margin: '0 auto 1rem' }} />
-                  <p style={{ fontWeight: '700' }}>Calibrating live opportunity matches...</p>
-                </div>
-              ) : viewMode === 'grid' ? (
-                <OpportunityGridView 
-                  opportunities={paginatedOpportunities}
-                  onSelectOp={(op) => { setDrawerOp(op); navigate(`/opportunities/${op.id}`); }}
-                  onToggleSave={(oppId) => toggleSaveApp(oppId)}
-                  onPrepareApplication={(op) => setPrepareAppOp(op)}
-                  onInspectEvidence={(op) => setInspectingEvidenceOp(op)}
-                  onRelaxConstraint={handleRelaxConstraint}
-                  savedIds={savedOppsList.map(s => s.id || s.opportunity_id)}
-                />
-              ) : (
-                <OpportunityListView 
-                  opportunities={paginatedOpportunities}
-                  onSelectOp={(op) => { setDrawerOp(op); navigate(`/opportunities/${op.id}`); }}
-                  onToggleSave={(oppId) => toggleSaveApp(oppId)}
-                  savedIds={savedOppsList.map(s => s.id || s.opportunity_id)}
-                  onAutoApply={(op) => setPrepareAppOp(op)}
-                  onEmailOutreach={(op) => setEmailOutreachOp(op)}
-                />
-              )}
-
-              {/* Pagination Controls */}
-              {totalPages > 1 && (
-                <div className="pagination-bar" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.65rem', marginTop: '2.5rem', paddingBottom: '3rem' }}>
-                  <button 
-                    className="action-btn-secondary"
-                    onClick={() => handlePageChange(currentPage - 1)}
-                    disabled={currentPage === 1}
-                    style={{ padding: '0.45rem 0.95rem', fontSize: '0.85rem' }}
-                  >
-                    <ChevronLeft size={15} /> Previous
-                  </button>
-                  <span style={{ fontSize: '0.88rem', fontWeight: '800', color: 'var(--foreground)', padding: '0 0.5rem' }}>
-                    Page {currentPage} of {totalPages}
-                  </span>
-                  <button 
-                    className="action-btn-secondary"
-                    onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                    style={{ padding: '0.45rem 0.95rem', fontSize: '0.85rem' }}
-                  >
-                    Next <ChevronRight size={15} />
-                  </button>
-                </div>
-              )}
-
-            </div>
-          </div>
+          <DiscoverScreen 
+            opportunities={opportunities}
+            isLoading={isLoading}
+            onSelectOpportunity={(op) => { setDrawerOp(op); navigate(`/opportunities/${op.id}`); }}
+            onPrepareKit={(op) => setPrepareAppOp(op)}
+            onToggleSave={(id) => toggleSaveApp(id)}
+            isSaved={(id) => isOpportunitySaved(id)}
+            triggerToast={triggerToast}
+          />
         )}
 
         {/* TAB: SAVED OPPORTUNITIES (USER-OWNED) */}
