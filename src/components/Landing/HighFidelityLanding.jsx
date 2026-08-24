@@ -524,7 +524,7 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
 
       {/* ── Hero ──────────────────────────────────────────────────── */}
       <section ref={heroRef} onMouseMove={onHeroMouse} onMouseLeave={()=>{ mouseX.set(0); mouseY.set(0); }}
-        className="relative overflow-hidden w-full sm:min-h-[90vh]" style={{ background:C.hero }}>
+        className="relative overflow-hidden w-full sm:min-h-[90vh] flex items-center justify-center" style={{ background:C.hero }}>
 
         {/* Grid texture */}
         <div className="absolute inset-0 opacity-[0.045]"
@@ -535,8 +535,8 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
         <div className="absolute pointer-events-none" style={{ bottom:"0%", left:"3%", width:380, height:380, borderRadius:"50%", background:`radial-gradient(circle,${C.bright}18 0%,transparent 70%)`, filter:"blur(55px)" }}/>
         <div className="absolute pointer-events-none" style={{ top:"35%", left:"30%", width:300, height:300, borderRadius:"50%", background:`radial-gradient(circle,${C.primary}10 0%,transparent 70%)`, filter:"blur(45px)" }}/>
 
-        <div className="relative z-10 w-full px-6 sm:px-10 lg:px-14 py-16 sm:py-20 lg:py-24 flex items-center min-h-[calc(90vh-80px)]">
-          <div className="grid grid-cols-1 lg:grid-cols-[480px_1fr] xl:grid-cols-[540px_1fr] gap-12 xl:gap-24 items-center w-full">
+        <div className="relative z-10 max-w-[1240px] mx-auto px-6 sm:px-10 py-14 sm:py-20 flex items-center w-full min-h-[calc(90vh-80px)]">
+          <div className="grid grid-cols-1 lg:grid-cols-[480px_1fr] gap-12 xl:gap-16 items-center w-full">
 
             {/* LEFT */}
             <div>
@@ -552,7 +552,7 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
               <motion.h1 initial={{ opacity:0, y:30 }} animate={{ opacity:1, y:0 }}
                 transition={{ duration:0.7, delay:0.08, ease:[0.16,1,0.3,1] }}
                 className="font-display font-bold leading-[1.02] tracking-[-0.03em] text-white mb-6 break-words"
-                style={{ fontSize:"clamp(48px,9vw,82px)" }}>
+                style={{ fontSize:"clamp(48px,8vw,78px)" }}>
                 Every career<br/>opportunity,<br/>
                 <em style={{ color:`${C.bright}`, fontStyle:"italic" }}>managed.</em>
               </motion.h1>
@@ -594,136 +594,117 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
               </motion.div>
             </div>
 
-            {/* RIGHT: constellation */}
+            {/* RIGHT: Constellation & Mock Dashboard */}
             <motion.div initial={{ opacity:0, x:52 }} animate={{ opacity:1, x:0 }}
               transition={{ duration:0.9, delay:0.14, ease:[0.16,1,0.3,1] }}
-              className="hidden lg:block relative" style={{ height:560 }}>
+              className="hidden lg:flex items-center justify-center relative w-full h-[520px]">
 
-              {/* SVG constellation lines */}
-              <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex:5 }}>
-                {[
-                  { x1:"15%", y1:"22%", x2:"50%", y2:"52%" },
-                  { x1:"82%", y1:"65%", x2:"50%", y2:"52%" },
-                  { x1:"76%", y1:"8%",  x2:"50%", y2:"52%" },
-                  { x1:"18%", y1:"82%", x2:"50%", y2:"52%" },
-                ].map((line, i) => (
-                  <motion.line key={i} {...line} stroke={`${C.primary}`} strokeWidth="0.8" strokeOpacity="0.25"
-                    strokeDasharray="5 5"
-                    animate={{ strokeDashoffset:[0,-20] }}
-                    transition={{ duration:2.5+i*0.4, repeat:Infinity, ease:"linear" }}/>
-                ))}
-              </svg>
+              {/* Central dashboard */}
+              <motion.div
+                style={{ x:dashX, y:dashY, border:`1px solid rgba(255,255,255,0.12)`, boxShadow:"0 32px 80px rgba(0,0,0,0.65), 0 0 0 1px rgba(255,255,255,0.06)" }}
+                animate={{ y:[0,-6,0] }} transition={{ duration:7.5, repeat:Infinity, ease:"easeInOut" }}
+                className="relative w-[540px] h-[370px] rounded-2xl overflow-hidden shadow-2xl">
+                <div className="h-9 flex items-center px-3.5 gap-2.5" style={{ background:"#1E2D3E", borderBottom:"1px solid rgba(255,255,255,0.08)" }}>
+                  <div className="flex gap-1.5">
+                    {[0,1,2].map(i=><div key={i} className="w-2.5 h-2.5 rounded-full" style={{ background:"rgba(255,255,255,0.15)" }}/>)}
+                  </div>
+                  <div className="flex-1 mx-3 h-5 rounded flex items-center px-2.5 gap-1.5" style={{ background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.07)" }}>
+                    <div className="w-1.5 h-1.5 rounded-full" style={{ background:"rgba(255,255,255,0.2)" }}/>
+                    <span className="text-[9px] font-mono" style={{ color:"rgba(255,255,255,0.4)" }}>app.careerly.io/dashboard</span>
+                  </div>
+                </div>
+                <div className="flex" style={{ height:"calc(100% - 36px)", background:C.bg }}>
+                  <div className="flex flex-col py-3 px-2.5 flex-shrink-0" style={{ width:130, background:"#fff", borderRight:`1px solid ${C.border}` }}>
+                    <div className="flex items-center gap-2 px-1.5 py-1 mb-3">
+                      <div className="w-5 h-5 rounded-md flex-shrink-0 flex items-center justify-center" style={{ background:C.primary }}>
+                        <span style={{ color:"#fff", fontSize:8, fontWeight:700 }}>C</span>
+                      </div>
+                      <span style={{ fontSize:11, fontWeight:700, color:C.text }}>Careerly</span>
+                    </div>
+                    {[["Dashboard",true],["Discover",false],["Applications",false],["Saved",false],["CV Studio",false],["Coach",false]].map(([l,a])=>(
+                      <div key={l as string} style={{ padding:"5px 8px", borderRadius:6, fontSize:9.5, fontWeight:500, marginBottom:2, cursor:"pointer", background:a?C.primary:"transparent", color:a?"#fff":C.muted }}>
+                        {l as string}
+                      </div>
+                    ))}
+                    <div className="mt-auto pt-2.5 flex items-center gap-1.5 px-1" style={{ borderTop:`1px solid ${C.border}` }}>
+                      <div className="w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center text-white text-[8px] font-bold" style={{ background:C.primary }}>AK</div>
+                      <div className="min-w-0"><p style={{ fontSize:9, fontWeight:600, color:C.text, lineHeight:1.1 }} className="truncate">Alex Kim</p><p style={{ fontSize:7.5, color:C.muted }}>Open to work</p></div>
+                    </div>
+                  </div>
+                  <div className="flex-1 overflow-hidden" style={{ padding:12 }}>
+                    <div className="flex items-center justify-between" style={{ marginBottom:10 }}>
+                      <p style={{ fontSize:11, fontWeight:700, color:C.text }}>Good morning, Alex 👋</p>
+                      <p style={{ fontSize:9, fontFamily:"monospace", color:C.muted }}>Dec 9, 2024</p>
+                    </div>
+                    <div className="grid grid-cols-4 gap-1.5" style={{ marginBottom:10 }}>
+                      {[["12","Active",C.primary],["4","Applied",C.bright],["2","Offers","#7C3AED"],["84%","Match",C.success]].map(([n,l,c])=>(
+                        <div key={l as string} style={{ background:"#fff", border:`1px solid ${C.border}`, borderRadius:8, padding:"6px 8px" }}>
+                          <p style={{ fontSize:15, fontWeight:700, fontFamily:"monospace", color:c as string, lineHeight:1 }}>{n}</p>
+                          <p style={{ fontSize:7.5, color:C.muted, marginTop:2 }}>{l}</p>
+                        </div>
+                      ))}
+                    </div>
+                    <p style={{ fontSize:8, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:6 }}>Recommended for you</p>
+                    {OPPS.slice(0,4).map(o=>(
+                      <div key={o.id} style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 6px", borderRadius:8, cursor:"pointer", marginBottom:2, transition:"background 0.15s" }}
+                        onMouseEnter={e=>(e.currentTarget.style.background="#fff")}
+                        onMouseLeave={e=>(e.currentTarget.style.background="transparent")}>
+                        <div style={{ width:20, height:20, borderRadius:6, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", color:"#fff", fontSize:8, fontWeight:700, background:o.color }}>{o.initial}</div>
+                        <div style={{ flex:1, minWidth:0 }}>
+                          <p style={{ fontSize:9.5, fontWeight:600, color:C.text, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{o.title}</p>
+                          <p style={{ fontSize:7.5, color:C.muted }}>{o.company}</p>
+                        </div>
+                        <span style={{ fontSize:7.5, fontFamily:"monospace", fontWeight:700, padding:"2px 5px", borderRadius:4, background:C.xlight, color:C.primary, flexShrink:0 }}>{o.match}%</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
 
-              {/* Floating opportunity cards */}
+              {/* Floating Opportunity Cards with High-Contrast Dark Navy */}
               {HERO_CARDS.map((card, i) => {
-                const pos = cardPositions[i];
+                const pos = [
+                  { top:"30px", left:"-20px", floatDir:1, floatAmp:10, floatDur:4.6 },
+                  { top:"15px", right:"-15px", floatDir:-1, floatAmp:9, floatDur:5.3 },
+                  { bottom:"25px", left:"-15px", floatDir:1, floatAmp:8, floatDur:3.9 },
+                  { bottom:"35px", right:"-20px", floatDir:-1, floatAmp:10, floatDur:4.8 },
+                ][i];
                 const isHov = hoveredHeroCard===i;
                 return (
                   <motion.div key={card.id}
-                    style={{ x:parallaxXArr[i], y:parallaxYArr[i], position:"absolute", top:pos.top, left:(pos as any).left, right:(pos as any).right, bottom:(pos as any).bottom, zIndex:isHov?30:10 }}>
+                    style={{ x:parallaxXArr[i], y:parallaxYArr[i], position:"absolute", top:pos.top, left:(pos as any).left, right:(pos as any).right, bottom:(pos as any).bottom, zIndex:isHov?30:15 }}>
                     <motion.div
                       animate={{ y:[0, pos.floatDir*pos.floatAmp, 0] }}
                       transition={{ duration:pos.floatDur, repeat:Infinity, ease:"easeInOut" }}>
                       <motion.div
                         onMouseEnter={()=>setHoveredHeroCard(i)}
                         onMouseLeave={()=>setHoveredHeroCard(null)}
-                        whileHover={{ scale:1.06, rotateY:isHov?0:3, rotateX:isHov?0:-2 }}
-                        transition={{ duration:0.25 }}
-                        style={{ perspective:800, transformStyle:"preserve-3d", cursor:"pointer", background:"rgba(255,255,255,0.07)", border:`1px solid ${isHov?C.primary+"60":"rgba(255,255,255,0.1)"}`, backdropFilter:"blur(18px)", boxShadow:isHov?`0 16px 48px ${C.primary}35, 0 0 0 1px ${C.primary}30`:"0 12px 36px rgba(0,0,0,0.3)" }}
-                        className="rounded-2xl p-4 w-52">
-                        <div className="flex items-start gap-3 mb-3">
-                          <div className="w-8 h-8 rounded-xl flex-shrink-0 flex items-center justify-center text-white text-[10px] font-bold" style={{ background:card.color }}>{card.initial}</div>
+                        whileHover={{ scale:1.05 }}
+                        transition={{ duration:0.2 }}
+                        style={{
+                          cursor:"pointer",
+                          background:"#091738",
+                          border:`1px solid ${isHov ? C.primary : "rgba(255,255,255,0.14)"}`,
+                          boxShadow: isHov ? `0 20px 48px ${C.primary}40, 0 0 0 1px ${C.primary}` : "0 18px 40px rgba(0,0,0,0.6)"
+                        }}
+                        className="rounded-2xl p-3.5 w-48">
+                        <div className="flex items-start gap-2.5 mb-2">
+                          <div className="w-7 h-7 rounded-xl flex-shrink-0 flex items-center justify-center text-white text-[10px] font-bold shadow-xs" style={{ background:card.color }}>{card.initial}</div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-[12px] font-semibold text-white truncate">{card.title}</p>
-                            <p className="text-[10px]" style={{ color:"rgba(255,255,255,0.45)" }}>{card.company}</p>
+                            <p className="text-[11.5px] font-semibold text-white truncate">{card.title}</p>
+                            <p className="text-[9.5px] text-white/60 truncate">{card.company}</p>
                           </div>
                         </div>
-                        <div className="flex items-center justify-between" style={{ paddingTop:10, borderTop:"1px solid rgba(255,255,255,0.08)" }}>
-                          <span className="text-[10px]" style={{ color:"rgba(255,255,255,0.38)" }}>{card.type} · {card.mode}</span>
-                          <MatchRing score={card.match} size={38} dark/>
+                        <div className="flex items-center justify-between pt-2 border-t border-white/10">
+                          <span className="text-[9.5px] text-white/50">{card.type} · {card.mode}</span>
+                          <MatchRing score={card.match} size={34} dark/>
                         </div>
-                        <AnimatePresence>
-                          {isHov && (
-                            <motion.div initial={{ opacity:0, height:0 }} animate={{ opacity:1, height:"auto" }}
-                              exit={{ opacity:0, height:0 }} transition={{ duration:0.22 }}
-                              className="overflow-hidden">
-                              <div style={{ paddingTop:10, borderTop:"1px solid rgba(255,255,255,0.08)", marginTop:10 }}>
-                                <p className="text-[10px] text-white/50 mb-1">{card.location} · {card.salary}</p>
-                                <button className="text-[11px] font-semibold flex items-center gap-1" style={{ color:C.bright }}>
-                                  Why you match <ChevronRight size={10}/>
-                                </button>
-                              </div>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
                       </motion.div>
                     </motion.div>
                   </motion.div>
                 );
               })}
 
-              {/* Central dashboard */}
-              <motion.div style={{ x:dashX, y:dashY, position:"absolute", top:70, left:60, right:60, bottom:30 }}
-                animate={{ y:[0,-6,0] }} transition={{ duration:7.5, repeat:Infinity, ease:"easeInOut" }}>
-                <div className="w-full h-full rounded-2xl overflow-hidden"
-                  style={{ border:`1px solid rgba(255,255,255,0.07)`, boxShadow:"0 32px 80px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.04)" }}>
-                  <div className="h-9 flex items-center px-3.5 gap-2.5" style={{ background:"#1E2D3E", borderBottom:"1px solid rgba(255,255,255,0.05)" }}>
-                    <div className="flex gap-1.5">
-                      {[0,1,2].map(i=><div key={i} className="w-2.5 h-2.5 rounded-full" style={{ background:"rgba(255,255,255,0.1)" }}/>)}
-                    </div>
-                    <div className="flex-1 mx-3 h-5 rounded flex items-center px-2.5 gap-1.5" style={{ background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.07)" }}>
-                      <div className="w-1.5 h-1.5 rounded-full" style={{ background:"rgba(255,255,255,0.2)" }}/>
-                      <span className="text-[9px] font-mono" style={{ color:"rgba(255,255,255,0.25)" }}>app.careerly.io/dashboard</span>
-                    </div>
-                  </div>
-                  <div className="flex" style={{ height:"calc(100% - 36px)", background:C.bg }}>
-                    <div className="flex flex-col py-3 px-2.5 flex-shrink-0" style={{ width:140, background:"#fff", borderRight:`1px solid ${C.border}` }}>
-                      <div className="flex items-center gap-2 px-2 py-1 mb-4">
-                        <div className="w-5 h-5 rounded-md flex-shrink-0 flex items-center justify-center" style={{ background:C.primary }}>
-                          <span style={{ color:"#fff", fontSize:7, fontWeight:700 }}>C</span>
-                        </div>
-                        <span style={{ fontSize:10, fontWeight:700, color:C.text }}>Careerly</span>
-                      </div>
-                      {[["Dashboard",true],["Discover",false],["Applications",false],["Saved",false],["CV Studio",false],["Coach",false]].map(([l,a])=>(
-                        <div key={l as string} style={{ padding:"6px 10px", borderRadius:6, fontSize:10, fontWeight:500, marginBottom:2, cursor:"pointer", background:a?C.primary:"transparent", color:a?"#fff":C.muted }}>
-                          {l as string}
-                        </div>
-                      ))}
-                      <div className="mt-auto pt-3 flex items-center gap-1.5 px-1" style={{ borderTop:`1px solid ${C.border}` }}>
-                        <div className="w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center text-white text-[8px] font-bold" style={{ background:C.primary }}>AK</div>
-                        <div><p style={{ fontSize:9, fontWeight:600, color:C.text }}>Alex Kim</p><p style={{ fontSize:8, color:C.muted }}>Open to work</p></div>
-                      </div>
-                    </div>
-                    <div className="flex-1 overflow-hidden" style={{ padding:16 }}>
-                      <div className="flex items-center justify-between" style={{ marginBottom:14 }}>
-                        <p style={{ fontSize:12, fontWeight:600, color:C.text }}>Good morning, Alex 👋</p>
-                        <p style={{ fontSize:10, fontFamily:"monospace", color:C.muted }}>Dec 9, 2024</p>
-                      </div>
-                      <div className="grid grid-cols-4 gap-2" style={{ marginBottom:14 }}>
-                        {[["12","Active",C.primary],["4","Applied",C.bright],["2","Offers","#7C3AED"],["84%","Match",C.success]].map(([n,l,c])=>(
-                          <div key={l as string} style={{ background:"#fff", border:`1px solid ${C.border}`, borderRadius:10, padding:"8px 10px" }}>
-                            <p style={{ fontSize:17, fontWeight:700, fontFamily:"monospace", color:c as string, lineHeight:1 }}>{n}</p>
-                            <p style={{ fontSize:8, color:C.muted, marginTop:3 }}>{l}</p>
-                          </div>
-                        ))}
-                      </div>
-                      <p style={{ fontSize:8, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.12em", marginBottom:8 }}>Recommended for you</p>
-                      {OPPS.slice(0,5).map(o=>(
-                        <div key={o.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"7px 8px", borderRadius:10, cursor:"pointer", marginBottom:3, transition:"background 0.15s" }}
-                          onMouseEnter={e=>(e.currentTarget.style.background="#fff")}
-                          onMouseLeave={e=>(e.currentTarget.style.background="transparent")}>
-                          <div style={{ width:22, height:22, borderRadius:7, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", color:"#fff", fontSize:8, fontWeight:700, background:o.color }}>{o.initial}</div>
-                          <div style={{ flex:1, minWidth:0 }}>
-                            <p style={{ fontSize:10, fontWeight:600, color:C.text, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{o.title}</p>
-                            <p style={{ fontSize:8, color:C.muted }}>{o.company}</p>
-                          </div>
-                          <span style={{ fontSize:8, fontFamily:"monospace", fontWeight:700, padding:"2px 6px", borderRadius:6, background:C.xlight, color:C.primary, flexShrink:0 }}>{o.match}%</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
             </motion.div>
           </div>
         </div>
