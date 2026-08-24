@@ -10,8 +10,8 @@
       "access_method": "html",
       "status": "active",
       "created_at": "2026-08-07T15:48:24.466Z",
-      "last_scraped_at": "2026-08-24T03:19:00.655Z",
-      "last_success_at": "2026-08-24T03:19:00.655Z"
+      "last_scraped_at": "2026-08-24T06:32:38.241Z",
+      "last_success_at": "2026-08-24T06:32:38.241Z"
     },
     {
       "id": "src-euraxess",
@@ -23,8 +23,8 @@
       "access_method": "rss",
       "status": "active",
       "created_at": "2026-08-07T15:48:24.469Z",
-      "last_scraped_at": "2026-08-24T03:19:00.659Z",
-      "last_success_at": "2026-08-24T03:19:00.659Z"
+      "last_scraped_at": "2026-08-24T06:32:38.244Z",
+      "last_success_at": "2026-08-24T06:32:38.244Z"
     },
     {
       "id": "src-un-careers",
@@ -36,8 +36,8 @@
       "access_method": "html",
       "status": "active",
       "created_at": "2026-08-07T15:48:24.469Z",
-      "last_scraped_at": "2026-08-24T03:19:00.664Z",
-      "last_success_at": "2026-08-24T03:19:00.664Z"
+      "last_scraped_at": "2026-08-24T06:32:38.247Z",
+      "last_success_at": "2026-08-24T06:32:38.247Z"
     },
     {
       "id": "src-op-desk",
@@ -49,8 +49,8 @@
       "access_method": "rss",
       "status": "active",
       "created_at": "2026-08-07T15:48:24.470Z",
-      "last_scraped_at": "2026-08-24T03:19:00.779Z",
-      "last_success_at": "2026-08-24T03:19:00.779Z"
+      "last_scraped_at": "2026-08-24T06:32:39.904Z",
+      "last_success_at": "2026-08-24T06:32:39.904Z"
     },
     {
       "id": "src-op-circle",
@@ -62,8 +62,8 @@
       "access_method": "rss",
       "status": "active",
       "created_at": "2026-08-07T15:48:24.471Z",
-      "last_scraped_at": "2026-08-24T03:19:00.798Z",
-      "last_success_at": "2026-08-24T03:19:00.798Z"
+      "last_scraped_at": "2026-08-24T06:32:44.512Z",
+      "last_success_at": "2026-08-24T06:32:44.512Z"
     },
     {
       "status": "active",
@@ -74,8 +74,8 @@
       "id": "src-gov-global",
       "name": "Global Government Scholarship Portals",
       "domain": "gov.scholarships",
-      "last_scraped_at": "2026-08-24T03:19:00.551Z",
-      "last_success_at": "2026-08-24T03:19:00.551Z",
+      "last_scraped_at": "2026-08-24T06:32:38.232Z",
+      "last_success_at": "2026-08-24T06:32:38.232Z",
       "created_at": "2026-08-07T17:26:49.965Z"
     },
     {
@@ -87,8 +87,8 @@
       "id": "src-intl-orgs",
       "name": "International Organizations & UN Agencies",
       "domain": "un.org",
-      "last_scraped_at": "2026-08-24T03:19:00.567Z",
-      "last_success_at": "2026-08-24T03:19:00.575Z",
+      "last_scraped_at": "2026-08-24T06:32:38.235Z",
+      "last_success_at": "2026-08-24T06:32:38.235Z",
       "created_at": "2026-08-07T17:26:49.970Z"
     },
     {
@@ -100,8 +100,8 @@
       "id": "src-uni-excellence",
       "name": "World-Class Universities Global Scholarships",
       "domain": "universities.edu",
-      "last_scraped_at": "2026-08-24T03:19:00.580Z",
-      "last_success_at": "2026-08-24T03:19:00.580Z",
+      "last_scraped_at": "2026-08-24T06:32:38.237Z",
+      "last_success_at": "2026-08-24T06:32:38.237Z",
       "created_at": "2026-08-07T17:26:49.975Z"
     },
     {
@@ -113,8 +113,8 @@
       "id": "src-linkedin-global",
       "name": "LinkedIn Global Internships & Fellowships",
       "domain": "linkedin.com",
-      "last_scraped_at": "2026-08-24T03:19:00.518Z",
-      "last_success_at": "2026-08-24T03:19:00.518Z",
+      "last_scraped_at": "2026-08-24T06:32:38.228Z",
+      "last_success_at": "2026-08-24T06:32:38.229Z",
       "created_at": "2026-08-17T15:26:48.040Z"
     }
   ],

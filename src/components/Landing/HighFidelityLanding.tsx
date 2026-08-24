@@ -196,41 +196,42 @@ function EcoPipeline() {
   );
 }
 
-function EcoCVStudio({ cvSection }: { cvSection:number }) {
+function EcoCVStudio({ cvSection, hideInnerHeader = false }: { cvSection:number; hideInnerHeader?:boolean }) {
   const sections = [
-    { id:"summary", label:"Professional Summary", color:C.primary, lines:2 },
-    { id:"experience", label:"Work Experience", color:"#7C3AED", lines:4 },
-    { id:"skills", label:"Skills & Tools", color:C.success, lines:2 },
-    { id:"education", label:"Education", color:"#F24E1E", lines:2 },
+    { id:"summary", label:"Professional Summary", color:C.primary },
+    { id:"experience", label:"Work Experience", color:"#7C3AED" },
+    { id:"skills", label:"Skills & Tools", color:C.success },
+    { id:"education", label:"Education", color:"#F24E1E" },
   ];
   return (
-    <div className="h-full overflow-hidden p-4" style={{ background:"#fff" }}>
-      <div className="flex items-center justify-between mb-4">
-        <p className="text-[11px] font-semibold" style={{ color:C.text }}>CV — Product Designer · Stripe</p>
-        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg" style={{ background:C.xlight }}>
-          <span className="text-[10px] font-bold" style={{ color:C.primary }}>ATS</span>
-          <motion.span key={cvSection} initial={{ opacity:0, y:4 }} animate={{ opacity:1, y:0 }}
-            className="text-[14px] font-bold font-mono" style={{ color:C.primary }}>
-            {[87,91,89,94][cvSection]}
-          </motion.span>
+    <div className="h-full flex flex-col justify-between p-4" style={{ background:"#fff" }}>
+      {!hideInnerHeader && (
+        <div className="flex items-center justify-between mb-3 pb-2 border-b flex-shrink-0" style={{ borderColor:C.border }}>
+          <p className="text-[11px] font-semibold" style={{ color:C.text }}>Target: Product Designer · Stripe</p>
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg" style={{ background:C.xlight }}>
+            <span className="text-[10px] font-bold" style={{ color:C.primary }}>ATS Score</span>
+            <motion.span key={cvSection} initial={{ opacity:0, y:3 }} animate={{ opacity:1, y:0 }}
+              className="text-[13px] font-bold font-mono" style={{ color:C.primary }}>
+              {[87,91,89,94][cvSection]}%
+            </motion.span>
+          </div>
         </div>
-      </div>
-      <div className="space-y-2">
-        {sections.map(({ id, label, color, lines }, idx) => {
+      )}
+      <div className="space-y-2 flex-1 flex flex-col justify-between py-1">
+        {sections.map(({ id, label, color }, idx) => {
           const isActive = idx === cvSection;
           return (
-            <motion.div key={id} animate={{ scale:isActive?1.01:1 }}
-              className="rounded-xl p-3 border transition-all"
+            <motion.div key={id}
+              className="rounded-xl p-3 border transition-all flex-1 flex flex-col justify-center min-h-[72px]"
               style={{ borderColor:isActive?color:C.border, background:isActive?color+"0c":"#fff", boxShadow:isActive?`0 4px 16px ${color}18`:"none" }}>
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-1.5 h-1.5 rounded-full" style={{ background:isActive?color:"#CBD5E1" }}/>
-                <span className="text-[10px] font-bold" style={{ color:C.text }}>{label}</span>
-                {isActive && <span className="text-[8px] font-bold ml-auto px-1.5 py-0.5 rounded text-white" style={{ background:color }}>AI Enhanced ✓</span>}
+              <div className="flex items-center gap-2 mb-1.5">
+                <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background:isActive?color:"#CBD5E1" }}/>
+                <span className="text-[11px] font-bold truncate" style={{ color:C.text }}>{label}</span>
+                {isActive && <span className="text-[8.5px] font-bold ml-auto px-2 py-0.5 rounded text-white flex-shrink-0" style={{ background:color }}>AI Optimized ✓</span>}
               </div>
               <div className="space-y-1.5">
-                {Array.from({ length:lines }).map((_,li) => (
-                  <div key={li} className="h-2 rounded-full" style={{ background:isActive?color+"22":"#E2E8F0", width:li===lines-1?"65%":"100%" }}/>
-                ))}
+                <div className="h-2 rounded-full transition-all" style={{ background:isActive?color+"22":"#E2E8F0", width:"100%" }}/>
+                <div className="h-2 rounded-full transition-all" style={{ background:isActive?color+"22":"#E2E8F0", width:"68%" }}/>
               </div>
             </motion.div>
           );
@@ -240,29 +241,39 @@ function EcoCVStudio({ cvSection }: { cvSection:number }) {
   );
 }
 
-function EcoCoach({ coachIdx, isTyping }: { coachIdx:number; isTyping:boolean }) {
+function EcoCoach({ coachIdx, isTyping, hideInnerHeader = false }: { coachIdx:number; isTyping:boolean; hideInnerHeader?:boolean }) {
+  const chatScrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (chatScrollRef.current) {
+      chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
+    }
+  }, [coachIdx, isTyping]);
+
   return (
     <div className="h-full flex flex-col p-4" style={{ background:C.bg }}>
-      <div className="flex items-center gap-2 mb-4 pb-3 border-b" style={{ borderColor:C.border }}>
-        <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background:"#7C3AED18" }}>
-          <MessageSquare size={13} style={{ color:"#7C3AED" }}/>
+      {!hideInnerHeader && (
+        <div className="flex items-center gap-2 mb-3 pb-2 border-b flex-shrink-0" style={{ borderColor:C.border }}>
+          <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background:"#7C3AED18" }}>
+            <MessageSquare size={12} style={{ color:"#7C3AED" }}/>
+          </div>
+          <span className="text-[11.5px] font-semibold truncate" style={{ color:C.text }}>Mock STAR Interview · Stripe</span>
+          <div className="ml-auto flex items-center gap-1.5 flex-shrink-0">
+            <motion.div animate={{ scale:[1,1.3,1] }} transition={{ duration:1.5, repeat:Infinity }}
+              className="w-2 h-2 rounded-full" style={{ background:C.success }}/>
+            <span className="text-[10px] font-medium" style={{ color:C.muted }}>Live</span>
+          </div>
         </div>
-        <span className="text-[12px] font-semibold" style={{ color:C.text }}>Interview Coach · Stripe Product Designer</span>
-        <div className="ml-auto flex items-center gap-1.5">
-          <motion.div animate={{ scale:[1,1.3,1] }} transition={{ duration:1.5, repeat:Infinity }}
-            className="w-2 h-2 rounded-full" style={{ background:C.success }}/>
-          <span className="text-[10px]" style={{ color:C.muted }}>Live</span>
-        </div>
-      </div>
-      <div className="flex-1 space-y-2.5 overflow-hidden">
+      )}
+      <div ref={chatScrollRef} className="flex-1 space-y-2.5 overflow-y-auto no-scrollbar pr-1" style={{ minHeight: 280 }}>
         <AnimatePresence mode="popLayout">
           {COACH_MSGS.slice(0, coachIdx+1).map((msg, i) => (
-            <motion.div key={i} layout initial={{ opacity:0, y:10, scale:0.96 }} animate={{ opacity:1, y:0, scale:1 }}
-              transition={{ duration:0.3, ease:[0.16,1,0.3,1] }}
+            <motion.div key={i} layout initial={{ opacity:0, y:8, scale:0.97 }} animate={{ opacity:1, y:0, scale:1 }}
+              transition={{ duration:0.25, ease:[0.16,1,0.3,1] }}
               className={cn("flex", msg.from==="user" ? "justify-end" : "justify-start")}>
-              <div className="max-w-[86%] rounded-2xl px-3.5 py-2.5 text-[11px] leading-relaxed"
+              <div className="max-w-[88%] rounded-2xl px-3.5 py-2.5 text-[11.5px] leading-relaxed shadow-sm"
                 style={{ background:msg.from==="ai"?"#fff":C.text, color:msg.from==="ai"?C.text:"#fff", border:msg.from==="ai"?`1px solid ${C.border}`:"none" }}>
-                {msg.from==="ai" && <p className="text-[9px] font-bold mb-1" style={{ color:"#7C3AED" }}>Career Coach</p>}
+                {msg.from==="ai" && <p className="text-[9.5px] font-bold mb-1" style={{ color:"#7C3AED" }}>Career Coach</p>}
                 {msg.text}
               </div>
             </motion.div>
@@ -271,7 +282,7 @@ function EcoCoach({ coachIdx, isTyping }: { coachIdx:number; isTyping:boolean })
         <AnimatePresence>
           {isTyping && (
             <motion.div initial={{ opacity:0, y:6 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0 }} className="flex">
-              <div className="rounded-2xl px-3.5 py-2.5 flex gap-1" style={{ background:"#fff", border:`1px solid ${C.border}` }}>
+              <div className="rounded-2xl px-3.5 py-2.5 flex gap-1 bg-white border shadow-sm" style={{ borderColor:C.border }}>
                 {[0,0.2,0.4].map((d,i) => (
                   <motion.div key={i} animate={{ y:[0,-4,0] }} transition={{ duration:0.6, delay:d, repeat:Infinity }}
                     className="w-1.5 h-1.5 rounded-full" style={{ background:C.muted }}/>
@@ -281,11 +292,11 @@ function EcoCoach({ coachIdx, isTyping }: { coachIdx:number; isTyping:boolean })
           )}
         </AnimatePresence>
       </div>
-      <div className="flex items-center gap-2 mt-3 pt-3 border-t" style={{ borderColor:C.border }}>
+      <div className="flex items-center gap-2 mt-3 pt-3 border-t flex-shrink-0" style={{ borderColor:C.border }}>
         <div className="flex-1 rounded-xl px-3 py-2 text-[11px]" style={{ background:"#fff", border:`1px solid ${C.border}`, color:C.muted }}>
           Type your answer...
         </div>
-        <div className="w-8 h-8 rounded-xl flex items-center justify-center text-white flex-shrink-0" style={{ background:"#7C3AED" }}>
+        <div className="w-8 h-8 rounded-xl flex items-center justify-center text-white flex-shrink-0 shadow-sm" style={{ background:"#7C3AED" }}>
           <Mic size={13}/>
         </div>
       </div>
@@ -469,27 +480,58 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
           <div className="flex items-center gap-8 min-w-0">
             {/* Logo pinned all the way to the left */}
             <div className="flex items-center gap-3 cursor-pointer flex-shrink-0" onClick={()=>nav("landing")}>
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm" style={{ background:C.primary }}>
-                <span className="text-white text-[15px] font-extrabold tracking-tight">C</span>
-              </div>
+              <img src="/careerly-logo.png" alt="Careerly" className="w-9 h-9 object-contain flex-shrink-0" />
               <span className="text-[20px] font-bold tracking-tight" style={{ color:C.text }}>Careerly</span>
             </div>
 
             {/* Nav links */}
             <div className="hidden lg:flex items-center gap-6">
               {[
-                { name: "Opportunities", action: () => nav("discovery") },
-                { name: "CV Studio", action: () => nav("cv") },
-                { name: "Interview Coach", action: () => nav("coach") },
-                { name: "Pipeline CRM", action: () => nav("crm") },
-                { name: "Pricing", action: () => {
-                  const el = document.getElementById("pricing-section");
-                  if (el) el.scrollIntoView({ behavior: "smooth" });
-                }},
-                { name: "About", action: () => {
-                  const el = document.getElementById("journey-section");
-                  if (el) el.scrollIntoView({ behavior: "smooth" });
-                }}
+                { 
+                  name: "Features", 
+                  action: () => {
+                    const el = document.getElementById("platform-section");
+                    if (el) el.scrollIntoView({ behavior: "smooth" });
+                  } 
+                },
+                { 
+                  name: "CV Studio", 
+                  action: () => {
+                    setActiveEco(3);
+                    const el = document.getElementById("prepare-section") || document.getElementById("platform-section");
+                    if (el) el.scrollIntoView({ behavior: "smooth" });
+                  } 
+                },
+                { 
+                  name: "Interview Coach", 
+                  action: () => {
+                    setActiveEco(4);
+                    const el = document.getElementById("prepare-section") || document.getElementById("platform-section");
+                    if (el) el.scrollIntoView({ behavior: "smooth" });
+                  } 
+                },
+                { 
+                  name: "Pipeline CRM", 
+                  action: () => {
+                    setActiveEco(2);
+                    const el = document.getElementById("pipeline-section") || document.getElementById("platform-section");
+                    if (el) el.scrollIntoView({ behavior: "smooth" });
+                  } 
+                },
+                { 
+                  name: "How It Works", 
+                  action: () => {
+                    const el = document.getElementById("journey-section");
+                    if (el) el.scrollIntoView({ behavior: "smooth" });
+                  } 
+                },
+                { 
+                  name: "Stories", 
+                  action: () => {
+                    const el = document.getElementById("stories-section");
+                    if (el) el.scrollIntoView({ behavior: "smooth" });
+                  } 
+                }
               ].map(item => (
                 <button 
                   key={item.name} 
@@ -533,10 +575,10 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
         <div className="absolute pointer-events-none" style={{ bottom:"0%", left:"3%", width:380, height:380, borderRadius:"50%", background:`radial-gradient(circle,${C.bright}18 0%,transparent 70%)`, filter:"blur(55px)" }}/>
         <div className="absolute pointer-events-none" style={{ top:"35%", left:"30%", width:300, height:300, borderRadius:"50%", background:`radial-gradient(circle,${C.primary}10 0%,transparent 70%)`, filter:"blur(45px)" }}/>
 
-        <div className="relative z-10 max-w-[1240px] mx-auto px-6 sm:px-10 py-14 sm:py-20 flex items-center w-full min-h-[calc(90vh-80px)]">
-          <div className="grid grid-cols-1 lg:grid-cols-[480px_1fr] gap-12 xl:gap-16 items-center w-full">
+        <div className="relative z-10 w-full px-6 sm:px-10 lg:px-14 xl:px-16 py-12 sm:py-16 lg:py-20 flex items-center justify-between min-h-[calc(90vh-80px)]">
+          <div className="grid grid-cols-1 lg:grid-cols-[490px_1fr] xl:grid-cols-[530px_1fr] gap-10 xl:gap-14 items-center w-full justify-between">
 
-            {/* LEFT */}
+            {/* LEFT: Pushed all the way to the left */}
             <div>
               <motion.div initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }}
                 transition={{ duration:0.5, ease:[0.16,1,0.3,1] }}
@@ -557,7 +599,7 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
 
               <motion.p initial={{ opacity:0, y:18 }} animate={{ opacity:1, y:0 }}
                 transition={{ duration:0.55, delay:0.18, ease:[0.16,1,0.3,1] }}
-                className="text-[16px] leading-[1.78] mb-10 max-w-[430px]" style={{ color:"rgba(255,255,255,0.5)" }}>
+                className="text-[16px] leading-[1.78] mb-10 max-w-[440px]" style={{ color:"rgba(255,255,255,0.5)" }}>
                 Discover jobs, internships, scholarships and fellowships. Match, prepare, apply and succeed — all in one intelligent workspace.
               </motion.p>
 
@@ -571,12 +613,15 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
                   onMouseLeave={e=>{ e.currentTarget.style.background=C.primary; e.currentTarget.style.boxShadow=`0 4px 22px ${C.primary}55`; }}>
                   Get Started Free <ArrowRight size={14}/>
                 </motion.button>
-                <motion.button onClick={()=>nav("discovery")} whileHover={{ scale:1.03, y:-1 }} whileTap={{ scale:0.97 }}
+                <motion.button onClick={() => {
+                  const el = document.getElementById("platform-section");
+                  if (el) el.scrollIntoView({ behavior: "smooth" });
+                }} whileHover={{ scale:1.03, y:-1 }} whileTap={{ scale:0.97 }}
                   className="flex items-center gap-2 px-6 py-3.5 text-[14.5px] font-semibold rounded-xl transition-all cursor-pointer"
                   style={{ color:"rgba(255,255,255,0.75)", border:"1px solid rgba(255,255,255,0.15)" }}
                   onMouseEnter={e=>{ e.currentTarget.style.color="rgba(255,255,255,1)"; e.currentTarget.style.borderColor="rgba(255,255,255,0.3)"; }}
                   onMouseLeave={e=>{ e.currentTarget.style.color="rgba(255,255,255,0.75)"; e.currentTarget.style.borderColor="rgba(255,255,255,0.15)"; }}>
-                  Explore Opportunities
+                  Explore Platform
                 </motion.button>
               </motion.div>
 
@@ -592,124 +637,144 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
               </motion.div>
             </div>
 
-            {/* RIGHT: Constellation & Mock Dashboard */}
+            {/* RIGHT: Constellation & Mock Dashboard (Cards close to dashboard) */}
             <motion.div initial={{ opacity:0, x:52 }} animate={{ opacity:1, x:0 }}
               transition={{ duration:0.9, delay:0.14, ease:[0.16,1,0.3,1] }}
-              className="hidden lg:flex items-center justify-center relative w-full h-[520px]">
+              className="hidden lg:flex items-center justify-center relative w-full h-[580px]">
 
-              {/* Central dashboard */}
-              <motion.div
-                style={{ x:dashX, y:dashY, border:`1px solid rgba(255,255,255,0.12)`, boxShadow:"0 32px 80px rgba(0,0,0,0.65), 0 0 0 1px rgba(255,255,255,0.06)" }}
-                animate={{ y:[0,-6,0] }} transition={{ duration:7.5, repeat:Infinity, ease:"easeInOut" }}
-                className="relative w-[540px] h-[370px] rounded-2xl overflow-hidden shadow-2xl">
-                <div className="h-9 flex items-center px-3.5 gap-2.5" style={{ background:"#1E2D3E", borderBottom:"1px solid rgba(255,255,255,0.08)" }}>
-                  <div className="flex gap-1.5">
-                    {[0,1,2].map(i=><div key={i} className="w-2.5 h-2.5 rounded-full" style={{ background:"rgba(255,255,255,0.15)" }}/>)}
+              <div className="relative w-[640px] h-[430px]">
+
+                {/* SVG constellation lines */}
+                <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex:15 }}>
+                  {[
+                    { x1:"-2%", y1:"0%", x2:"48%", y2:"48%" },
+                    { x1:"98%", y1:"0%", x2:"52%", y2:"48%" },
+                    { x1:"98%", y1:"98%", x2:"52%", y2:"52%" },
+                    { x1:"-2%", y1:"98%", x2:"48%", y2:"52%" },
+                  ].map((line, i) => (
+                    <motion.line key={i} {...line} stroke={`${C.primary}`} strokeWidth="0.9" strokeOpacity="0.3"
+                      strokeDasharray="5 5"
+                      animate={{ strokeDashoffset:[0,-20] }}
+                      transition={{ duration:2.5+i*0.4, repeat:Infinity, ease:"linear" }}/>
+                  ))}
+                </svg>
+
+                {/* Central dashboard */}
+                <motion.div
+                  style={{ x:dashX, y:dashY, border:`1px solid rgba(255,255,255,0.12)`, boxShadow:"0 32px 80px rgba(0,0,0,0.65), 0 0 0 1px rgba(255,255,255,0.06)" }}
+                  animate={{ y:[0,-6,0] }} transition={{ duration:7.5, repeat:Infinity, ease:"easeInOut" }}
+                  className="w-full h-full rounded-2xl overflow-hidden shadow-2xl">
+                  <div className="h-10 flex items-center px-4 gap-2.5" style={{ background:"#1E2D3E", borderBottom:"1px solid rgba(255,255,255,0.08)" }}>
+                    <div className="flex gap-1.5">
+                      {[0,1,2].map(i=><div key={i} className="w-2.5 h-2.5 rounded-full" style={{ background:"rgba(255,255,255,0.15)" }}/>)}
+                    </div>
+                    <div className="flex-1 mx-3 h-6 rounded flex items-center px-3 gap-2" style={{ background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.07)" }}>
+                      <div className="w-2 h-2 rounded-full" style={{ background:"rgba(255,255,255,0.2)" }}/>
+                      <span className="text-[10px] font-mono" style={{ color:"rgba(255,255,255,0.45)" }}>app.careerly.io/dashboard</span>
+                    </div>
                   </div>
-                  <div className="flex-1 mx-3 h-5 rounded flex items-center px-2.5 gap-1.5" style={{ background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.07)" }}>
-                    <div className="w-1.5 h-1.5 rounded-full" style={{ background:"rgba(255,255,255,0.2)" }}/>
-                    <span className="text-[9px] font-mono" style={{ color:"rgba(255,255,255,0.4)" }}>app.careerly.io/dashboard</span>
-                  </div>
-                </div>
-                <div className="flex" style={{ height:"calc(100% - 36px)", background:C.bg }}>
-                  <div className="flex flex-col py-3 px-2.5 flex-shrink-0" style={{ width:130, background:"#fff", borderRight:`1px solid ${C.border}` }}>
-                    <div className="flex items-center gap-2 px-1.5 py-1 mb-3">
-                      <div className="w-5 h-5 rounded-md flex-shrink-0 flex items-center justify-center" style={{ background:C.primary }}>
-                        <span style={{ color:"#fff", fontSize:8, fontWeight:700 }}>C</span>
+                  <div className="flex" style={{ height:"calc(100% - 40px)", background:C.bg }}>
+                    <div className="flex flex-col py-4 px-3 flex-shrink-0" style={{ width:145, background:"#fff", borderRight:`1px solid ${C.border}` }}>
+                      <div className="flex items-center gap-2.5 px-2 py-1 mb-4">
+                        <img src="/careerly-logo.png" alt="Careerly" className="w-6 h-6 object-contain flex-shrink-0" />
+                        <span style={{ fontSize:12, fontWeight:700, color:C.text }}>Careerly</span>
                       </div>
-                      <span style={{ fontSize:11, fontWeight:700, color:C.text }}>Careerly</span>
-                    </div>
-                    {[["Dashboard",true],["Discover",false],["Applications",false],["Saved",false],["CV Studio",false],["Coach",false]].map(([l,a])=>(
-                      <div key={l as string} style={{ padding:"5px 8px", borderRadius:6, fontSize:9.5, fontWeight:500, marginBottom:2, cursor:"pointer", background:a?C.primary:"transparent", color:a?"#fff":C.muted }}>
-                        {l as string}
+                      {[["Dashboard",true],["Discover",false],["Applications",false],["Saved",false],["CV Studio",false],["Coach",false]].map(([l,a])=>(
+                        <div key={l as string} style={{ padding:"6px 10px", borderRadius:7, fontSize:10.5, fontWeight:500, marginBottom:3, cursor:"pointer", background:a?C.primary:"transparent", color:a?"#fff":C.muted }}>
+                          {l as string}
+                        </div>
+                      ))}
+                      <div className="mt-auto pt-3 flex items-center gap-2 px-1" style={{ borderTop:`1px solid ${C.border}` }}>
+                        <div className="w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center text-white text-[9px] font-bold" style={{ background:C.primary }}>AK</div>
+                        <div className="min-w-0"><p style={{ fontSize:10, fontWeight:600, color:C.text, lineHeight:1.1 }} className="truncate">Alex Kim</p><p style={{ fontSize:8, color:C.muted }}>Open to work</p></div>
                       </div>
-                    ))}
-                    <div className="mt-auto pt-2.5 flex items-center gap-1.5 px-1" style={{ borderTop:`1px solid ${C.border}` }}>
-                      <div className="w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center text-white text-[8px] font-bold" style={{ background:C.primary }}>AK</div>
-                      <div className="min-w-0"><p style={{ fontSize:9, fontWeight:600, color:C.text, lineHeight:1.1 }} className="truncate">Alex Kim</p><p style={{ fontSize:7.5, color:C.muted }}>Open to work</p></div>
                     </div>
-                  </div>
-                  <div className="flex-1 overflow-hidden" style={{ padding:12 }}>
-                    <div className="flex items-center justify-between" style={{ marginBottom:10 }}>
-                      <p style={{ fontSize:11, fontWeight:700, color:C.text }}>Good morning, Alex 👋</p>
-                      <p style={{ fontSize:9, fontFamily:"monospace", color:C.muted }}>Dec 9, 2024</p>
-                    </div>
-                    <div className="grid grid-cols-4 gap-1.5" style={{ marginBottom:10 }}>
-                      {[["12","Active",C.primary],["4","Applied",C.bright],["2","Offers","#7C3AED"],["84%","Match",C.success]].map(([n,l,c])=>(
-                        <div key={l as string} style={{ background:"#fff", border:`1px solid ${C.border}`, borderRadius:8, padding:"6px 8px" }}>
-                          <p style={{ fontSize:15, fontWeight:700, fontFamily:"monospace", color:c as string, lineHeight:1 }}>{n}</p>
-                          <p style={{ fontSize:7.5, color:C.muted, marginTop:2 }}>{l}</p>
+                    <div className="flex-1 overflow-hidden" style={{ padding:16 }}>
+                      <div className="flex items-center justify-between" style={{ marginBottom:14 }}>
+                        <p style={{ fontSize:13, fontWeight:700, color:C.text }}>Good morning, Alex 👋</p>
+                        <p style={{ fontSize:10, fontFamily:"monospace", color:C.muted }}>Dec 9, 2024</p>
+                      </div>
+                      <div className="grid grid-cols-4 gap-2" style={{ marginBottom:14 }}>
+                        {[["12","Active",C.primary],["4","Applied",C.bright],["2","Offers","#7C3AED"],["84%","Match",C.success]].map(([n,l,c])=>(
+                          <div key={l as string} style={{ background:"#fff", border:`1px solid ${C.border}`, borderRadius:10, padding:"8px 10px" }}>
+                            <p style={{ fontSize:17, fontWeight:700, fontFamily:"monospace", color:c as string, lineHeight:1 }}>{n}</p>
+                            <p style={{ fontSize:8.5, color:C.muted, marginTop:2 }}>{l}</p>
+                          </div>
+                        ))}
+                      </div>
+                      <p style={{ fontSize:9, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:8 }}>Recommended for you</p>
+                      {OPPS.slice(0,4).map(o=>(
+                        <div key={o.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"7px 8px", borderRadius:10, cursor:"pointer", marginBottom:3, transition:"background 0.15s" }}
+                          onMouseEnter={e=>(e.currentTarget.style.background="#fff")}
+                          onMouseLeave={e=>(e.currentTarget.style.background="transparent")}>
+                          <div style={{ width:24, height:24, borderRadius:8, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", color:"#fff", fontSize:9, fontWeight:700, background:o.color }}>{o.initial}</div>
+                          <div style={{ flex:1, minWidth:0 }}>
+                            <p style={{ fontSize:11, fontWeight:600, color:C.text, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{o.title}</p>
+                            <p style={{ fontSize:8.5, color:C.muted }}>{o.company}</p>
+                          </div>
+                          <span style={{ fontSize:8.5, fontFamily:"monospace", fontWeight:700, padding:"2px 6px", borderRadius:5, background:C.xlight, color:C.primary, flexShrink:0 }}>{o.match}%</span>
                         </div>
                       ))}
                     </div>
-                    <p style={{ fontSize:8, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:6 }}>Recommended for you</p>
-                    {OPPS.slice(0,4).map(o=>(
-                      <div key={o.id} style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 6px", borderRadius:8, cursor:"pointer", marginBottom:2, transition:"background 0.15s" }}
-                        onMouseEnter={e=>(e.currentTarget.style.background="#fff")}
-                        onMouseLeave={e=>(e.currentTarget.style.background="transparent")}>
-                        <div style={{ width:20, height:20, borderRadius:6, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", color:"#fff", fontSize:8, fontWeight:700, background:o.color }}>{o.initial}</div>
-                        <div style={{ flex:1, minWidth:0 }}>
-                          <p style={{ fontSize:9.5, fontWeight:600, color:C.text, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{o.title}</p>
-                          <p style={{ fontSize:7.5, color:C.muted }}>{o.company}</p>
-                        </div>
-                        <span style={{ fontSize:7.5, fontFamily:"monospace", fontWeight:700, padding:"2px 5px", borderRadius:4, background:C.xlight, color:C.primary, flexShrink:0 }}>{o.match}%</span>
-                      </div>
-                    ))}
                   </div>
-                </div>
-              </motion.div>
+                </motion.div>
 
-              {/* Floating Opportunity Cards with High-Contrast Dark Navy */}
-              {HERO_CARDS.map((card, i) => {
-                const pos = [
-                  { top:"30px", left:"-20px", floatDir:1, floatAmp:10, floatDur:4.6 },
-                  { top:"15px", right:"-15px", floatDir:-1, floatAmp:9, floatDur:5.3 },
-                  { bottom:"25px", left:"-15px", floatDir:1, floatAmp:8, floatDur:3.9 },
-                  { bottom:"35px", right:"-20px", floatDir:-1, floatAmp:10, floatDur:4.8 },
-                ][i];
-                const isHov = hoveredHeroCard===i;
-                return (
-                  <motion.div key={card.id}
-                    style={{ x:parallaxXArr[i], y:parallaxYArr[i], position:"absolute", top:pos.top, left:(pos as any).left, right:(pos as any).right, bottom:(pos as any).bottom, zIndex:isHov?30:15 }}>
-                    <motion.div
-                      animate={{ y:[0, pos.floatDir*pos.floatAmp, 0] }}
-                      transition={{ duration:pos.floatDur, repeat:Infinity, ease:"easeInOut" }}>
+                {/* Floating Opportunity Cards positioned at the 4 outer corner pockets */}
+                {HERO_CARDS.map((card, i) => {
+                  const pos = [
+                    // Card 0: Product Designer (Stripe) -> Top-Left outer corner pocket
+                    { top:"-45px", left:"-50px", floatDir:1, floatAmp:8, floatDur:4.6 },
+                    // Card 1: Staff Product Manager (Figma) -> Bottom-Right outer corner pocket
+                    { bottom:"-40px", right:"-35px", floatDir:-1, floatAmp:8, floatDur:5.3 },
+                    // Card 2: Senior Frontend Engineer (Linear) -> Top-Right outer corner pocket
+                    { top:"-50px", right:"-35px", floatDir:1, floatAmp:7, floatDur:3.9 },
+                    // Card 3: Chevening Scholarship (UK Gov) -> Bottom-Left outer corner pocket
+                    { bottom:"-40px", left:"-50px", floatDir:-1, floatAmp:8, floatDur:4.8 },
+                  ][i];
+                  const isHov = hoveredHeroCard===i;
+                  return (
+                    <motion.div key={card.id}
+                      style={{ x:parallaxXArr[i], y:parallaxYArr[i], position:"absolute", top:pos.top, left:(pos as any).left, right:(pos as any).right, bottom:(pos as any).bottom, zIndex:isHov?35:25 }}>
                       <motion.div
-                        onMouseEnter={()=>setHoveredHeroCard(i)}
-                        onMouseLeave={()=>setHoveredHeroCard(null)}
-                        whileHover={{ scale:1.05 }}
-                        transition={{ duration:0.2 }}
-                        style={{
-                          cursor:"pointer",
-                          background:"#091738",
-                          border:`1px solid ${isHov ? C.primary : "rgba(255,255,255,0.14)"}`,
-                          boxShadow: isHov ? `0 20px 48px ${C.primary}40, 0 0 0 1px ${C.primary}` : "0 18px 40px rgba(0,0,0,0.6)"
-                        }}
-                        className="rounded-2xl p-3.5 w-48">
-                        <div className="flex items-start gap-2.5 mb-2">
-                          <div className="w-7 h-7 rounded-xl flex-shrink-0 flex items-center justify-center text-white text-[10px] font-bold shadow-xs" style={{ background:card.color }}>{card.initial}</div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-[11.5px] font-semibold text-white truncate">{card.title}</p>
-                            <p className="text-[9.5px] text-white/60 truncate">{card.company}</p>
+                        animate={{ y:[0, pos.floatDir*pos.floatAmp, 0] }}
+                        transition={{ duration:pos.floatDur, repeat:Infinity, ease:"easeInOut" }}>
+                        <motion.div
+                          onMouseEnter={()=>setHoveredHeroCard(i)}
+                          onMouseLeave={()=>setHoveredHeroCard(null)}
+                          whileHover={{ scale:1.05 }}
+                          transition={{ duration:0.2 }}
+                          style={{
+                            cursor:"pointer",
+                            background:"#091738",
+                            border:`1px solid ${isHov ? C.primary : "rgba(255,255,255,0.14)"}`,
+                            boxShadow: isHov ? `0 20px 48px ${C.primary}40, 0 0 0 1px ${C.primary}` : "0 18px 40px rgba(0,0,0,0.65)"
+                          }}
+                          className="rounded-2xl p-4 w-52">
+                          <div className="flex items-start gap-2.5 mb-2.5">
+                            <div className="w-8 h-8 rounded-xl flex-shrink-0 flex items-center justify-center text-white text-[11px] font-bold shadow-xs" style={{ background:card.color }}>{card.initial}</div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-[12px] font-semibold text-white truncate">{card.title}</p>
+                              <p className="text-[10px] text-white/60 truncate">{card.company}</p>
+                            </div>
                           </div>
-                        </div>
-                        <div className="flex items-center justify-between pt-2 border-t border-white/10">
-                          <span className="text-[9.5px] text-white/50">{card.type} · {card.mode}</span>
-                          <MatchRing score={card.match} size={34} dark/>
-                        </div>
+                          <div className="flex items-center justify-between pt-2 border-t border-white/10">
+                            <span className="text-[10px] text-white/50">{card.type} · {card.mode}</span>
+                            <MatchRing score={card.match} size={36} dark/>
+                          </div>
+                        </motion.div>
                       </motion.div>
                     </motion.div>
-                  </motion.div>
-                );
-              })}
+                  );
+                })}
 
+              </div>
             </motion.div>
           </div>
         </div>
       </section>
 
       {/* ── Ecosystem Command Center ──────────────────────────────── */}
-      <section className="py-14 sm:py-20" style={{ borderBottom:`1px solid ${C.border}` }}>
+      <section id="platform-section" className="py-14 sm:py-20" style={{ borderBottom:`1px solid ${C.border}` }}>
         <div className="max-w-[1180px] mx-auto px-4 sm:px-6">
           <motion.div initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }}
             viewport={{ once:true, amount:0.2 }} transition={{ duration:0.55 }} className="mb-10">
@@ -835,7 +900,8 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
                   initial={{ opacity:0, scale:0.95, y:12 }} animate={{ opacity:1, scale:1, y:0 }}
                   exit={{ opacity:0, scale:0.92 }} transition={{ duration:0.3, delay:i*0.04 }}
                   onMouseEnter={()=>setHoverOpp(o.id)} onMouseLeave={()=>setHoverOpp(null)}
-                  className="group rounded-2xl p-5 cursor-pointer border transition-all"
+                  onClick={() => nav("signin")}
+                  className="group rounded-2xl p-5 cursor-pointer border transition-all relative overflow-hidden"
                   style={{ background:"#fff", borderColor:hoverOpp===o.id?C.primary:C.border, boxShadow:hoverOpp===o.id?`0 12px 36px ${C.primary}15`:"0 2px 8px rgba(16,33,61,0.04)" }}>
                   <motion.div animate={{ y:hoverOpp===o.id?-2:0 }} transition={{ duration:0.2 }}>
                     <div className="flex items-start gap-3 mb-4">
@@ -844,8 +910,8 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
                         <p className="text-[14px] font-semibold leading-tight truncate transition-colors" style={{ color:hoverOpp===o.id?C.primary:C.text }}>{o.title}</p>
                         <p className="text-[12px]" style={{ color:C.muted }}>{o.company}</p>
                       </div>
-                      <motion.button onClick={e=>{e.stopPropagation();toggleSave(o.id);}} whileHover={{ scale:1.3 }} whileTap={{ scale:0.8 }}>
-                        <Heart size={16} fill={savedOpps.has(o.id)?C.primary:"none"} color={savedOpps.has(o.id)?C.primary:"#CBD5E1"}/>
+                      <motion.button onClick={e=>{e.stopPropagation();nav("signin");}} whileHover={{ scale:1.3 }} whileTap={{ scale:0.8 }} title="Sign in to save">
+                        <Heart size={16} fill="none" color="#CBD5E1"/>
                       </motion.button>
                     </div>
                     <div className="flex items-center gap-2 mb-4 flex-wrap">
@@ -861,10 +927,13 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
                       {hoverOpp===o.id && (
                         <motion.div initial={{ opacity:0, height:0 }} animate={{ opacity:1, height:"auto" }}
                           exit={{ opacity:0, height:0 }} transition={{ duration:0.22 }} className="overflow-hidden">
-                          <div className="flex flex-wrap gap-1.5 mt-3 pt-3" style={{ borderTop:`1px solid ${C.border}` }}>
-                            {o.skills.map(s=>(
-                              <span key={s} className="text-[10px] font-medium px-2 py-0.5 rounded-md" style={{ background:C.xlight, color:C.primary }}>{s}</span>
-                            ))}
+                          <div className="flex items-center justify-between mt-3 pt-3" style={{ borderTop:`1px solid ${C.border}` }}>
+                            <div className="flex flex-wrap gap-1.5">
+                              {o.skills.slice(0,2).map(s=>(
+                                <span key={s} className="text-[10px] font-medium px-2 py-0.5 rounded-md" style={{ background:C.xlight, color:C.primary }}>{s}</span>
+                              ))}
+                            </div>
+                            <span className="text-[11px] font-bold" style={{ color:C.primary }}>Sign in to view →</span>
                           </div>
                         </motion.div>
                       )}
@@ -881,17 +950,22 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
             </motion.div>
           )}
           <div className="text-center mt-8">
-            <motion.button onClick={()=>nav("discovery")} whileHover={{ scale:1.04, y:-1 }} whileTap={{ scale:0.96 }}
-              className="inline-flex items-center gap-2 px-6 py-3 text-white text-[14px] font-semibold rounded-xl"
-              style={{ background:C.primary, boxShadow:`0 4px 16px ${C.primary}30` }}>
-              Browse All 50,000+ Opportunities <ArrowRight size={14}/>
-            </motion.button>
+            <div className="inline-flex flex-col sm:flex-row items-center gap-3 p-2 bg-white rounded-2xl border shadow-sm max-w-full" style={{ borderColor:C.border }}>
+              <span className="text-[12.5px] font-medium px-3 text-center sm:text-left" style={{ color:C.muted }}>
+                🔒 Sign in to unlock full database and match with your profile
+              </span>
+              <motion.button onClick={()=>nav("signin")} whileHover={{ scale:1.03, y:-1 }} whileTap={{ scale:0.96 }}
+                className="inline-flex items-center gap-2 px-5 py-2.5 text-white text-[13.5px] font-bold rounded-xl cursor-pointer whitespace-nowrap shadow-sm"
+                style={{ background:C.primary, boxShadow:`0 4px 14px ${C.primary}35` }}>
+                Sign In to View All 50,000+ Opportunities <ArrowRight size={14}/>
+              </motion.button>
+            </div>
           </div>
         </div>
       </section>
 
       {/* ── Pipeline ──────────────────────────────────────────────── */}
-      <section className="py-14 sm:py-20" style={{ borderBottom:`1px solid ${C.border}`, background:"#fff" }}>
+      <section id="pipeline-section" className="py-14 sm:py-20" style={{ borderBottom:`1px solid ${C.border}`, background:"#fff" }}>
         <div className="max-w-[1180px] mx-auto px-4 sm:px-6">
           <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-12 items-start">
             <motion.div initial={{ opacity:0, x:-20 }} whileInView={{ opacity:1, x:0 }}
@@ -1013,7 +1087,7 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
       </section>
 
       {/* ── CV Studio + Interview Coach ───────────────────────────── */}
-      <section className="py-14 sm:py-20" style={{ borderBottom:`1px solid ${C.border}`, background:C.bg }}>
+      <section id="prepare-section" className="py-14 sm:py-20" style={{ borderBottom:`1px solid ${C.border}`, background:C.bg }}>
         <div className="max-w-[1180px] mx-auto px-4 sm:px-6">
           <motion.div initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }}
             viewport={{ once:true, amount:0.2 }} transition={{ duration:0.55 }} className="text-center mb-14">
@@ -1028,8 +1102,8 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <motion.div initial={{ opacity:0, x:-20 }} whileInView={{ opacity:1, x:0 }}
               viewport={{ once:true, amount:0.2 }} transition={{ duration:0.55 }}
-              className="rounded-2xl overflow-hidden border" style={{ borderColor:C.border, boxShadow:"0 8px 32px rgba(16,33,61,0.07)" }}>
-              <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor:C.border, background:"#fff" }}>
+              className="rounded-2xl overflow-hidden border flex flex-col h-[480px] min-h-[480px] max-h-[480px]" style={{ borderColor:C.border, boxShadow:"0 8px 32px rgba(16,33,61,0.07)", background:"#fff" }}>
+              <div className="flex items-center justify-between px-4 py-3 border-b flex-shrink-0" style={{ borderColor:C.border, background:"#fff" }}>
                 <div className="flex items-center gap-2">
                   <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background:"#F24E1E18" }}>
                     <FileText size={14} style={{ color:"#F24E1E" }}/>
@@ -1037,19 +1111,22 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
                   <span className="text-[13px] font-semibold" style={{ color:C.text }}>CV Studio</span>
                 </div>
                 <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg" style={{ background:C.xlight }}>
-                  <span className="text-[10px] font-bold" style={{ color:C.primary }}>ATS</span>
+                  <span className="text-[10px] font-bold" style={{ color:C.primary }}>ATS Score</span>
                   <motion.span key={cvSection} initial={{ scale:0.8, opacity:0 }} animate={{ scale:1, opacity:1 }}
-                    className="text-[15px] font-bold font-mono" style={{ color:C.primary }}>
-                    {[87,91,89,94][cvSection]}
+                    className="text-[14px] font-bold font-mono" style={{ color:C.primary }}>
+                    {[87,91,89,94][cvSection]}%
                   </motion.span>
                 </div>
               </div>
-              <EcoCVStudio cvSection={cvSection}/>
+              <div className="flex-1 overflow-hidden">
+                <EcoCVStudio cvSection={cvSection} hideInnerHeader={true}/>
+              </div>
             </motion.div>
+
             <motion.div initial={{ opacity:0, x:20 }} whileInView={{ opacity:1, x:0 }}
               viewport={{ once:true, amount:0.2 }} transition={{ duration:0.55 }}
-              className="rounded-2xl overflow-hidden border" style={{ borderColor:C.border, boxShadow:"0 8px 32px rgba(16,33,61,0.07)" }}>
-              <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor:C.border, background:"#fff" }}>
+              className="rounded-2xl overflow-hidden border flex flex-col h-[480px] min-h-[480px] max-h-[480px]" style={{ borderColor:C.border, boxShadow:"0 8px 32px rgba(16,33,61,0.07)", background:C.bg }}>
+              <div className="flex items-center justify-between px-4 py-3 border-b flex-shrink-0" style={{ borderColor:C.border, background:"#fff" }}>
                 <div className="flex items-center gap-2">
                   <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background:"#7C3AED18" }}>
                     <MessageSquare size={14} style={{ color:"#7C3AED" }}/>
@@ -1058,17 +1135,19 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
                 </div>
                 <div className="flex items-center gap-1.5">
                   <motion.div animate={{ scale:[1,1.3,1] }} transition={{ duration:1.5, repeat:Infinity }} className="w-2 h-2 rounded-full" style={{ background:C.success }}/>
-                  <span className="text-[11px]" style={{ color:C.muted }}>Live session</span>
+                  <span className="text-[11px] font-medium" style={{ color:C.muted }}>Live session</span>
                 </div>
               </div>
-              <EcoCoach coachIdx={coachIdx} isTyping={isTyping}/>
+              <div className="flex-1 overflow-hidden">
+                <EcoCoach coachIdx={coachIdx} isTyping={isTyping} hideInnerHeader={true}/>
+              </div>
             </motion.div>
           </div>
         </div>
       </section>
 
       {/* ── Career Journey ─────────────────────────────────────────── */}
-      <section className="py-14 sm:py-20" style={{ borderBottom:`1px solid ${C.border}`, background:"#fff" }}>
+      <section id="journey-section" className="py-14 sm:py-20" style={{ borderBottom:`1px solid ${C.border}`, background:"#fff" }}>
         <div className="max-w-[1180px] mx-auto px-4 sm:px-6">
           <motion.div initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }}
             viewport={{ once:true, amount:0.2 }} transition={{ duration:0.55 }} className="text-center mb-14">
@@ -1145,7 +1224,7 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
       </section>
 
       {/* ── Testimonials ─────────────────────────────────────────── */}
-      <section className="py-14 sm:py-20" style={{ borderBottom:`1px solid ${C.border}`, background:C.bg }}>
+      <section id="stories-section" className="py-14 sm:py-20" style={{ borderBottom:`1px solid ${C.border}`, background:C.bg }}>
         <div className="max-w-[1180px] mx-auto px-4 sm:px-6">
           <motion.div initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }}
             viewport={{ once:true, amount:0.2 }} transition={{ duration:0.55 }} className="mb-12">
@@ -1207,12 +1286,15 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
                 onMouseLeave={e=>{ e.currentTarget.style.background=C.primary; e.currentTarget.style.boxShadow=`0 4px 24px ${C.primary}55`; }}>
                 Get Started Free <ArrowRight size={15}/>
               </motion.button>
-              <motion.button onClick={()=>nav("discovery")} whileHover={{ scale:1.03, y:-1 }} whileTap={{ scale:0.97 }}
-                className="w-full sm:w-auto flex items-center justify-center gap-2 px-7 py-3.5 text-[14px] font-medium rounded-xl transition-all"
+              <motion.button onClick={() => {
+                const el = document.getElementById("platform-section");
+                if (el) el.scrollIntoView({ behavior: "smooth" });
+              }} whileHover={{ scale:1.03, y:-1 }} whileTap={{ scale:0.97 }}
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-7 py-3.5 text-[14px] font-medium rounded-xl transition-all cursor-pointer"
                 style={{ color:"rgba(255,255,255,0.55)", border:"1px solid rgba(255,255,255,0.1)" }}
                 onMouseEnter={e=>{ e.currentTarget.style.color="rgba(255,255,255,0.9)"; e.currentTarget.style.borderColor="rgba(255,255,255,0.22)"; }}
                 onMouseLeave={e=>{ e.currentTarget.style.color="rgba(255,255,255,0.55)"; e.currentTarget.style.borderColor="rgba(255,255,255,0.1)"; }}>
-                Browse Opportunities
+                Explore Platform
               </motion.button>
             </div>
           </motion.div>
@@ -1225,9 +1307,7 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
           <div className="flex flex-col sm:flex-row items-start sm:justify-between gap-10 mb-10">
             <div className="flex-shrink-0">
               <div className="flex items-center gap-2.5 mb-3">
-                <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background:C.primary }}>
-                  <span className="text-white text-[10px] font-bold">C</span>
-                </div>
+                <img src="/careerly-logo.png" alt="Careerly" className="w-7 h-7 object-contain flex-shrink-0" />
                 <span className="text-[14px] font-semibold text-white">Careerly</span>
               </div>
               <p className="text-[12px] leading-relaxed max-w-[200px]" style={{ color:"rgba(255,255,255,0.28)" }}>The career operating system for ambitious professionals.</p>

@@ -383,47 +383,49 @@ export default function SecurityCenter({ triggerToast }) {
   const statusMeta = getStatusBadge(authoritativeStatus);
 
   return (
-    <div className="security-center-container" style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
+    <div className="security-center-container flex flex-col gap-6 w-full">
 
       {/* TOP HEADER & REAL-TIME AUDIT CONTROLS */}
-      <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.75rem', boxShadow: 'var(--shadow-card)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1.25rem' }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-              <span style={{ padding: '0.4rem', borderRadius: 'var(--radius-md)', background: 'rgba(16,185,129,0.12)', display: 'inline-flex' }}>
-                <ShieldCheck size={26} color="var(--accent-emerald)" />
-              </span>
-              <div>
-                <h2 style={{ fontSize: '1.45rem', fontWeight: '900', color: 'var(--text-headings)', letterSpacing: '-0.02em', margin: 0 }}>
+      <div className="bg-card border border-border rounded-2xl p-6 shadow-xs transition-all">
+        <div className="flex justify-between items-center flex-wrap gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center flex-shrink-0">
+              <ShieldCheck size={24} className="text-emerald-500" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-xl font-bold text-foreground tracking-tight">
                   Enterprise Security Operations Center
                 </h2>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: '0.2rem' }}>
-                  Authoritative multi-tenant isolation, penetration defense gates, supply-chain audits, and runtime telemetry.
-                </p>
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-[11px] font-bold">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                  Active Shield
+                </span>
               </div>
+              <p className="text-muted-foreground text-xs sm:text-sm mt-0.5">
+                Authoritative multi-tenant isolation, penetration defense gates, supply-chain audits, and runtime telemetry.
+              </p>
             </div>
           </div>
 
           {/* ACTION BUTTONS */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap' }}>
+          <div className="flex items-center gap-2.5 flex-wrap">
             <button
-              className="btn btn-secondary"
               onClick={loadAllSecurityData}
               disabled={isLoading || isActionRunning}
               title="Refresh security metrics"
-              style={{ fontSize: '0.82rem', padding: '0.55rem 0.95rem' }}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold bg-secondary/80 hover:bg-secondary border border-border text-foreground transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
             >
-              <RefreshCw size={15} className={isLoading ? 'spin-animation' : ''} />
+              <RefreshCw size={14} className={isLoading ? 'spin-animation' : ''} />
               <span>Refresh</span>
             </button>
 
             <button
-              className="btn btn-primary"
               onClick={() => runSecurityAction('35-Point Security Audit', '/admin/security/audit/run', 'Full Security Audit Completed!')}
               disabled={isActionRunning}
-              style={{ fontSize: '0.82rem', padding: '0.55rem 1.1rem', background: 'var(--accent-emerald)', borderColor: 'var(--accent-emerald)', color: '#fff' }}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm shadow-emerald-600/20 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
             >
-              <Play size={15} />
+              <Play size={14} />
               <span>Run Full Audit</span>
             </button>
           </div>
@@ -431,59 +433,64 @@ export default function SecurityCenter({ triggerToast }) {
 
         {/* ACTIVE ACTION RUNNING BANNER */}
         {isActionRunning && (
-          <div style={{ marginTop: '1.25rem', padding: '0.75rem 1rem', borderRadius: 'var(--radius-md)', background: 'rgba(56,189,248,0.1)', border: '1px solid var(--accent-cyan)', display: 'flex', alignItems: 'center', gap: '0.65rem', color: 'var(--accent-cyan)', fontSize: '0.85rem' }}>
-            <RefreshCw size={16} className="spin-animation" />
-            <span style={{ fontWeight: '700' }}>{actionMessage}</span>
+          <div className="mt-4 p-3.5 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center gap-3 text-cyan-600 dark:text-cyan-400 text-xs font-semibold">
+            <RefreshCw size={15} className="spin-animation flex-shrink-0" />
+            <span>{actionMessage}</span>
           </div>
         )}
       </div>
 
       {/* CORE KPI SUMMARY CARDS */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         
         {/* KPI 1: AUTHORITATIVE SECURITY SCORE */}
-        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: '1.35rem', boxShadow: 'var(--shadow-sm)' }}>
-          <div style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Security Posture Score</div>
-          <div style={{ fontSize: '2.2rem', fontWeight: '900', color: authoritativeScore >= 90 ? 'var(--accent-emerald)' : authoritativeScore >= 70 ? 'var(--accent-amber)' : 'var(--accent-rose)', marginTop: '0.2rem' }}>
-            {authoritativeScore} <span style={{ fontSize: '1rem', color: 'var(--text-tertiary)', fontWeight: '700' }}>/ 100</span>
+        <div className="bg-card border border-border rounded-2xl p-5 shadow-xs hover:shadow-md transition-all">
+          <div className="text-[11px] text-muted-foreground font-bold uppercase tracking-wider">Security Posture Score</div>
+          <div className="text-3xl sm:text-4xl font-extrabold font-mono text-foreground mt-1 flex items-baseline gap-1">
+            <span style={{ color: authoritativeScore >= 90 ? '#10B981' : authoritativeScore >= 70 ? '#F59E0B' : '#F43F5E' }}>
+              {authoritativeScore}
+            </span>
+            <span className="text-sm font-semibold text-muted-foreground">/ 100</span>
           </div>
-          <div style={{ marginTop: '0.35rem' }}>
-            <span style={{ display: 'inline-flex', padding: '0.2rem 0.6rem', borderRadius: 'var(--radius-full)', background: statusMeta.bg, color: statusMeta.color, fontSize: '0.75rem', fontWeight: '800' }}>
-              ● {statusMeta.label}
+          <div className="mt-2.5">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold" style={{ background: statusMeta.bg, color: statusMeta.color }}>
+              <span className="w-1.5 h-1.5 rounded-full" style={{ background: statusMeta.color }}></span>
+              {statusMeta.label}
             </span>
           </div>
         </div>
 
         {/* KPI 2: PENETRATION CHECKS SUMMARY */}
-        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: '1.35rem', boxShadow: 'var(--shadow-sm)' }}>
-          <div style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Audit Assertions</div>
-          <div style={{ fontSize: '2.2rem', fontWeight: '900', color: 'var(--text-headings)', marginTop: '0.2rem' }}>
-            {lastAudit.passedChecks ?? 35} <span style={{ fontSize: '1rem', color: 'var(--text-tertiary)', fontWeight: '700' }}>/ {lastAudit.totalChecks ?? 35}</span>
+        <div className="bg-card border border-border rounded-2xl p-5 shadow-xs hover:shadow-md transition-all">
+          <div className="text-[11px] text-muted-foreground font-bold uppercase tracking-wider">Audit Assertions</div>
+          <div className="text-3xl sm:text-4xl font-extrabold font-mono text-foreground mt-1 flex items-baseline gap-1">
+            <span>{lastAudit.passedChecks ?? 35}</span>
+            <span className="text-sm font-semibold text-muted-foreground">/ {lastAudit.totalChecks ?? 35}</span>
           </div>
-          <div style={{ fontSize: '0.75rem', color: lastAudit.failedChecks > 0 ? 'var(--accent-rose)' : 'var(--accent-emerald)', marginTop: '0.35rem', fontWeight: '700' }}>
+          <div className={`text-xs mt-2.5 font-bold flex items-center gap-1 ${lastAudit.failedChecks > 0 ? 'text-rose-500' : 'text-emerald-500'}`}>
             {lastAudit.failedChecks > 0 ? `✗ ${lastAudit.failedChecks} failing gates` : '✓ 0 failed defensive checks'}
           </div>
         </div>
 
         {/* KPI 3: VERIFICATION FRESHNESS & TTL */}
-        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: '1.35rem', boxShadow: 'var(--shadow-sm)' }}>
-          <div style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Verification Freshness</div>
-          <div style={{ fontSize: '1.35rem', fontWeight: '800', color: 'var(--text-headings)', marginTop: '0.45rem' }}>
+        <div className="bg-card border border-border rounded-2xl p-5 shadow-xs hover:shadow-md transition-all">
+          <div className="text-[11px] text-muted-foreground font-bold uppercase tracking-wider">Verification Freshness</div>
+          <div className="text-xl sm:text-2xl font-bold text-foreground mt-2">
             {securityStatus?.freshness?.isOutdated ? 'Outdated (>24h)' : 'Fresh & Active'}
           </div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.45rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+          <div className="text-xs text-muted-foreground mt-2 flex items-center gap-1.5 font-medium">
             <Clock size={13} />
             <span>TTL: 24h Window</span>
           </div>
         </div>
 
         {/* KPI 4: RUNTIME DEFENSE EVENTS (24H) */}
-        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: '1.35rem', boxShadow: 'var(--shadow-sm)' }}>
-          <div style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Telemetry Events (24h)</div>
-          <div style={{ fontSize: '2.2rem', fontWeight: '900', color: 'var(--accent-cyan)', marginTop: '0.2rem' }}>
+        <div className="bg-card border border-border rounded-2xl p-5 shadow-xs hover:shadow-md transition-all">
+          <div className="text-[11px] text-muted-foreground font-bold uppercase tracking-wider">Telemetry Events (24h)</div>
+          <div className="text-3xl sm:text-4xl font-extrabold font-mono text-cyan-600 dark:text-cyan-400 mt-1">
             {eventStats?.last24h ?? 0}
           </div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.35rem' }}>
+          <div className="text-xs text-muted-foreground mt-2 font-medium">
             {eventStats?.total ?? 0} all-time logged events
           </div>
         </div>
@@ -491,17 +498,7 @@ export default function SecurityCenter({ triggerToast }) {
       </div>
 
       {/* SUB-TAB NAVIGATION BAR */}
-      <div 
-        className="no-scrollbar"
-        style={{ 
-          display: 'flex', 
-          gap: '0.45rem', 
-          borderBottom: '1px solid var(--border-default)', 
-          paddingBottom: '0.75rem', 
-          overflowX: 'auto',
-          WebkitOverflowScrolling: 'touch'
-        }}
-      >
+      <div className="flex items-center gap-1.5 p-1.5 bg-slate-100/80 dark:bg-slate-900/80 border border-border rounded-xl overflow-x-auto no-scrollbar shadow-xs">
         {[
           { id: 'overview', label: 'Overview & Actions', icon: Activity },
           { id: 'categories', label: '14 Security Categories', icon: Layers },
@@ -518,25 +515,13 @@ export default function SecurityCenter({ triggerToast }) {
             <button
               key={tab.id}
               onClick={() => setActiveSecTab(tab.id)}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.45rem',
-                padding: '0.55rem 0.95rem',
-                borderRadius: 'var(--radius-full)',
-                fontSize: '0.84rem',
-                fontWeight: isActive ? '800' : '600',
-                background: isActive ? '#2457FF' : 'var(--bg-surface-elevated)',
-                color: isActive ? '#ffffff' : 'var(--text-secondary)',
-                border: isActive ? '1px solid #2457FF' : '1px solid var(--border-default)',
-                cursor: 'pointer',
-                transition: 'all 0.15s cubic-bezier(0.16, 1, 0.3, 1)',
-                whiteSpace: 'nowrap',
-                boxShadow: isActive ? '0 1px 3px rgba(36, 87, 255, 0.3)' : 'none',
-                flexShrink: 0
-              }}
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all whitespace-nowrap cursor-pointer flex-shrink-0 ${
+                isActive
+                  ? 'bg-[#2457FF] text-white shadow-xs'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-white/60 dark:hover:bg-slate-800/60'
+              }`}
             >
-              <Icon size={15} color={isActive ? '#ffffff' : 'currentColor'} />
+              <Icon size={14} className={isActive ? 'text-white' : 'text-current'} />
               <span>{tab.label}</span>
             </button>
           );
@@ -547,76 +532,72 @@ export default function SecurityCenter({ triggerToast }) {
       {/* SUB-VIEW 1: OVERVIEW & FAST ACTIONS */}
       {/* ========================================================================= */}
       {activeSecTab === 'overview' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        <div className="flex flex-col gap-6">
           
           {/* SCAN ACTIONS STRIP */}
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.5rem', boxShadow: 'var(--shadow-sm)' }}>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: '800', color: 'var(--text-headings)', marginBottom: '0.35rem' }}>
+          <div className="bg-card border border-border rounded-2xl p-6 shadow-xs">
+            <h3 className="text-base font-bold text-foreground">
               On-Demand Security Verification Actions
             </h3>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1.25rem' }}>
+            <p className="text-muted-foreground text-xs sm:text-sm mt-0.5 mb-5">
               Execute targeted security evaluations on live backend infrastructure. All scans enforce zero-secret logging.
             </p>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.85rem' }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
               
               <button
-                className="btn btn-secondary"
                 disabled={isActionRunning}
                 onClick={() => runSecurityAction('Dependency Audit', '/admin/security/scan/dependencies', 'Dependency audit clean: 0 vulnerabilities!')}
-                style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', justifyContent: 'flex-start', padding: '0.85rem 1rem', height: 'auto', textAlign: 'left', background: 'var(--bg-surface-elevated)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-md)' }}
+                className="bg-card hover:bg-slate-50 dark:hover:bg-slate-800/60 border border-border hover:border-primary/40 rounded-xl p-4 transition-all hover:shadow-xs text-left flex items-center gap-3.5 cursor-pointer disabled:opacity-50"
               >
-                <div style={{ width: '34px', height: '34px', borderRadius: 'var(--radius-sm)', background: 'var(--accent-blue-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <Package size={18} color="var(--accent-blue)" />
+                <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center flex-shrink-0">
+                  <Package size={18} className="text-blue-500" />
                 </div>
-                <div>
-                  <div style={{ fontWeight: '800', fontSize: '0.86rem', color: 'var(--text-primary)' }}>Scan Dependencies</div>
-                  <div style={{ fontSize: '0.74rem', color: 'var(--text-secondary)' }}>Live npm audit v2 analysis</div>
+                <div className="min-w-0 flex-1">
+                  <div className="font-bold text-xs sm:text-sm text-foreground truncate">Scan Dependencies</div>
+                  <div className="text-[11px] text-muted-foreground truncate">Live npm audit v2 analysis</div>
                 </div>
               </button>
 
               <button
-                className="btn btn-secondary"
                 disabled={isActionRunning}
                 onClick={() => runSecurityAction('Source Secret Scan', '/admin/security/scan/secrets', 'Source secret scan completed!')}
-                style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', justifyContent: 'flex-start', padding: '0.85rem 1rem', height: 'auto', textAlign: 'left', background: 'var(--bg-surface-elevated)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-md)' }}
+                className="bg-card hover:bg-slate-50 dark:hover:bg-slate-800/60 border border-border hover:border-primary/40 rounded-xl p-4 transition-all hover:shadow-xs text-left flex items-center gap-3.5 cursor-pointer disabled:opacity-50"
               >
-                <div style={{ width: '34px', height: '34px', borderRadius: 'var(--radius-sm)', background: 'var(--accent-amber-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <Lock size={18} color="var(--accent-amber)" />
+                <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center flex-shrink-0">
+                  <Lock size={18} className="text-amber-500" />
                 </div>
-                <div>
-                  <div style={{ fontWeight: '800', fontSize: '0.86rem', color: 'var(--text-primary)' }}>Scan Source Secrets</div>
-                  <div style={{ fontSize: '0.74rem', color: 'var(--text-secondary)' }}>11 high-confidence regex rules</div>
+                <div className="min-w-0 flex-1">
+                  <div className="font-bold text-xs sm:text-sm text-foreground truncate">Scan Source Secrets</div>
+                  <div className="text-[11px] text-muted-foreground truncate">11 high-confidence regex rules</div>
                 </div>
               </button>
 
               <button
-                className="btn btn-secondary"
                 disabled={isActionRunning}
                 onClick={() => runSecurityAction('Historical Git Scan', '/admin/security/scan/git-history', 'Historical Git commit scan completed!')}
-                style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', justifyContent: 'flex-start', padding: '0.85rem 1rem', height: 'auto', textAlign: 'left', background: 'var(--bg-surface-elevated)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-md)' }}
+                className="bg-card hover:bg-slate-50 dark:hover:bg-slate-800/60 border border-border hover:border-primary/40 rounded-xl p-4 transition-all hover:shadow-xs text-left flex items-center gap-3.5 cursor-pointer disabled:opacity-50"
               >
-                <div style={{ width: '34px', height: '34px', borderRadius: 'var(--radius-sm)', background: 'var(--accent-emerald-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <GitBranch size={18} color="var(--accent-emerald)" />
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center flex-shrink-0">
+                  <GitBranch size={18} className="text-emerald-500" />
                 </div>
-                <div>
-                  <div style={{ fontWeight: '800', fontSize: '0.86rem', color: 'var(--text-primary)' }}>Scan Git History</div>
-                  <div style={{ fontSize: '0.74rem', color: 'var(--text-secondary)' }}>Traverse all reachable commits</div>
+                <div className="min-w-0 flex-1">
+                  <div className="font-bold text-xs sm:text-sm text-foreground truncate">Scan Git History</div>
+                  <div className="text-[11px] text-muted-foreground truncate">Traverse all reachable commits</div>
                 </div>
               </button>
 
               <button
-                className="btn btn-secondary"
                 disabled={isActionRunning}
                 onClick={() => runSecurityAction('35-Point Security Audit', '/admin/security/audit/run', 'Full Security Audit Completed!')}
-                style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', justifyContent: 'flex-start', padding: '0.85rem 1rem', height: 'auto', textAlign: 'left', background: 'var(--bg-surface-elevated)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-md)' }}
+                className="bg-card hover:bg-slate-50 dark:hover:bg-slate-800/60 border border-border hover:border-emerald-500/50 rounded-xl p-4 transition-all hover:shadow-xs text-left flex items-center gap-3.5 cursor-pointer disabled:opacity-50"
               >
-                <div style={{ width: '34px', height: '34px', borderRadius: 'var(--radius-sm)', background: 'var(--accent-emerald-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <ShieldCheck size={18} color="var(--accent-emerald)" />
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center flex-shrink-0">
+                  <ShieldCheck size={18} className="text-emerald-500" />
                 </div>
-                <div>
-                  <div style={{ fontWeight: '800', fontSize: '0.86rem', color: 'var(--text-primary)' }}>Run 35-Point Audit</div>
-                  <div style={{ fontSize: '0.74rem', color: 'var(--text-secondary)' }}>Full regression & scoring run</div>
+                <div className="min-w-0 flex-1">
+                  <div className="font-bold text-xs sm:text-sm text-foreground truncate">Run 35-Point Audit</div>
+                  <div className="text-[11px] text-muted-foreground truncate">Full regression & scoring run</div>
                 </div>
               </button>
 
@@ -625,27 +606,27 @@ export default function SecurityCenter({ triggerToast }) {
 
           {/* LATEST AUDIT RUN METADATA SUMMARY */}
           {lastAudit.id && (
-            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.5rem', boxShadow: 'var(--shadow-sm)' }}>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: '800', color: 'var(--text-headings)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Clock size={18} color="var(--accent-cyan)" /> Latest Executed Security Audit Run
+            <div className="bg-card border border-border rounded-2xl p-6 shadow-xs">
+              <h3 className="text-base font-bold text-foreground mb-4 flex items-center gap-2">
+                <Clock size={18} className="text-cyan-500" /> Latest Executed Security Audit Run
               </h3>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', fontSize: '0.85rem' }}>
-                <div>
-                  <div style={{ color: 'var(--text-tertiary)', fontSize: '0.75rem', fontWeight: '700' }}>RUN IDENTIFIER</div>
-                  <div style={{ fontWeight: '700', fontFamily: 'monospace', marginTop: '0.2rem' }}>{lastAudit.id}</div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs sm:text-sm">
+                <div className="bg-slate-50/80 dark:bg-slate-900/80 p-3.5 rounded-xl border border-border">
+                  <div className="text-muted-foreground text-[10px] font-bold uppercase tracking-wider">RUN IDENTIFIER</div>
+                  <div className="font-bold font-mono text-foreground mt-1 truncate">{lastAudit.id}</div>
                 </div>
-                <div>
-                  <div style={{ color: 'var(--text-tertiary)', fontSize: '0.75rem', fontWeight: '700' }}>GIT COMMIT SHA</div>
-                  <div style={{ fontWeight: '700', fontFamily: 'monospace', marginTop: '0.2rem' }}>{lastAudit.gitCommit || 'b4440d3'}</div>
+                <div className="bg-slate-50/80 dark:bg-slate-900/80 p-3.5 rounded-xl border border-border">
+                  <div className="text-muted-foreground text-[10px] font-bold uppercase tracking-wider">GIT COMMIT SHA</div>
+                  <div className="font-bold font-mono text-foreground mt-1 truncate">{lastAudit.gitCommit || '96d01ea'}</div>
                 </div>
-                <div>
-                  <div style={{ color: 'var(--text-tertiary)', fontSize: '0.75rem', fontWeight: '700' }}>COMPLETED AT</div>
-                  <div style={{ fontWeight: '600', marginTop: '0.2rem' }}>{lastAudit.completedAt || 'Just now'}</div>
+                <div className="bg-slate-50/80 dark:bg-slate-900/80 p-3.5 rounded-xl border border-border">
+                  <div className="text-muted-foreground text-[10px] font-bold uppercase tracking-wider">COMPLETED AT</div>
+                  <div className="font-semibold text-foreground mt-1 truncate">{lastAudit.completedAt || 'Just now'}</div>
                 </div>
-                <div>
-                  <div style={{ color: 'var(--text-tertiary)', fontSize: '0.75rem', fontWeight: '700' }}>EXECUTION TIME</div>
-                  <div style={{ fontWeight: '600', marginTop: '0.2rem' }}>{lastAudit.durationMs ? `${lastAudit.durationMs}ms` : '—'}</div>
+                <div className="bg-slate-50/80 dark:bg-slate-900/80 p-3.5 rounded-xl border border-border">
+                  <div className="text-muted-foreground text-[10px] font-bold uppercase tracking-wider">EXECUTION TIME</div>
+                  <div className="font-semibold text-foreground mt-1 truncate">{lastAudit.durationMs ? `${lastAudit.durationMs}ms` : '—'}</div>
                 </div>
               </div>
             </div>
@@ -658,52 +639,58 @@ export default function SecurityCenter({ triggerToast }) {
       {/* SUB-VIEW 2: 14 AUTHORITATIVE SECURITY CATEGORIES */}
       {/* ========================================================================= */}
       {activeSecTab === 'categories' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.85rem' }}>
+        <div className="flex flex-col gap-6">
+          <div className="flex justify-between items-center flex-wrap gap-4">
             <div>
-              <h3 style={{ fontSize: '1.2rem', fontWeight: '800', color: 'var(--text-headings)' }}>14 Security Verification Categories</h3>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: '0.15rem' }}>
+              <h3 className="text-base sm:text-lg font-bold text-foreground">14 Security Verification Categories</h3>
+              <p className="text-muted-foreground text-xs sm:text-sm mt-0.5">
                 Weights strictly sum to 100 points, calculated deterministically by the authoritative backend scoring engine.
               </p>
             </div>
-            <div style={{ fontSize: '0.85rem', fontWeight: '800', color: 'var(--accent-emerald)', background: 'rgba(16,185,129,0.1)', padding: '0.35rem 0.85rem', borderRadius: 'var(--radius-full)' }}>
+            <div className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3.5 py-1.5 rounded-full">
               Weights Sum: 100 Points
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(310px, 1fr))', gap: '1rem' }}>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {(categoriesData?.categories || []).map(cat => {
               const catStatus = getStatusBadge(cat.status);
               const pct = cat.percentage ?? (cat.score / cat.weight * 100);
 
               return (
-                <div key={cat.key} style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: '1.25rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '0.85rem', boxShadow: 'var(--shadow-sm)' }}>
+                <div key={cat.key} className="bg-card border border-border rounded-2xl p-5 flex flex-col justify-between gap-4 shadow-xs hover:shadow-md transition-all">
                   <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
-                      <h4 style={{ fontSize: '0.95rem', fontWeight: '800', color: 'var(--text-headings)', margin: 0 }}>{cat.name}</h4>
-                      <span style={{ fontSize: '0.7rem', fontWeight: '800', padding: '0.15rem 0.5rem', borderRadius: 'var(--radius-full)', background: catStatus.bg, color: catStatus.color, flexShrink: 0 }}>
+                    <div className="flex justify-between items-start gap-2">
+                      <h4 className="font-bold text-sm text-foreground">{cat.name}</h4>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0" style={{ background: catStatus.bg, color: catStatus.color }}>
                         {cat.status}
                       </span>
                     </div>
 
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginTop: '0.85rem' }}>
-                      <div style={{ fontSize: '1.4rem', fontWeight: '900', color: 'var(--text-headings)' }}>
-                        {cat.score} <span style={{ fontSize: '0.85rem', color: 'var(--text-tertiary)', fontWeight: '700' }}>/ {cat.weight} pts</span>
+                    <div className="flex justify-between items-baseline mt-3">
+                      <div className="text-2xl font-extrabold font-mono text-foreground">
+                        {cat.score} <span className="text-xs text-muted-foreground font-semibold">/ {cat.weight} pts</span>
                       </div>
-                      <div style={{ fontSize: '0.82rem', fontWeight: '800', color: pct === 100 ? 'var(--accent-emerald)' : 'var(--accent-amber)' }}>
+                      <div className={`text-xs font-bold ${pct === 100 ? 'text-emerald-500' : 'text-amber-500'}`}>
                         {Math.round(pct)}%
                       </div>
                     </div>
 
                     {/* Progress Bar */}
-                    <div style={{ width: '100%', height: '6px', background: 'var(--border)', borderRadius: 'var(--radius-full)', marginTop: '0.45rem', overflow: 'hidden' }}>
-                      <div style={{ width: `${Math.min(100, Math.max(0, pct))}%`, height: '100%', background: pct === 100 ? 'var(--accent-emerald)' : pct > 0 ? 'var(--accent-amber)' : 'var(--accent-rose)', borderRadius: 'var(--radius-full)', transition: 'width 0.3s ease' }} />
+                    <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full mt-2.5 overflow-hidden">
+                      <div 
+                        className="h-full rounded-full transition-all duration-300"
+                        style={{ 
+                          width: `${Math.min(100, Math.max(0, pct))}%`,
+                          background: pct === 100 ? '#10B981' : pct > 0 ? '#F59E0B' : '#F43F5E' 
+                        }} 
+                      />
                     </div>
                   </div>
 
-                  <div style={{ fontSize: '0.76rem', color: 'var(--text-secondary)', borderTop: '1px solid var(--border)', paddingTop: '0.65rem', display: 'flex', justifyContent: 'space-between' }}>
+                  <div className="text-xs text-muted-foreground border-t border-border/80 pt-3 flex justify-between items-center">
                     <span>{cat.checks_count || cat.passed_count || 1} assertions evaluated</span>
-                    <span style={{ color: 'var(--accent-emerald)', fontWeight: '700' }}>✓ {cat.passed_count || 1} pass</span>
+                    <span className="text-emerald-500 font-bold">✓ {cat.passed_count || 1} pass</span>
                   </div>
                 </div>
               );
@@ -716,38 +703,38 @@ export default function SecurityCenter({ triggerToast }) {
       {/* SUB-VIEW 3: RUNTIME SECURITY DEFENSE EVENTS & TELEMETRY */}
       {/* ========================================================================= */}
       {activeSecTab === 'events' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        <div className="flex flex-col gap-6">
           
           {/* STATS STRIP */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.85rem' }}>
-            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: '1rem' }}>
-              <div style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)', fontWeight: '800', textTransform: 'uppercase' }}>Total Events</div>
-              <div style={{ fontSize: '1.6rem', fontWeight: '900', color: 'var(--text-headings)', marginTop: '0.2rem' }}>{eventStats?.total ?? 0}</div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="bg-card border border-border rounded-2xl p-5 shadow-xs">
+              <div className="text-[11px] text-muted-foreground font-bold uppercase tracking-wider">Total Events</div>
+              <div className="text-3xl font-extrabold font-mono text-foreground mt-1">{eventStats?.total ?? 0}</div>
             </div>
-            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: '1rem' }}>
-              <div style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)', fontWeight: '800', textTransform: 'uppercase' }}>Last 24 Hours</div>
-              <div style={{ fontSize: '1.6rem', fontWeight: '900', color: 'var(--accent-cyan)', marginTop: '0.2rem' }}>{eventStats?.last24h ?? 0}</div>
+            <div className="bg-card border border-border rounded-2xl p-5 shadow-xs">
+              <div className="text-[11px] text-muted-foreground font-bold uppercase tracking-wider">Last 24 Hours</div>
+              <div className="text-3xl font-extrabold font-mono text-cyan-600 dark:text-cyan-400 mt-1">{eventStats?.last24h ?? 0}</div>
             </div>
-            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: '1rem' }}>
-              <div style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)', fontWeight: '800', textTransform: 'uppercase' }}>Critical / High</div>
-              <div style={{ fontSize: '1.6rem', fontWeight: '900', color: (eventStats?.bySeverity?.CRITICAL || eventStats?.bySeverity?.HIGH) ? 'var(--accent-rose)' : 'var(--accent-emerald)', marginTop: '0.2rem' }}>
+            <div className="bg-card border border-border rounded-2xl p-5 shadow-xs">
+              <div className="text-[11px] text-muted-foreground font-bold uppercase tracking-wider">Critical / High</div>
+              <div className={`text-3xl font-extrabold font-mono mt-1 ${(eventStats?.bySeverity?.CRITICAL || eventStats?.bySeverity?.HIGH) ? 'text-rose-500' : 'text-emerald-500'}`}>
                 {(eventStats?.bySeverity?.CRITICAL || 0) + (eventStats?.bySeverity?.HIGH || 0)}
               </div>
             </div>
-            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: '1rem' }}>
-              <div style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)', fontWeight: '800', textTransform: 'uppercase' }}>Medium / Low</div>
-              <div style={{ fontSize: '1.6rem', fontWeight: '900', color: 'var(--accent-amber)', marginTop: '0.2rem' }}>
+            <div className="bg-card border border-border rounded-2xl p-5 shadow-xs">
+              <div className="text-[11px] text-muted-foreground font-bold uppercase tracking-wider">Medium / Low</div>
+              <div className="text-3xl font-extrabold font-mono text-amber-500 mt-1">
                 {(eventStats?.bySeverity?.MEDIUM || 0) + (eventStats?.bySeverity?.LOW || 0)}
               </div>
             </div>
           </div>
 
           {/* FILTERS & SEARCH */}
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.25rem', display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
+          <div className="bg-card border border-border rounded-2xl p-4 flex gap-3 flex-wrap items-center shadow-xs">
             <select
               value={eventTypeFilter}
               onChange={(e) => { setEventTypeFilter(e.target.value); setEventsPage(1); fetchEvents(1); }}
-              style={{ background: 'var(--bg-main)', border: '1px solid var(--border)', color: 'var(--text-headings)', padding: '0.5rem 0.85rem', borderRadius: 'var(--radius-md)', fontSize: '0.84rem' }}
+              className="bg-slate-100 dark:bg-slate-900 border border-border text-foreground px-3.5 py-2 rounded-xl text-xs font-semibold outline-none focus:border-primary cursor-pointer"
             >
               <option value="">All Event Types</option>
               <option value="AUTH_FAILURE">AUTH_FAILURE</option>
@@ -765,7 +752,7 @@ export default function SecurityCenter({ triggerToast }) {
             <select
               value={eventSeverityFilter}
               onChange={(e) => { setEventSeverityFilter(e.target.value); setEventsPage(1); fetchEvents(1); }}
-              style={{ background: 'var(--bg-main)', border: '1px solid var(--border)', color: 'var(--text-headings)', padding: '0.5rem 0.85rem', borderRadius: 'var(--radius-md)', fontSize: '0.84rem' }}
+              className="bg-slate-100 dark:bg-slate-900 border border-border text-foreground px-3.5 py-2 rounded-xl text-xs font-semibold outline-none focus:border-primary cursor-pointer"
             >
               <option value="">All Severities</option>
               <option value="CRITICAL">CRITICAL</option>
@@ -774,79 +761,92 @@ export default function SecurityCenter({ triggerToast }) {
               <option value="LOW">LOW</option>
             </select>
 
-            <button className="btn btn-secondary" onClick={() => fetchEvents(eventsPage)} style={{ fontSize: '0.82rem', padding: '0.5rem 0.85rem' }}>
-              <Filter size={14} /> Apply Filter
+            <button 
+              onClick={() => fetchEvents(eventsPage)}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-[#2457FF] hover:bg-[#1d4ed8] text-white shadow-xs transition-all cursor-pointer"
+            >
+              <Filter size={13} /> Apply Filter
             </button>
           </div>
 
           {/* EVENTS TABLE */}
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.25rem', overflowX: 'auto', boxShadow: 'var(--shadow-sm)' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.84rem' }}>
-              <thead>
-                <tr style={{ borderBottom: '1.5px solid var(--border)', color: 'var(--text-tertiary)', textAlign: 'left' }}>
-                  <th style={{ padding: '0.65rem 0.75rem' }}>Timestamp</th>
-                  <th style={{ padding: '0.65rem 0.75rem' }}>Event Type</th>
-                  <th style={{ padding: '0.65rem 0.75rem' }}>Severity</th>
-                  <th style={{ padding: '0.65rem 0.75rem' }}>Method & Path</th>
-                  <th style={{ padding: '0.65rem 0.75rem' }}>Actor IP</th>
-                  <th style={{ padding: '0.65rem 0.75rem' }}>Sanitized Details</th>
-                </tr>
-              </thead>
-              <tbody>
-                {eventsData.events.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-tertiary)' }}>
-                      No security telemetry events found matching the criteria.
-                    </td>
+          <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-xs">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-slate-50/80 dark:bg-slate-900/80 border-b border-border text-muted-foreground text-[11px] font-bold uppercase tracking-wider">
+                    <th className="px-4 py-3">Timestamp</th>
+                    <th className="px-4 py-3">Event Type</th>
+                    <th className="px-4 py-3">Severity</th>
+                    <th className="px-4 py-3">Method & Path</th>
+                    <th className="px-4 py-3">Actor IP</th>
+                    <th className="px-4 py-3">Sanitized Details</th>
                   </tr>
-                ) : (
-                  eventsData.events.map(ev => {
-                    const sevMeta = getStatusBadge(ev.severity);
-                    return (
-                      <tr key={ev.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                        <td style={{ padding: '0.65rem 0.75rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>{ev.created_at}</td>
-                        <td style={{ padding: '0.65rem 0.75rem', fontWeight: '800', fontFamily: 'monospace' }}>{ev.event_type}</td>
-                        <td style={{ padding: '0.65rem 0.75rem' }}>
-                          <span style={{ fontSize: '0.72rem', fontWeight: '800', padding: '0.15rem 0.45rem', borderRadius: 'var(--radius-full)', background: sevMeta.bg, color: sevMeta.color }}>
-                            {ev.severity}
-                          </span>
-                        </td>
-                        <td style={{ padding: '0.65rem 0.75rem', fontFamily: 'monospace', color: 'var(--text-headings)' }}>
-                          <span style={{ color: 'var(--accent-cyan)', fontWeight: '700' }}>{ev.request_method || 'GET'}</span> {ev.request_path || '—'}
-                        </td>
-                        <td style={{ padding: '0.65rem 0.75rem', fontFamily: 'monospace', color: 'var(--text-tertiary)' }}>{ev.actor_ip || '—'}</td>
-                        <td style={{ padding: '0.65rem 0.75rem', fontSize: '0.78rem', color: 'var(--text-secondary)', maxWidth: '320px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          {ev.details ? JSON.stringify(ev.details) : '—'}
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-border/60">
+                  {eventsData.events.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="text-center py-8 text-muted-foreground text-xs">
+                        No security telemetry events found matching the criteria.
+                      </td>
+                    </tr>
+                  ) : (
+                    eventsData.events.map(ev => {
+                      const sev = String(ev.severity || '').toUpperCase();
+                      const sevBadgeClass = 
+                        sev === 'CRITICAL' || sev === 'HIGH' 
+                          ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20'
+                          : sev === 'MEDIUM' 
+                            ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
+                            : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20';
+
+                      return (
+                        <tr key={ev.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
+                          <td className="px-4 py-3 text-muted-foreground whitespace-nowrap font-mono text-[11px]">{ev.created_at}</td>
+                          <td className="px-4 py-3 font-bold font-mono text-foreground text-[11px]">{ev.event_type}</td>
+                          <td className="px-4 py-3">
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${sevBadgeClass}`}>
+                              {ev.severity}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 font-mono text-[11px] text-foreground">
+                            <span className="px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 font-bold mr-1.5">
+                              {ev.request_method || 'GET'}
+                            </span>
+                            <span>{ev.request_path || '—'}</span>
+                          </td>
+                          <td className="px-4 py-3 font-mono text-[11px] text-muted-foreground">{ev.actor_ip || '—'}</td>
+                          <td className="px-4 py-3 font-mono text-[11px] text-muted-foreground max-w-xs truncate">
+                            {ev.details ? JSON.stringify(ev.details) : '—'}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
 
             {/* PAGINATION CONTROLS */}
             {eventsData.totalPages > 1 && (
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.25rem', paddingTop: '0.85rem', borderTop: '1px solid var(--border)' }}>
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)' }}>
+              <div className="flex justify-between items-center px-4 py-3 border-t border-border bg-slate-50/40 dark:bg-slate-900/40">
+                <span className="text-xs text-muted-foreground">
                   Page {eventsPage} of {eventsData.totalPages} ({eventsData.total} records)
                 </span>
-                <div style={{ display: 'flex', gap: '0.45rem' }}>
+                <div className="flex gap-2">
                   <button
-                    className="btn btn-secondary"
                     disabled={eventsPage <= 1}
                     onClick={() => { const p = eventsPage - 1; setEventsPage(p); fetchEvents(p); }}
-                    style={{ padding: '0.4rem 0.75rem', fontSize: '0.8rem' }}
+                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-border text-xs font-semibold bg-card hover:bg-secondary text-foreground disabled:opacity-40 cursor-pointer"
                   >
-                    <ChevronLeft size={15} /> Prev
+                    <ChevronLeft size={14} /> Prev
                   </button>
                   <button
-                    className="btn btn-secondary"
                     disabled={eventsPage >= eventsData.totalPages}
                     onClick={() => { const p = eventsPage + 1; setEventsPage(p); fetchEvents(p); }}
-                    style={{ padding: '0.4rem 0.75rem', fontSize: '0.8rem' }}
+                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-border text-xs font-semibold bg-card hover:bg-secondary text-foreground disabled:opacity-40 cursor-pointer"
                   >
-                    Next <ChevronRight size={15} />
+                    Next <ChevronRight size={14} />
                   </button>
                 </div>
               </div>
@@ -859,113 +859,119 @@ export default function SecurityCenter({ triggerToast }) {
       {/* SUB-VIEW 4: AUDIT RUNS HISTORY & DETAILED INSPECTOR */}
       {/* ========================================================================= */}
       {activeSecTab === 'audits' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        <div className="flex flex-col gap-6">
           
           {/* AUDIT RUNS TABLE */}
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.25rem', overflowX: 'auto', boxShadow: 'var(--shadow-sm)' }}>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: '800', color: 'var(--text-headings)', marginBottom: '1rem' }}>
-              Historical Security Audit Executions
-            </h3>
+          <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-xs">
+            <div className="p-5 border-b border-border bg-slate-50/40 dark:bg-slate-900/40">
+              <h3 className="text-base font-bold text-foreground">
+                Historical Security Audit Executions
+              </h3>
+            </div>
 
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.84rem' }}>
-              <thead>
-                <tr style={{ borderBottom: '1.5px solid var(--border)', color: 'var(--text-tertiary)', textAlign: 'left' }}>
-                  <th style={{ padding: '0.65rem 0.75rem' }}>Audit ID</th>
-                  <th style={{ padding: '0.65rem 0.75rem' }}>Status</th>
-                  <th style={{ padding: '0.65rem 0.75rem' }}>Score</th>
-                  <th style={{ padding: '0.65rem 0.75rem' }}>Checks (Pass/Fail)</th>
-                  <th style={{ padding: '0.65rem 0.75rem' }}>Commit</th>
-                  <th style={{ padding: '0.65rem 0.75rem' }}>Completed At</th>
-                  <th style={{ padding: '0.65rem 0.75rem' }}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {auditsData.audits.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-tertiary)' }}>
-                      No audit history runs available. Run an audit above to generate historical runs.
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-slate-50/80 dark:bg-slate-900/80 border-b border-border text-muted-foreground text-[11px] font-bold uppercase tracking-wider">
+                    <th className="px-4 py-3">Audit ID</th>
+                    <th className="px-4 py-3">Status</th>
+                    <th className="px-4 py-3">Score</th>
+                    <th className="px-4 py-3">Checks (Pass/Fail)</th>
+                    <th className="px-4 py-3">Commit</th>
+                    <th className="px-4 py-3">Completed At</th>
+                    <th className="px-4 py-3">Actions</th>
                   </tr>
-                ) : (
-                  auditsData.audits.map(a => {
-                    const st = getStatusBadge(a.status);
-                    return (
-                      <tr key={a.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                        <td style={{ padding: '0.65rem 0.75rem', fontFamily: 'monospace', fontWeight: '700', color: 'var(--text-headings)' }}>{a.id}</td>
-                        <td style={{ padding: '0.65rem 0.75rem' }}>
-                          <span style={{ fontSize: '0.72rem', fontWeight: '800', padding: '0.15rem 0.5rem', borderRadius: 'var(--radius-full)', background: st.bg, color: st.color }}>
-                            {a.status}
-                          </span>
-                        </td>
-                        <td style={{ padding: '0.65rem 0.75rem', fontWeight: '800', color: a.score >= 90 ? 'var(--accent-emerald)' : 'var(--accent-rose)' }}>
-                          {a.score} / 100
-                        </td>
-                        <td style={{ padding: '0.65rem 0.75rem' }}>
-                          <span style={{ color: 'var(--accent-emerald)', fontWeight: '700' }}>✓ {a.passed_checks}</span>
-                          {a.failed_checks > 0 && <span style={{ color: 'var(--accent-rose)', fontWeight: '700', marginLeft: '0.45rem' }}>✗ {a.failed_checks}</span>}
-                        </td>
-                        <td style={{ padding: '0.65rem 0.75rem', fontFamily: 'monospace', color: 'var(--text-tertiary)' }}>{a.git_commit || '—'}</td>
-                        <td style={{ padding: '0.65rem 0.75rem', color: 'var(--text-secondary)' }}>{a.completed_at || a.started_at}</td>
-                        <td style={{ padding: '0.65rem 0.75rem' }}>
-                          <button
-                            className="btn btn-secondary"
-                            onClick={() => fetchAuditDetail(a.id)}
-                            style={{ padding: '0.35rem 0.65rem', fontSize: '0.76rem' }}
-                          >
-                            Inspect Detail
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-border/60">
+                  {auditsData.audits.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="text-center py-8 text-muted-foreground text-xs">
+                        No audit history runs available. Run an audit above to generate historical runs.
+                      </td>
+                    </tr>
+                  ) : (
+                    auditsData.audits.map(a => {
+                      const st = getStatusBadge(a.status);
+                      return (
+                        <tr key={a.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
+                          <td className="px-4 py-3 font-bold font-mono text-foreground text-[11px]">{a.id}</td>
+                          <td className="px-4 py-3">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold" style={{ background: st.bg, color: st.color }}>
+                              {a.status}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 font-bold font-mono text-xs" style={{ color: a.score >= 90 ? '#10B981' : '#F43F5E' }}>
+                            {a.score} / 100
+                          </td>
+                          <td className="px-4 py-3 font-medium text-[11px]">
+                            <span className="text-emerald-500 font-bold">✓ {a.passed_checks}</span>
+                            {a.failed_checks > 0 && <span className="text-rose-500 font-bold ml-1.5">✗ {a.failed_checks}</span>}
+                          </td>
+                          <td className="px-4 py-3 font-mono text-[11px] text-muted-foreground">{a.git_commit || '—'}</td>
+                          <td className="px-4 py-3 text-muted-foreground text-[11px]">{a.completed_at || a.started_at}</td>
+                          <td className="px-4 py-3">
+                            <button
+                              onClick={() => fetchAuditDetail(a.id)}
+                              className="px-3 py-1 rounded-lg text-xs font-semibold bg-secondary hover:bg-slate-200 dark:hover:bg-slate-700 text-foreground transition-all cursor-pointer"
+                            >
+                              Inspect Detail
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
 
           {/* AUDIT DETAIL MODAL / DRAWER */}
           {selectedAuditDetail && (
-            <div style={{ background: 'var(--bg-card)', border: '1.5px solid var(--accent-primary)', borderRadius: 'var(--radius-lg)', padding: '1.5rem', boxShadow: 'var(--shadow-card)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+            <div className="bg-card border border-primary/40 rounded-2xl p-6 shadow-md">
+              <div className="flex justify-between items-center mb-4">
                 <div>
-                  <h3 style={{ fontSize: '1.2rem', fontWeight: '900', color: 'var(--text-headings)', margin: 0 }}>
-                    Audit Run Inspector: {selectedAuditDetail.id}
+                  <h3 className="text-base font-bold text-foreground">
+                    Audit Run Inspector: <span className="font-mono text-[#2457FF]">{selectedAuditDetail.id}</span>
                   </h3>
-                  <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
-                    Score: {selectedAuditDetail.score}/100 | Status: {selectedAuditDetail.status} | Total Checks: {selectedAuditDetail.total_checks}
+                  <div className="text-xs text-muted-foreground mt-0.5">
+                    Score: <strong className="text-foreground">{selectedAuditDetail.score}/100</strong> · Status: {selectedAuditDetail.status} · Total Checks: {selectedAuditDetail.total_checks}
                   </div>
                 </div>
-                <button className="btn btn-secondary" onClick={() => setSelectedAuditDetail(null)} style={{ padding: '0.35rem 0.65rem' }}>
-                  <X size={16} /> Close Inspector
+                <button 
+                  onClick={() => setSelectedAuditDetail(null)}
+                  className="px-3 py-1.5 rounded-lg border border-border text-xs font-semibold bg-card hover:bg-secondary text-foreground flex items-center gap-1 cursor-pointer"
+                >
+                  <X size={14} /> Close Inspector
                 </button>
               </div>
 
               {/* Checks list for this audit */}
-              <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
+              <div className="max-h-96 overflow-y-auto border border-border rounded-xl">
+                <table className="w-full text-left text-xs border-collapse">
                   <thead>
-                    <tr style={{ borderBottom: '1.5px solid var(--border)', color: 'var(--text-tertiary)', textAlign: 'left' }}>
-                      <th style={{ padding: '0.5rem' }}>Check Name</th>
-                      <th style={{ padding: '0.5rem' }}>Category</th>
-                      <th style={{ padding: '0.5rem' }}>Severity</th>
-                      <th style={{ padding: '0.5rem' }}>Status</th>
-                      <th style={{ padding: '0.5rem' }}>Evidence / Output</th>
+                    <tr className="bg-slate-50 dark:bg-slate-900 border-b border-border text-muted-foreground text-[11px] font-bold uppercase tracking-wider">
+                      <th className="px-3 py-2.5">Check Name</th>
+                      <th className="px-3 py-2.5">Category</th>
+                      <th className="px-3 py-2.5">Severity</th>
+                      <th className="px-3 py-2.5">Status</th>
+                      <th className="px-3 py-2.5">Evidence / Output</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className="divide-y divide-border/60">
                     {(selectedAuditDetail.checks || []).map(chk => (
-                      <tr key={chk.id || chk.check_key} style={{ borderBottom: '1px solid var(--border)' }}>
-                        <td style={{ padding: '0.5rem', fontWeight: '700', color: 'var(--text-headings)' }}>{chk.name}</td>
-                        <td style={{ padding: '0.5rem', color: 'var(--text-secondary)' }}>{chk.category}</td>
-                        <td style={{ padding: '0.5rem' }}>
-                          <span style={{ fontSize: '0.7rem', fontWeight: '800', padding: '0.1rem 0.4rem', borderRadius: 'var(--radius-full)', background: getStatusBadge(chk.severity).bg, color: getStatusBadge(chk.severity).color }}>
+                      <tr key={chk.id || chk.check_key} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+                        <td className="px-3 py-2.5 font-bold text-foreground">{chk.name}</td>
+                        <td className="px-3 py-2.5 text-muted-foreground">{chk.category}</td>
+                        <td className="px-3 py-2.5">
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: getStatusBadge(chk.severity).bg, color: getStatusBadge(chk.severity).color }}>
                             {chk.severity}
                           </span>
                         </td>
-                        <td style={{ padding: '0.5rem', fontWeight: '800', color: chk.status === 'PASS' ? 'var(--accent-emerald)' : 'var(--accent-rose)' }}>
+                        <td className="px-3 py-2.5 font-bold" style={{ color: chk.status === 'PASS' ? '#10B981' : '#F43F5E' }}>
                           {chk.status}
                         </td>
-                        <td style={{ padding: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.76rem', maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        <td className="px-3 py-2.5 text-muted-foreground font-mono text-[11px] max-w-xs truncate">
                           {chk.evidence_text || chk.error_message || '—'}
                         </td>
                       </tr>
@@ -983,14 +989,14 @@ export default function SecurityCenter({ triggerToast }) {
       {/* SUB-VIEW 5: ITEMIZED SECURITY CHECKS REPOSITORY */}
       {/* ========================================================================= */}
       {activeSecTab === 'checks' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        <div className="flex flex-col gap-6">
           
           {/* FILTERS */}
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.25rem', display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+          <div className="bg-card border border-border rounded-2xl p-4 flex gap-3 flex-wrap items-center shadow-xs">
             <select
               value={checkSeverityFilter}
               onChange={(e) => { setCheckSeverityFilter(e.target.value); setChecksPage(1); fetchChecks(1); }}
-              style={{ background: 'var(--bg-main)', border: '1px solid var(--border)', color: 'var(--text-headings)', padding: '0.5rem 0.85rem', borderRadius: 'var(--radius-md)', fontSize: '0.84rem' }}
+              className="bg-slate-100 dark:bg-slate-900 border border-border text-foreground px-3.5 py-2 rounded-xl text-xs font-semibold outline-none focus:border-primary cursor-pointer"
             >
               <option value="">All Severities</option>
               <option value="CRITICAL">CRITICAL</option>
@@ -1002,7 +1008,7 @@ export default function SecurityCenter({ triggerToast }) {
             <select
               value={checkStatusFilter}
               onChange={(e) => { setCheckStatusFilter(e.target.value); setChecksPage(1); fetchChecks(1); }}
-              style={{ background: 'var(--bg-main)', border: '1px solid var(--border)', color: 'var(--text-headings)', padding: '0.5rem 0.85rem', borderRadius: 'var(--radius-md)', fontSize: '0.84rem' }}
+              className="bg-slate-100 dark:bg-slate-900 border border-border text-foreground px-3.5 py-2 rounded-xl text-xs font-semibold outline-none focus:border-primary cursor-pointer"
             >
               <option value="">All Statuses</option>
               <option value="PASS">PASS</option>
@@ -1010,61 +1016,66 @@ export default function SecurityCenter({ triggerToast }) {
               <option value="WARNING">WARNING</option>
             </select>
 
-            <button className="btn btn-secondary" onClick={() => fetchChecks(checksPage)} style={{ fontSize: '0.82rem', padding: '0.5rem 0.85rem' }}>
-              <Filter size={14} /> Filter Checks
+            <button 
+              onClick={() => fetchChecks(checksPage)}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-[#2457FF] hover:bg-[#1d4ed8] text-white shadow-xs transition-all cursor-pointer"
+            >
+              <Filter size={13} /> Filter Checks
             </button>
           </div>
 
           {/* CHECKS TABLE */}
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.25rem', overflowX: 'auto', boxShadow: 'var(--shadow-sm)' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.84rem' }}>
-              <thead>
-                <tr style={{ borderBottom: '1.5px solid var(--border)', color: 'var(--text-tertiary)', textAlign: 'left' }}>
-                  <th style={{ padding: '0.65rem 0.75rem' }}>Check Name</th>
-                  <th style={{ padding: '0.65rem 0.75rem' }}>Category</th>
-                  <th style={{ padding: '0.65rem 0.75rem' }}>Severity</th>
-                  <th style={{ padding: '0.65rem 0.75rem' }}>Status</th>
-                  <th style={{ padding: '0.65rem 0.75rem' }}>Execution</th>
-                  <th style={{ padding: '0.65rem 0.75rem' }}>Evidence / Output</th>
-                </tr>
-              </thead>
-              <tbody>
-                {checksData.checks.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-tertiary)' }}>
-                      No checks found matching the selected filter.
-                    </td>
+          <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-xs">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-slate-50/80 dark:bg-slate-900/80 border-b border-border text-muted-foreground text-[11px] font-bold uppercase tracking-wider">
+                    <th className="px-4 py-3">Check Name</th>
+                    <th className="px-4 py-3">Category</th>
+                    <th className="px-4 py-3">Severity</th>
+                    <th className="px-4 py-3">Status</th>
+                    <th className="px-4 py-3">Execution</th>
+                    <th className="px-4 py-3">Evidence / Output</th>
                   </tr>
-                ) : (
-                  checksData.checks.map(chk => {
-                    const sev = getStatusBadge(chk.severity);
-                    return (
-                      <tr key={chk.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                        <td style={{ padding: '0.65rem 0.75rem', fontWeight: '800', color: 'var(--text-headings)' }}>
-                          <div>{chk.name}</div>
-                          <div style={{ fontSize: '0.74rem', color: 'var(--text-tertiary)', fontWeight: '500' }}>{chk.description}</div>
-                        </td>
-                        <td style={{ padding: '0.65rem 0.75rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>{chk.category}</td>
-                        <td style={{ padding: '0.65rem 0.75rem' }}>
-                          <span style={{ fontSize: '0.72rem', fontWeight: '800', padding: '0.15rem 0.45rem', borderRadius: 'var(--radius-full)', background: sev.bg, color: sev.color }}>
-                            {chk.severity}
-                          </span>
-                        </td>
-                        <td style={{ padding: '0.65rem 0.75rem', fontWeight: '800', color: chk.status === 'PASS' ? 'var(--accent-emerald)' : 'var(--accent-rose)' }}>
-                          {chk.status}
-                        </td>
-                        <td style={{ padding: '0.65rem 0.75rem', color: 'var(--text-tertiary)', fontFamily: 'monospace' }}>
-                          {chk.execution_time_ms ? `${chk.execution_time_ms}ms` : '—'}
-                        </td>
-                        <td style={{ padding: '0.65rem 0.75rem', fontSize: '0.78rem', color: 'var(--text-secondary)', maxWidth: '340px' }}>
-                          {chk.evidence_text || chk.error_message || '—'}
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-border/60">
+                  {checksData.checks.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="text-center py-8 text-muted-foreground text-xs">
+                        No checks found matching the selected filter.
+                      </td>
+                    </tr>
+                  ) : (
+                    checksData.checks.map(chk => {
+                      const sev = getStatusBadge(chk.severity);
+                      return (
+                        <tr key={chk.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
+                          <td className="px-4 py-3 font-bold text-foreground">
+                            <div>{chk.name}</div>
+                            <div className="text-[11px] text-muted-foreground font-normal mt-0.5">{chk.description}</div>
+                          </td>
+                          <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">{chk.category}</td>
+                          <td className="px-4 py-3">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold" style={{ background: sev.bg, color: sev.color }}>
+                              {chk.severity}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 font-bold" style={{ color: chk.status === 'PASS' ? '#10B981' : '#F43F5E' }}>
+                            {chk.status}
+                          </td>
+                          <td className="px-4 py-3 font-mono text-[11px] text-muted-foreground">
+                            {chk.execution_time_ms ? `${chk.execution_time_ms}ms` : '—'}
+                          </td>
+                          <td className="px-4 py-3 text-muted-foreground font-mono text-[11px] max-w-xs truncate">
+                            {chk.evidence_text || chk.error_message || '—'}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}
@@ -1073,100 +1084,100 @@ export default function SecurityCenter({ triggerToast }) {
       {/* SUB-VIEW 6: SUPPLY CHAIN & HISTORICAL GIT SECRET SECURITY */}
       {/* ========================================================================= */}
       {activeSecTab === 'supply-chain' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        <div className="flex flex-col gap-6">
           
           {/* DEPENDENCY SECURITY AUDIT */}
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.5rem', boxShadow: 'var(--shadow-sm)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: '800', color: 'var(--text-headings)', display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}>
-                <Package size={18} color="var(--accent-cyan)" /> Node.js Dependency Security (npm audit v2)
+          <div className="bg-card border border-border rounded-2xl p-6 shadow-xs">
+            <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
+              <h3 className="text-base font-bold text-foreground flex items-center gap-2">
+                <Package size={18} className="text-cyan-500" /> Node.js Dependency Security (npm audit v2)
               </h3>
-              <span style={{ fontSize: '0.75rem', fontWeight: '800', padding: '0.2rem 0.65rem', borderRadius: 'var(--radius-full)', background: 'rgba(16,185,129,0.12)', color: 'var(--accent-emerald)' }}>
+              <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                 ● 0 VULNERABILITIES DETECTED
               </span>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '0.85rem' }}>
-              <div style={{ background: 'var(--bg-main)', padding: '0.85rem', borderRadius: 'var(--radius-md)', textAlign: 'center' }}>
-                <div style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)', fontWeight: '800' }}>CRITICAL</div>
-                <div style={{ fontSize: '1.4rem', fontWeight: '900', color: 'var(--accent-emerald)', marginTop: '0.15rem' }}>0</div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+              <div className="bg-slate-50/80 dark:bg-slate-900/80 p-4 rounded-xl border border-border text-center">
+                <div className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">CRITICAL</div>
+                <div className="text-2xl font-extrabold font-mono text-emerald-500 mt-1">0</div>
               </div>
-              <div style={{ background: 'var(--bg-main)', padding: '0.85rem', borderRadius: 'var(--radius-md)', textAlign: 'center' }}>
-                <div style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)', fontWeight: '800' }}>HIGH</div>
-                <div style={{ fontSize: '1.4rem', fontWeight: '900', color: 'var(--accent-emerald)', marginTop: '0.15rem' }}>0</div>
+              <div className="bg-slate-50/80 dark:bg-slate-900/80 p-4 rounded-xl border border-border text-center">
+                <div className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">HIGH</div>
+                <div className="text-2xl font-extrabold font-mono text-emerald-500 mt-1">0</div>
               </div>
-              <div style={{ background: 'var(--bg-main)', padding: '0.85rem', borderRadius: 'var(--radius-md)', textAlign: 'center' }}>
-                <div style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)', fontWeight: '800' }}>MODERATE</div>
-                <div style={{ fontSize: '1.4rem', fontWeight: '900', color: 'var(--accent-emerald)', marginTop: '0.15rem' }}>0</div>
+              <div className="bg-slate-50/80 dark:bg-slate-900/80 p-4 rounded-xl border border-border text-center">
+                <div className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">MODERATE</div>
+                <div className="text-2xl font-extrabold font-mono text-emerald-500 mt-1">0</div>
               </div>
-              <div style={{ background: 'var(--bg-main)', padding: '0.85rem', borderRadius: 'var(--radius-md)', textAlign: 'center' }}>
-                <div style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)', fontWeight: '800' }}>LOW</div>
-                <div style={{ fontSize: '1.4rem', fontWeight: '900', color: 'var(--accent-emerald)', marginTop: '0.15rem' }}>0</div>
+              <div className="bg-slate-50/80 dark:bg-slate-900/80 p-4 rounded-xl border border-border text-center">
+                <div className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">LOW</div>
+                <div className="text-2xl font-extrabold font-mono text-emerald-500 mt-1">0</div>
               </div>
             </div>
           </div>
 
           {/* HISTORICAL GIT SECRET SCANNER REPORT */}
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.5rem', boxShadow: 'var(--shadow-sm)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: '800', color: 'var(--text-headings)', display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}>
-                <GitBranch size={18} color="var(--accent-emerald)" /> Historical Git Commit Secret Scanner (Phase 5C-2)
+          <div className="bg-card border border-border rounded-2xl p-6 shadow-xs">
+            <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
+              <h3 className="text-base font-bold text-foreground flex items-center gap-2">
+                <GitBranch size={18} className="text-emerald-500" /> Historical Git Commit Secret Scanner (Phase 5C-2)
               </h3>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: '700' }}>
+              <div className="text-xs text-muted-foreground font-medium">
                 Coverage: {gitHistoryData?.coverage || 'FULL_REACHABLE_HISTORY'} ({gitHistoryData?.commitsScanned || 14} commits)
               </div>
             </div>
 
             {/* Findings Table */}
             {gitHistoryData?.findings?.length > 0 ? (
-              <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
+              <div className="overflow-x-auto border border-border rounded-xl">
+                <table className="w-full text-left text-xs border-collapse">
                   <thead>
-                    <tr style={{ borderBottom: '1.5px solid var(--border)', color: 'var(--text-tertiary)', textAlign: 'left' }}>
-                      <th style={{ padding: '0.5rem' }}>Commit Hash</th>
-                      <th style={{ padding: '0.5rem' }}>File in Commit</th>
-                      <th style={{ padding: '0.5rem' }}>Type</th>
-                      <th style={{ padding: '0.5rem' }}>Severity</th>
-                      <th style={{ padding: '0.5rem' }}>Fingerprint</th>
-                      <th style={{ padding: '0.5rem' }}>Redacted Preview</th>
+                    <tr className="bg-slate-50 dark:bg-slate-900 border-b border-border text-muted-foreground text-[11px] font-bold uppercase tracking-wider">
+                      <th className="px-3 py-2.5">Commit Hash</th>
+                      <th className="px-3 py-2.5">File in Commit</th>
+                      <th className="px-3 py-2.5">Type</th>
+                      <th className="px-3 py-2.5">Severity</th>
+                      <th className="px-3 py-2.5">Fingerprint</th>
+                      <th className="px-3 py-2.5">Redacted Preview</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className="divide-y divide-border/60">
                     {gitHistoryData.findings.map((f, idx) => (
-                      <tr key={idx} style={{ borderBottom: '1px solid var(--border)' }}>
-                        <td style={{ padding: '0.5rem', fontFamily: 'monospace', color: 'var(--accent-cyan)' }}>{f.commit?.substring(0, 8)}</td>
-                        <td style={{ padding: '0.5rem', fontWeight: '700', color: 'var(--text-headings)' }}>{f.file}</td>
-                        <td style={{ padding: '0.5rem', fontFamily: 'monospace' }}>{f.type}</td>
-                        <td style={{ padding: '0.5rem' }}>
-                          <span style={{ fontSize: '0.7rem', fontWeight: '800', padding: '0.1rem 0.4rem', borderRadius: 'var(--radius-full)', background: getStatusBadge(f.severity).bg, color: getStatusBadge(f.severity).color }}>
+                      <tr key={idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+                        <td className="px-3 py-2.5 font-mono text-cyan-500">{f.commit?.substring(0, 8)}</td>
+                        <td className="px-3 py-2.5 font-bold text-foreground">{f.file}</td>
+                        <td className="px-3 py-2.5 font-mono">{f.type}</td>
+                        <td className="px-3 py-2.5">
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: getStatusBadge(f.severity).bg, color: getStatusBadge(f.severity).color }}>
                             {f.severity}
                           </span>
                         </td>
-                        <td style={{ padding: '0.5rem', fontFamily: 'monospace', color: 'var(--text-tertiary)' }}>{f.fingerprint}</td>
-                        <td style={{ padding: '0.5rem', fontFamily: 'monospace', color: 'var(--accent-amber)' }}>{f.redactedPreview}</td>
+                        <td className="px-3 py-2.5 font-mono text-muted-foreground">{f.fingerprint}</td>
+                        <td className="px-3 py-2.5 font-mono text-amber-500">{f.redactedPreview}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
             ) : (
-              <div style={{ textAlign: 'center', padding: '1.5rem', color: 'var(--accent-emerald)', fontWeight: '700', fontSize: '0.85rem' }}>
+              <div className="text-center py-6 text-emerald-500 font-bold text-xs">
                 ✓ Zero credentials or secrets found across all reachable Git history.
               </div>
             )}
           </div>
 
           {/* FRONTEND CLIENT BUNDLE SCANNER */}
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.5rem', boxShadow: 'var(--shadow-sm)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: '800', color: 'var(--text-headings)', display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}>
-                <FileCode size={18} color="var(--accent-cyan)" /> Production Client Bundle Secret Scanner
+          <div className="bg-card border border-border rounded-2xl p-6 shadow-xs">
+            <div className="flex justify-between items-center mb-2">
+              <h3 className="text-base font-bold text-foreground flex items-center gap-2">
+                <FileCode size={18} className="text-cyan-500" /> Production Client Bundle Secret Scanner
               </h3>
-              <span style={{ fontSize: '0.75rem', fontWeight: '800', padding: '0.2rem 0.65rem', borderRadius: 'var(--radius-full)', background: 'rgba(16,185,129,0.12)', color: 'var(--accent-emerald)' }}>
+              <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                 ✓ 0 BUNDLE LEAKS
               </span>
             </div>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.82rem' }}>
+            <p className="text-muted-foreground text-xs">
               Compiled JavaScript assets in <code>dist/assets/</code> verified clean of JWT secrets, database connection URIs, and private keys.
             </p>
           </div>
@@ -1178,39 +1189,39 @@ export default function SecurityCenter({ triggerToast }) {
       {/* SUB-VIEW 7: SUBSYSTEM HEALTH & OPERATIONAL DIAGNOSTICS */}
       {/* ========================================================================= */}
       {activeSecTab === 'health' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.5rem', boxShadow: 'var(--shadow-sm)' }}>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: '800', color: 'var(--text-headings)', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Server size={18} color="var(--accent-emerald)" /> Subsystem Operational Diagnostics
+        <div className="flex flex-col gap-6">
+          <div className="bg-card border border-border rounded-2xl p-6 shadow-xs">
+            <h3 className="text-base font-bold text-foreground mb-4 flex items-center gap-2">
+              <Server size={18} className="text-emerald-500" /> Subsystem Operational Diagnostics
             </h3>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               
-              <div style={{ background: 'var(--bg-main)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: '1.1rem' }}>
-                <div style={{ fontSize: '0.74rem', color: 'var(--text-tertiary)', fontWeight: '800' }}>SQLITE DATABASE</div>
-                <div style={{ fontSize: '1.1rem', fontWeight: '800', color: 'var(--accent-emerald)', marginTop: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                  <CheckCircle2 size={16} /> {healthData?.database === 'connected' ? 'Connected & Verified' : 'Connected'}
+              <div className="bg-slate-50/80 dark:bg-slate-900/80 border border-border rounded-xl p-4">
+                <div className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">SQLITE DATABASE</div>
+                <div className="text-sm font-bold text-emerald-500 mt-1 flex items-center gap-1.5">
+                  <CheckCircle2 size={15} /> {healthData?.database === 'connected' ? 'Connected & Verified' : 'Connected'}
                 </div>
               </div>
 
-              <div style={{ background: 'var(--bg-main)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: '1.1rem' }}>
-                <div style={{ fontSize: '0.74rem', color: 'var(--text-tertiary)', fontWeight: '800' }}>SECURITY AUDIT RUNS TABLE</div>
-                <div style={{ fontSize: '1.1rem', fontWeight: '800', color: healthData?.tables?.security_audit_runs ? 'var(--accent-emerald)' : 'var(--accent-rose)', marginTop: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                  <CheckCircle2 size={16} /> {healthData?.tables?.security_audit_runs ? 'Operational' : 'Unavailable'}
+              <div className="bg-slate-50/80 dark:bg-slate-900/80 border border-border rounded-xl p-4">
+                <div className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">SECURITY AUDIT RUNS TABLE</div>
+                <div className={`text-sm font-bold mt-1 flex items-center gap-1.5 ${healthData?.tables?.security_audit_runs ? 'text-emerald-500' : 'text-rose-500'}`}>
+                  <CheckCircle2 size={15} /> {healthData?.tables?.security_audit_runs ? 'Operational' : 'Unavailable'}
                 </div>
               </div>
 
-              <div style={{ background: 'var(--bg-main)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: '1.1rem' }}>
-                <div style={{ fontSize: '0.74rem', color: 'var(--text-tertiary)', fontWeight: '800' }}>SECURITY CHECKS TABLE</div>
-                <div style={{ fontSize: '1.1rem', fontWeight: '800', color: healthData?.tables?.security_checks ? 'var(--accent-emerald)' : 'var(--accent-rose)', marginTop: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                  <CheckCircle2 size={16} /> {healthData?.tables?.security_checks ? 'Operational' : 'Unavailable'}
+              <div className="bg-slate-50/80 dark:bg-slate-900/80 border border-border rounded-xl p-4">
+                <div className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">SECURITY CHECKS TABLE</div>
+                <div className={`text-sm font-bold mt-1 flex items-center gap-1.5 ${healthData?.tables?.security_checks ? 'text-emerald-500' : 'text-rose-500'}`}>
+                  <CheckCircle2 size={15} /> {healthData?.tables?.security_checks ? 'Operational' : 'Unavailable'}
                 </div>
               </div>
 
-              <div style={{ background: 'var(--bg-main)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: '1.1rem' }}>
-                <div style={{ fontSize: '0.74rem', color: 'var(--text-tertiary)', fontWeight: '800' }}>RUNTIME SECURITY EVENTS TABLE</div>
-                <div style={{ fontSize: '1.1rem', fontWeight: '800', color: healthData?.tables?.security_events ? 'var(--accent-emerald)' : 'var(--accent-rose)', marginTop: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                  <CheckCircle2 size={16} /> {healthData?.tables?.security_events ? 'Operational' : 'Unavailable'}
+              <div className="bg-slate-50/80 dark:bg-slate-900/80 border border-border rounded-xl p-4">
+                <div className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">RUNTIME SECURITY EVENTS TABLE</div>
+                <div className={`text-sm font-bold mt-1 flex items-center gap-1.5 ${healthData?.tables?.security_events ? 'text-emerald-500' : 'text-rose-500'}`}>
+                  <CheckCircle2 size={15} /> {healthData?.tables?.security_events ? 'Operational' : 'Unavailable'}
                 </div>
               </div>
 
@@ -1223,22 +1234,21 @@ export default function SecurityCenter({ triggerToast }) {
       {/* SUB-VIEW 8: ALERTS & OPERATIONAL MONITORING (PHASE 5C-5) */}
       {/* ========================================================================= */}
       {activeSecTab === 'alerts' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        <div className="flex flex-col gap-6">
           
           {/* NOTIFICATION CHANNELS STATUS STRIP */}
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.5rem', boxShadow: 'var(--shadow-sm)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.25rem' }}>
+          <div className="bg-card border border-border rounded-2xl p-6 shadow-xs">
+            <div className="flex justify-between items-center flex-wrap gap-4 mb-4">
               <div>
-                <h3 style={{ fontSize: '1.1rem', fontWeight: '800', color: 'var(--text-headings)', display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}>
-                  <Bell size={18} color="var(--accent-primary)" /> Configured Notification Channels
+                <h3 className="text-base font-bold text-foreground flex items-center gap-2">
+                  <Bell size={18} className="text-[#2457FF]" /> Configured Notification Channels
                 </h3>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.82rem', marginTop: '0.25rem' }}>
+                <p className="text-muted-foreground text-xs mt-0.5">
                   Real-time alerting dispatch status. Channel credentials and webhook destinations are protected and never exposed.
                 </p>
               </div>
 
               <button
-                className="btn btn-primary"
                 disabled={isActionRunning}
                 onClick={async () => {
                   if (isActionRunning) return;
@@ -1263,55 +1273,55 @@ export default function SecurityCenter({ triggerToast }) {
                     setActionMessage('');
                   }
                 }}
-                style={{ fontSize: '0.82rem', padding: '0.5rem 1rem' }}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-[#2457FF] hover:bg-[#1d4ed8] text-white shadow-xs transition-all cursor-pointer disabled:opacity-50"
               >
-                <Send size={15} />
+                <Send size={14} />
                 <span>Send Test Alert</span>
               </button>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               
               {/* Channel 1: Email */}
-              <div style={{ background: 'var(--bg-main)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: '1.1rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.74rem', color: 'var(--text-tertiary)', fontWeight: '800' }}>EMAIL CHANNEL</span>
-                  <Mail size={16} color="var(--text-tertiary)" />
+              <div className="bg-slate-50/80 dark:bg-slate-900/80 border border-border rounded-xl p-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">EMAIL CHANNEL</span>
+                  <Mail size={15} className="text-muted-foreground" />
                 </div>
-                <div style={{ fontSize: '1rem', fontWeight: '800', marginTop: '0.35rem', color: alertConfig?.channels?.email?.configured ? 'var(--accent-emerald)' : 'var(--text-secondary)' }}>
+                <div className={`text-xs font-bold mt-2 ${alertConfig?.channels?.email?.configured ? 'text-emerald-500' : 'text-muted-foreground'}`}>
                   {alertConfig?.channels?.email?.configured ? '● Configured & Active' : '○ Not Configured'}
                 </div>
               </div>
 
               {/* Channel 2: Slack */}
-              <div style={{ background: 'var(--bg-main)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: '1.1rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.74rem', color: 'var(--text-tertiary)', fontWeight: '800' }}>SLACK WEBHOOK</span>
-                  <ExternalLink size={16} color="var(--text-tertiary)" />
+              <div className="bg-slate-50/80 dark:bg-slate-900/80 border border-border rounded-xl p-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">SLACK WEBHOOK</span>
+                  <ExternalLink size={15} className="text-muted-foreground" />
                 </div>
-                <div style={{ fontSize: '1rem', fontWeight: '800', marginTop: '0.35rem', color: alertConfig?.channels?.slack?.configured ? 'var(--accent-emerald)' : 'var(--text-secondary)' }}>
+                <div className={`text-xs font-bold mt-2 ${alertConfig?.channels?.slack?.configured ? 'text-emerald-500' : 'text-muted-foreground'}`}>
                   {alertConfig?.channels?.slack?.configured ? '● Configured & Active' : '○ Standby'}
                 </div>
               </div>
 
               {/* Channel 3: HTTPS Webhook */}
-              <div style={{ background: 'var(--bg-main)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: '1.1rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.74rem', color: 'var(--text-tertiary)', fontWeight: '800' }}>HTTPS WEBHOOK (SSRF-SAFE)</span>
-                  <Lock size={16} color="var(--text-tertiary)" />
+              <div className="bg-slate-50/80 dark:bg-slate-900/80 border border-border rounded-xl p-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">HTTPS WEBHOOK (SSRF-SAFE)</span>
+                  <Lock size={15} className="text-muted-foreground" />
                 </div>
-                <div style={{ fontSize: '1rem', fontWeight: '800', marginTop: '0.35rem', color: alertConfig?.channels?.webhook?.configured ? 'var(--accent-emerald)' : 'var(--text-secondary)' }}>
+                <div className={`text-xs font-bold mt-2 ${alertConfig?.channels?.webhook?.configured ? 'text-emerald-500' : 'text-muted-foreground'}`}>
                   {alertConfig?.channels?.webhook?.configured ? '● Configured & Active' : '○ Standby'}
                 </div>
               </div>
 
               {/* Rate limit status */}
-              <div style={{ background: 'var(--bg-main)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: '1.1rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.74rem', color: 'var(--text-tertiary)', fontWeight: '800' }}>DELIVERY SUCCESS RATE</span>
-                  <Activity size={16} color="var(--text-tertiary)" />
+              <div className="bg-slate-50/80 dark:bg-slate-900/80 border border-border rounded-xl p-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">DELIVERY SUCCESS RATE</span>
+                  <Activity size={15} className="text-muted-foreground" />
                 </div>
-                <div style={{ fontSize: '1.1rem', fontWeight: '800', color: 'var(--accent-cyan)', marginTop: '0.35rem' }}>
+                <div className="text-sm font-bold text-cyan-500 mt-2 font-mono">
                   {alertStats?.deliveries?.success_rate ?? 100}%
                 </div>
               </div>
@@ -1320,23 +1330,23 @@ export default function SecurityCenter({ triggerToast }) {
           </div>
 
           {/* RECENT ALERTS AUDIT LOG */}
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.5rem', boxShadow: 'var(--shadow-sm)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.25rem' }}>
+          <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-xs">
+            <div className="p-5 border-b border-border bg-slate-50/40 dark:bg-slate-900/40 flex justify-between items-center flex-wrap gap-4">
               <div>
-                <h3 style={{ fontSize: '1.1rem', fontWeight: '800', color: 'var(--text-headings)', margin: 0 }}>
+                <h3 className="text-base font-bold text-foreground">
                   Security Alerts History ({alertsData.total})
                 </h3>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.82rem', marginTop: '0.2rem' }}>
+                <p className="text-muted-foreground text-xs mt-0.5">
                   Deterministic alert records with deduplication timestamps and delivery telemetry.
                 </p>
               </div>
 
               {/* FILTERS */}
-              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+              <div className="flex gap-2 flex-wrap">
                 <select
                   value={alertSeverityFilter}
                   onChange={(e) => { setAlertSeverityFilter(e.target.value); fetchAlerts(1); }}
-                  style={{ padding: '0.45rem 0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', background: 'var(--bg-main)', color: 'var(--text-primary)', fontSize: '0.82rem' }}
+                  className="bg-slate-100 dark:bg-slate-900 border border-border text-foreground px-3 py-1.5 rounded-xl text-xs font-semibold outline-none focus:border-primary cursor-pointer"
                 >
                   <option value="">All Severities</option>
                   <option value="CRITICAL">CRITICAL</option>
@@ -1349,71 +1359,60 @@ export default function SecurityCenter({ triggerToast }) {
                 <select
                   value={alertStatusFilter}
                   onChange={(e) => { setAlertStatusFilter(e.target.value); fetchAlerts(1); }}
-                  style={{ padding: '0.45rem 0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', background: 'var(--bg-main)', color: 'var(--text-primary)', fontSize: '0.82rem' }}
+                  className="bg-slate-100 dark:bg-slate-900 border border-border text-foreground px-3 py-1.5 rounded-xl text-xs font-semibold outline-none focus:border-primary cursor-pointer"
                 >
                   <option value="">All Statuses</option>
-                  <option value="TRIGGERED">TRIGGERED</option>
-                  <option value="DELIVERED">DELIVERED</option>
-                  <option value="FAILED">FAILED</option>
-                  <option value="SUPPRESSED">SUPPRESSED</option>
+                  <option value="ACTIVE">ACTIVE</option>
                   <option value="RESOLVED">RESOLVED</option>
+                  <option value="DISMISSED">DISMISSED</option>
                 </select>
               </div>
             </div>
 
-            {alertsData.alerts.length > 0 ? (
-              <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.82rem' }}>
-                  <thead>
-                    <tr style={{ borderBottom: '1px solid var(--border)', color: 'var(--text-tertiary)' }}>
-                      <th style={{ padding: '0.65rem 0.75rem' }}>Timestamp</th>
-                      <th style={{ padding: '0.65rem 0.75rem' }}>Severity</th>
-                      <th style={{ padding: '0.65rem 0.75rem' }}>Alert Type</th>
-                      <th style={{ padding: '0.65rem 0.75rem' }}>Title / Summary</th>
-                      <th style={{ padding: '0.65rem 0.75rem' }}>Source</th>
-                      <th style={{ padding: '0.65rem 0.75rem' }}>Status</th>
-                      <th style={{ padding: '0.65rem 0.75rem' }}>Fingerprint</th>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-slate-50/80 dark:bg-slate-900/80 border-b border-border text-muted-foreground text-[11px] font-bold uppercase tracking-wider">
+                    <th className="px-4 py-3">Timestamp</th>
+                    <th className="px-4 py-3">Alert Type</th>
+                    <th className="px-4 py-3">Severity</th>
+                    <th className="px-4 py-3">Summary</th>
+                    <th className="px-4 py-3">Status</th>
+                    <th className="px-4 py-3">Channels Dispatched</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/60">
+                  {alertsData.alerts.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="text-center py-8 text-muted-foreground text-xs">
+                        No security alerts recorded matching active criteria.
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {alertsData.alerts.map(a => (
-                      <tr key={a.id} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
-                        <td style={{ padding: '0.65rem 0.75rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
-                          {new Date(a.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                        </td>
-                        <td style={{ padding: '0.65rem 0.75rem' }}>
-                          <span style={{ fontSize: '0.72rem', fontWeight: '800', padding: '0.15rem 0.5rem', borderRadius: 'var(--radius-full)', background: getStatusBadge(a.severity).bg, color: getStatusBadge(a.severity).color }}>
-                            {a.severity}
+                  ) : (
+                    alertsData.alerts.map(al => (
+                      <tr key={al.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
+                        <td className="px-4 py-3 text-muted-foreground font-mono text-[11px]">{al.created_at}</td>
+                        <td className="px-4 py-3 font-bold font-mono text-foreground">{al.alert_type}</td>
+                        <td className="px-4 py-3">
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: getStatusBadge(al.severity).bg, color: getStatusBadge(al.severity).color }}>
+                            {al.severity}
                           </span>
                         </td>
-                        <td style={{ padding: '0.65rem 0.75rem', fontFamily: 'monospace', fontWeight: '700', color: 'var(--text-headings)' }}>
-                          {a.alert_type}
-                        </td>
-                        <td style={{ padding: '0.65rem 0.75rem' }}>
-                          <div style={{ fontWeight: '700', color: 'var(--text-headings)' }}>{a.title}</div>
-                          <div style={{ color: 'var(--text-secondary)', fontSize: '0.78rem', marginTop: '0.15rem' }}>{a.summary}</div>
-                        </td>
-                        <td style={{ padding: '0.65rem 0.75rem', color: 'var(--text-secondary)' }}>
-                          {a.source}
-                        </td>
-                        <td style={{ padding: '0.65rem 0.75rem' }}>
-                          <span style={{ fontSize: '0.72rem', fontWeight: '800', padding: '0.15rem 0.5rem', borderRadius: 'var(--radius-full)', background: a.status === 'DELIVERED' ? 'rgba(16,185,129,0.12)' : a.status === 'FAILED' ? 'rgba(244,63,94,0.12)' : 'rgba(148,163,184,0.12)', color: a.status === 'DELIVERED' ? 'var(--accent-emerald)' : a.status === 'FAILED' ? 'var(--accent-rose)' : 'var(--text-secondary)' }}>
-                            {a.status}
+                        <td className="px-4 py-3 text-foreground font-medium max-w-sm truncate">{al.message}</td>
+                        <td className="px-4 py-3">
+                          <span className="font-bold text-[11px]" style={{ color: al.status === 'ACTIVE' ? '#F43F5E' : '#10B981' }}>
+                            {al.status}
                           </span>
                         </td>
-                        <td style={{ padding: '0.65rem 0.75rem', fontFamily: 'monospace', color: 'var(--text-tertiary)', fontSize: '0.75rem' }}>
-                          {a.fingerprint}
+                        <td className="px-4 py-3 text-muted-foreground text-[11px]">
+                          {al.channels_sent ? (typeof al.channels_sent === 'string' ? al.channels_sent : JSON.stringify(al.channels_sent)) : '—'}
                         </td>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <div style={{ textAlign: 'center', padding: '2.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                Zero security alerts recorded matching active filters.
-              </div>
-            )}
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
 
         </div>

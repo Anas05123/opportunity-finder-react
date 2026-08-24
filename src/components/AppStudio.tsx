@@ -191,9 +191,7 @@ function Sidebar({ active, nav }: { active: Screen; nav: (s: Screen) => void }) 
     <aside className="w-56 flex-shrink-0 h-screen flex flex-col border-r border-border bg-card">
       <div className="h-14 flex items-center px-4 border-b border-border">
         <button onClick={() => nav("landing")} className="flex items-center gap-2.5">
-          <div className="w-7 h-7 bg-primary rounded-md flex items-center justify-center flex-shrink-0">
-            <span className="text-primary-foreground text-[11px] font-bold font-display leading-none">C</span>
-          </div>
+          <img src="/careerly-logo.png" alt="Careerly" className="w-7 h-7 object-contain flex-shrink-0" />
           <span className="text-[15px] font-semibold text-foreground tracking-[-0.01em]">Careerly</span>
         </button>
       </div>
@@ -343,8 +341,8 @@ function SignIn({ nav }: { nav: (s: Screen) => void }) {
       <div className="hidden lg:flex flex-col justify-between w-[420px] flex-shrink-0 bg-primary p-10">
         <div>
           <div className="flex items-center gap-2.5 mb-12">
-            <div className="w-7 h-7 bg-white/20 rounded-md flex items-center justify-center">
-              <span className="text-white text-[11px] font-bold">C</span>
+            <div className="w-8 h-8 bg-white rounded-md p-1 flex items-center justify-center">
+              <img src="/careerly-logo.png" alt="Careerly" className="w-full h-full object-contain" />
             </div>
             <span className="text-white text-[15px] font-semibold">Careerly</span>
           </div>
@@ -381,9 +379,7 @@ function SignIn({ nav }: { nav: (s: Screen) => void }) {
       <div className="flex-1 flex items-center justify-center px-6 py-12">
         <div className="w-full max-w-[380px]">
           <div className="flex items-center gap-2.5 mb-8 lg:hidden">
-            <div className="w-7 h-7 bg-primary rounded-md flex items-center justify-center">
-              <span className="text-primary-foreground text-[11px] font-bold">C</span>
-            </div>
+            <img src="/careerly-logo.png" alt="Careerly" className="w-7 h-7 object-contain" />
             <span className="text-foreground text-[15px] font-semibold">Careerly</span>
           </div>
 

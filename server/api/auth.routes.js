@@ -288,7 +288,25 @@ router.post('/resend-verification', async (req, res) => {
  */
 router.post('/google', async (req, res) => {
   try {
-    const { email, full_name, google_id, avatar_url } = req.body;
+    let { email, full_name, google_id, avatar_url, credential } = req.body;
+
+    if (credential && typeof credential === 'string') {
+      try {
+        const parts = credential.split('.');
+        if (parts.length >= 2) {
+          const base64Url = parts[1];
+          const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+          const payloadJson = Buffer.from(base64, 'base64').toString('utf8');
+          const payload = JSON.parse(payloadJson);
+          if (payload.email) email = payload.email;
+          if (payload.name || payload.given_name) full_name = payload.name || payload.given_name;
+          if (payload.sub) google_id = payload.sub;
+          if (payload.picture) avatar_url = payload.picture;
+        }
+      } catch (e) {
+        console.warn('[Google Auth] Could not decode credential payload:', e.message);
+      }
+    }
 
     if (!email || !email.includes('@')) {
       return res.status(400).json({ error: 'Valid Google email is required.' });

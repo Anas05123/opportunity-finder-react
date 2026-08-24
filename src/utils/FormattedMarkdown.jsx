@@ -53,18 +53,19 @@ function cleanAndDecodeHtml(raw = '') {
  * Universal Markdown & Formatting Renderer
  * Converts **bold**, *italic*, `code`, bullet points, and newlines into clean React elements.
  */
-export function FormattedMarkdown({ text, style = {}, className = '' }) {
-  if (!text) return null;
+export function FormattedMarkdown({ text, content, children, style = {}, className = '' }) {
+  const rawInput = text ?? content ?? (typeof children === 'string' ? children : '');
+  if (!rawInput) return null;
 
   // Clean HTML entities and convert markup to markdown
-  const cleaned = cleanAndDecodeHtml(text);
+  const cleaned = cleanAndDecodeHtml(String(rawInput));
   if (!cleaned) return null;
   
   // Split by double newlines into blocks
   const blocks = cleaned.split(/\n\n+/).map(b => b.trim()).filter(Boolean);
 
   return (
-    <div className={`formatted-markdown-wrapper ${className}`} style={style}>
+    <div className={`formatted-markdown-wrapper ${className}`} style={{ color: 'inherit', ...style }}>
       {blocks.map((block, bIdx) => {
         const lines = block.split('\n').map(l => l.trim()).filter(Boolean);
         
@@ -86,14 +87,14 @@ export function FormattedMarkdown({ text, style = {}, className = '' }) {
         if (block.startsWith('### ') || block.startsWith('## ') || block.startsWith('# ')) {
           const headingText = block.replace(/^#+\s*/, '');
           return (
-            <h4 key={bIdx} style={{ fontWeight: '800', fontSize: '0.98rem', color: 'var(--text-primary)', margin: '1.25rem 0 0.4rem' }}>
+            <h4 key={bIdx} style={{ fontWeight: '800', fontSize: '0.98rem', color: 'inherit', margin: '0.75rem 0 0.35rem' }}>
               {parseInlineMarkdown(headingText)}
             </h4>
           );
         }
 
         return (
-          <p key={bIdx} style={{ margin: bIdx === 0 ? 0 : '0.65rem 0', lineHeight: '1.65', color: 'var(--text-secondary)' }}>
+          <p key={bIdx} style={{ margin: bIdx === 0 ? 0 : '0.5rem 0', lineHeight: '1.65', color: 'inherit' }}>
             {lines.map((line, lIdx) => (
               <React.Fragment key={lIdx}>
                 {parseInlineMarkdown(line)}

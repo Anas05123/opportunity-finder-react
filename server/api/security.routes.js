@@ -622,6 +622,31 @@ router.get('/health', (req, res) => {
     });
   }
 });
+/**
+ * 10. POST /api/v1/admin/security/audit/run & /audits/run
+ * Triggers full 35-point enterprise security audit suite on-demand.
+ */
+router.post(['/audit/run', '/audits/run'], async (req, res) => {
+  try {
+    const result = await executeSecurityAudit({
+      triggeredBy: req.user?.email || 'admin_operator',
+      actor_ip: req.ip || '127.0.0.1'
+    });
+    res.json({
+      success: true,
+      status: 'success',
+      message: '35-Point Security Audit completed successfully',
+      data: result
+    });
+  } catch (err) {
+    console.error('[Security Routes] Audit run execution error:', err);
+    res.status(500).json({
+      success: false,
+      error: 'Security audit execution failed: ' + err.message,
+      code: 'AUDIT_EXECUTION_ERROR'
+    });
+  }
+});
 
 /**
  * 11. POST /api/v1/admin/security/scan/dependencies

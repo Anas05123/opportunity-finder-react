@@ -137,29 +137,27 @@ export default function AdminDashboard({ triggerToast }) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="w-full p-5 sm:p-8 space-y-7" style={{ fontFamily: 'var(--font-sans)' }}>
       {/* Top Admin Section Tabs */}
-      <div className="flex items-center gap-1.5 p-1 bg-card border border-border rounded-xl w-fit shadow-xs">
+      <div className="flex items-center gap-1.5 p-1.5 bg-slate-100/80 dark:bg-slate-900/80 border border-border rounded-xl w-fit shadow-xs">
         <button
           onClick={() => setAdminSection('security')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-[13px] font-semibold transition-all ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
             adminSection === 'security'
-              ? 'bg-primary text-white shadow-sm'
-              : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+              ? 'bg-[#2457FF] text-white shadow-xs'
+              : 'text-muted-foreground hover:text-foreground hover:bg-white/60 dark:hover:bg-slate-800/60'
           }`}
-          style={adminSection === 'security' ? { background: '#2457FF' } : {}}
         >
           <ShieldCheck size={15} />
           <span>Enterprise Security Center</span>
         </button>
         <button
           onClick={() => setAdminSection('sources')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-[13px] font-semibold transition-all ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
             adminSection === 'sources'
-              ? 'bg-primary text-white shadow-sm'
-              : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+              ? 'bg-[#2457FF] text-white shadow-xs'
+              : 'text-muted-foreground hover:text-foreground hover:bg-white/60 dark:hover:bg-slate-800/60'
           }`}
-          style={adminSection === 'sources' ? { background: '#2457FF' } : {}}
         >
           <Globe size={15} />
           <span>Scraper Sources & Registry</span>

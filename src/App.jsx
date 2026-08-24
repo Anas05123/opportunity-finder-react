@@ -23,6 +23,8 @@ import DiscoverScreen from './components/Discovery/DiscoverScreen.jsx';
 import ProfileView from './components/Profile/ProfileView.jsx';
 import SettingsView from './components/Settings/SettingsView.jsx';
 import NotFoundPage from './components/NotFoundPage.jsx';
+import LoadingScreen from './components/Common/LoadingScreen.jsx';
+import Toast from './components/Common/Toast.jsx';
 
 import ConversationalHero from './components/SearchInterface/ConversationalHero.jsx';
 import AIQuestionModal from './components/SearchInterface/AIQuestionModal.jsx';
@@ -452,9 +454,11 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
           {/* Header / Brand */}
           <div className="h-14 flex items-center px-4 border-b border-border">
             <Link to="/dashboard" className="flex items-center gap-2.5 no-underline">
-              <div className="w-7 h-7 bg-primary rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm" style={{ background: '#2457FF' }}>
-                <span className="text-white text-[12px] font-bold leading-none">C</span>
-              </div>
+              <img 
+                src="/careerly-logo.png" 
+                alt="Careerly Logo" 
+                className="w-7 h-7 object-contain flex-shrink-0" 
+              />
               <span className="text-[15px] font-semibold text-foreground tracking-tight">Careerly</span>
             </Link>
           </div>
@@ -910,7 +914,9 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
 
 function HomeRoute({ theme, toggleTheme, triggerToast }) {
   const { isAuthenticated, isLoading, needsOnboarding } = useAuth();
-  if (isLoading) return null;
+  if (isLoading) {
+    return <LoadingScreen message="Launching Careerly" subMessage="Calibrating your career opportunities..." />;
+  }
   if (isAuthenticated) {
     if (needsOnboarding) return <Navigate to="/onboarding" replace />;
     return <Navigate to="/dashboard" replace />;
@@ -1050,42 +1056,7 @@ export default function App() {
         </Routes>
 
         {/* Global Toast Notification */}
-        {toastMessage && (
-          <div 
-            role="status" 
-            aria-live="polite" 
-            className="toast-entrance-slide"
-            style={{
-              position: 'fixed',
-              bottom: '2rem',
-              left: '2rem',
-              background: 'var(--card)',
-              border: '1px solid var(--border-default)',
-              color: 'var(--foreground)',
-              padding: '0.75rem 1.15rem',
-              borderRadius: 'var(--radius-lg)',
-              boxShadow: 'var(--shadow-lg), 0 10px 30px rgba(0,0,0,0.3)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.65rem',
-              zIndex: 4000,
-              fontSize: '0.86rem',
-              fontWeight: '700',
-              backdropFilter: 'blur(16px)',
-              maxWidth: '90vw'
-            }}
-          >
-            <CheckCircle size={17} color="var(--accent-emerald)" style={{ flexShrink: 0 }} />
-            <span style={{ flex: 1 }}>{toastMessage}</span>
-            <button 
-              onClick={() => setToastMessage('')}
-              style={{ background: 'none', border: 'none', color: 'var(--muted-foreground)', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '2px', marginLeft: '0.25rem' }}
-              aria-label="Dismiss notification"
-            >
-              <X size={14} />
-            </button>
-          </div>
-        )}
+        <Toast message={toastMessage} onClose={() => setToastMessage('')} />
       </AuthProvider>
     </BrowserRouter>
   );

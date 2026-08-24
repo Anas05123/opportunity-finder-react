@@ -300,33 +300,33 @@ export default function OnboardingWizard({ triggerToast, onComplete }) {
           maxWidth: '520px',
           width: '100%',
           textAlign: 'center',
-          background: 'rgba(12, 15, 23, 0.95)',
-          border: '1.5px solid #1FE477',
+          background: 'var(--card, rgba(12, 15, 23, 0.95))',
+          border: '1.5px solid #2457FF',
           borderRadius: '24px',
           padding: '3rem 2rem',
-          boxShadow: '0 0 60px rgba(31, 228, 119, 0.25), 0 25px 60px rgba(0,0,0,0.9)'
+          boxShadow: '0 0 60px rgba(36, 87, 255, 0.25), 0 25px 60px rgba(0,0,0,0.5)'
         }}>
           <div style={{
             width: '80px',
             height: '80px',
             borderRadius: '50%',
-            background: 'rgba(31, 228, 119, 0.15)',
-            border: '2px solid #1FE477',
+            background: 'rgba(36, 87, 255, 0.15)',
+            border: '2px solid #2457FF',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            color: '#1FE477',
+            color: '#2457FF',
             margin: '0 auto 1.5rem',
-            boxShadow: '0 0 30px rgba(31, 228, 119, 0.4)'
+            boxShadow: '0 0 30px rgba(36, 87, 255, 0.4)'
           }}>
             <Sparkles size={40} className="pulse-glow" />
           </div>
 
-          <h2 style={{ fontSize: '1.85rem', fontWeight: '800', color: '#ffffff', fontFamily: "'Space Grotesk', sans-serif", margin: '0 0 0.5rem' }}>
+          <h2 style={{ fontSize: '1.85rem', fontWeight: '800', color: 'var(--foreground, #ffffff)', fontFamily: 'var(--font-display, inherit)', margin: '0 0 0.5rem' }}>
             Calibration Complete! 🚀
           </h2>
 
-          <p style={{ fontSize: '0.95rem', color: '#94a3b8', lineHeight: 1.6, margin: '0 0 1.75rem' }}>
+          <p style={{ fontSize: '0.95rem', color: 'var(--text-secondary, #94a3b8)', lineHeight: 1.6, margin: '0 0 1.75rem' }}>
             We've calibrated 3,400+ verified global opportunities against your <strong>{education.field_of_study}</strong> background and <strong>{targetRoles.slice(0, 2).join(', ')}</strong> preferences.
           </p>
 
@@ -335,26 +335,27 @@ export default function OnboardingWizard({ triggerToast, onComplete }) {
             gridTemplateColumns: 'repeat(3, 1fr)',
             gap: '0.75rem',
             marginBottom: '1.75rem',
-            background: 'rgba(255, 255, 255, 0.03)',
+            background: 'rgba(36, 87, 255, 0.05)',
+            border: '1px solid rgba(36, 87, 255, 0.15)',
             borderRadius: '16px',
             padding: '1.25rem 1rem'
           }}>
             <div>
-              <div style={{ fontSize: '1.35rem', fontWeight: '800', color: '#1FE477', fontFamily: 'monospace' }}>95%+</div>
-              <div style={{ fontSize: '0.72rem', color: '#64748b', textTransform: 'uppercase', marginTop: '2px' }}>Match Score</div>
+              <div style={{ fontSize: '1.35rem', fontWeight: '800', color: '#2457FF', fontFamily: 'monospace' }}>95%+</div>
+              <div style={{ fontSize: '0.72rem', color: 'var(--text-tertiary, #64748b)', textTransform: 'uppercase', marginTop: '2px' }}>Match Score</div>
             </div>
             <div>
               <div style={{ fontSize: '1.35rem', fontWeight: '800', color: '#38bdf8', fontFamily: 'monospace' }}>3,402</div>
-              <div style={{ fontSize: '0.72rem', color: '#64748b', textTransform: 'uppercase', marginTop: '2px' }}>Verified Jobs</div>
+              <div style={{ fontSize: '0.72rem', color: 'var(--text-tertiary, #64748b)', textTransform: 'uppercase', marginTop: '2px' }}>Verified Jobs</div>
             </div>
             <div>
-              <div style={{ fontSize: '1.35rem', fontWeight: '800', color: '#a855f7', fontFamily: 'monospace' }}>100%</div>
-              <div style={{ fontSize: '0.72rem', color: '#64748b', textTransform: 'uppercase', marginTop: '2px' }}>ATS Ready</div>
+              <div style={{ fontSize: '1.35rem', fontWeight: '800', color: '#10B981', fontFamily: 'monospace' }}>100%</div>
+              <div style={{ fontSize: '0.72rem', color: 'var(--text-tertiary, #64748b)', textTransform: 'uppercase', marginTop: '2px' }}>ATS Ready</div>
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', color: '#1FE477', fontSize: '0.85rem', fontWeight: '700' }}>
-            <RefreshCw size={16} className="spin-slow" />
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', color: '#2457FF', fontSize: '0.85rem', fontWeight: '700' }}>
+            <RefreshCw size={16} className="animate-spin" />
             <span>Redirecting to your personalized feed...</span>
           </div>
         </div>
@@ -379,10 +380,10 @@ export default function OnboardingWizard({ triggerToast, onComplete }) {
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
           <div>
-            <span style={{ fontSize: '0.76rem', color: 'var(--primary)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: "'JetBrains Mono', monospace" }}>
+            <span style={{ fontSize: '0.76rem', color: '#2457FF', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: "'JetBrains Mono', monospace" }}>
               STEP {currentStep} OF 4
             </span>
-            <h1 style={{ fontSize: '1.35rem', fontWeight: '800', color: 'var(--foreground)', margin: '0.2rem 0 0', fontFamily: "'Space Grotesk', sans-serif" }}>
+            <h1 style={{ fontSize: '1.35rem', fontWeight: '800', color: 'var(--foreground)', margin: '0.2rem 0 0', fontFamily: 'var(--font-display, inherit)' }}>
               {currentStep === 1 && 'Academic & Education Background'}
               {currentStep === 2 && 'Target Career Tracks & Roles'}
               {currentStep === 3 && 'Core Skills & ATS Calibration'}
@@ -398,9 +399,9 @@ export default function OnboardingWizard({ triggerToast, onComplete }) {
                   width: '32px',
                   height: '32px',
                   borderRadius: '50%',
-                  background: s < currentStep ? '#1FE477' : s === currentStep ? 'rgba(31, 228, 119, 0.2)' : 'rgba(255, 255, 255, 0.05)',
-                  border: s === currentStep ? '1.5px solid #1FE477' : '1px solid rgba(255, 255, 255, 0.1)',
-                  color: s < currentStep ? '#06070a' : s === currentStep ? '#1FE477' : '#64748b',
+                  background: s < currentStep ? '#2457FF' : s === currentStep ? 'rgba(36, 87, 255, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+                  border: s === currentStep ? '1.5px solid #2457FF' : '1px solid var(--border-default, rgba(255, 255, 255, 0.1))',
+                  color: s < currentStep ? '#ffffff' : s === currentStep ? '#2457FF' : '#64748b',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -415,8 +416,8 @@ export default function OnboardingWizard({ triggerToast, onComplete }) {
         </div>
 
         {/* Progress Fill Line */}
-        <div style={{ height: '4px', background: 'rgba(255, 255, 255, 0.08)', borderRadius: '9999px', overflow: 'hidden' }}>
-          <div style={{ width: `${(currentStep / 4) * 100}%`, height: '100%', background: '#1FE477', transition: 'all 0.3s ease' }} />
+        <div style={{ height: '4px', background: 'var(--border-default, rgba(255, 255, 255, 0.08))', borderRadius: '9999px', overflow: 'hidden' }}>
+          <div style={{ width: `${(currentStep / 4) * 100}%`, height: '100%', background: '#2457FF', transition: 'all 0.3s ease' }} />
         </div>
       </div>
 
@@ -573,14 +574,14 @@ export default function OnboardingWizard({ triggerToast, onComplete }) {
                       borderRadius: '10px',
                       fontSize: '0.84rem',
                       fontWeight: '700',
-                      background: isSelected ? 'rgba(31, 228, 119, 0.15)' : 'rgba(255, 255, 255, 0.04)',
-                      border: isSelected ? '1.5px solid #1FE477' : '1px solid rgba(255, 255, 255, 0.1)',
-                      color: isSelected ? '#1FE477' : '#cbd5e1',
+                      background: isSelected ? 'rgba(36, 87, 255, 0.15)' : 'rgba(255, 255, 255, 0.04)',
+                      border: isSelected ? '1.5px solid #2457FF' : '1px solid rgba(255, 255, 255, 0.1)',
+                      color: isSelected ? '#2457FF' : '#cbd5e1',
                       cursor: 'pointer',
                       display: 'inline-flex',
                       alignItems: 'center',
                       gap: '0.4rem',
-                      boxShadow: isSelected ? '0 0 12px rgba(31, 228, 119, 0.25)' : 'none',
+                      boxShadow: isSelected ? '0 0 12px rgba(36, 87, 255, 0.25)' : 'none',
                       transition: 'all 0.15s ease'
                     }}
                   >
@@ -696,7 +697,7 @@ export default function OnboardingWizard({ triggerToast, onComplete }) {
             <div style={{ background: 'rgba(255, 255, 255, 0.03)', borderRadius: '14px', padding: '1rem 1.25rem', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                 <label style={{ fontSize: '0.82rem', fontWeight: '700', color: '#cbd5e1' }}>Years of Professional Experience</label>
-                <span style={{ color: '#1FE477', fontWeight: '800', fontSize: '0.86rem' }}>
+                <span style={{ color: '#2457FF', fontWeight: '800', fontSize: '0.86rem' }}>
                   {experienceYears === 0 ? 'Student / Entry-level (0 years)' : `${experienceYears} ${experienceYears === 1 ? 'year' : 'years'}`}
                 </span>
               </div>
@@ -707,7 +708,7 @@ export default function OnboardingWizard({ triggerToast, onComplete }) {
                 step="1"
                 value={experienceYears}
                 onChange={(e) => setExperienceYears(Number(e.target.value))}
-                style={{ width: '100%', accentColor: '#1FE477', cursor: 'pointer' }}
+                style={{ width: '100%', accentColor: '#2457FF', cursor: 'pointer' }}
               />
             </div>
           </div>
@@ -738,9 +739,9 @@ export default function OnboardingWizard({ triggerToast, onComplete }) {
                         borderRadius: '8px',
                         fontSize: '0.82rem',
                         fontWeight: '700',
-                        background: isSelected ? 'rgba(31, 228, 119, 0.15)' : 'rgba(255, 255, 255, 0.04)',
-                        border: isSelected ? '1.5px solid #1FE477' : '1px solid rgba(255, 255, 255, 0.1)',
-                        color: isSelected ? '#1FE477' : '#cbd5e1',
+                        background: isSelected ? 'rgba(36, 87, 255, 0.15)' : 'rgba(255, 255, 255, 0.04)',
+                        border: isSelected ? '1.5px solid #2457FF' : '1px solid rgba(255, 255, 255, 0.1)',
+                        color: isSelected ? '#2457FF' : '#cbd5e1',
                         cursor: 'pointer',
                         display: 'inline-flex',
                         alignItems: 'center',
@@ -839,9 +840,9 @@ export default function OnboardingWizard({ triggerToast, onComplete }) {
                         borderRadius: '10px',
                         fontSize: '0.82rem',
                         fontWeight: '700',
-                        background: isChecked ? 'var(--primary-subtle, rgba(31, 228, 119, 0.15))' : 'var(--card)',
-                        border: isChecked ? '1.5px solid var(--primary, #1FE477)' : '1px solid var(--border-default)',
-                        color: isChecked ? 'var(--primary, #1FE477)' : 'var(--foreground)',
+                        background: isChecked ? 'rgba(36, 87, 255, 0.15)' : 'var(--card)',
+                        border: isChecked ? '1.5px solid #2457FF' : '1px solid var(--border-default)',
+                        color: isChecked ? '#2457FF' : 'var(--foreground)',
                         cursor: 'pointer',
                         display: 'inline-flex',
                         alignItems: 'center',
@@ -896,8 +897,8 @@ export default function OnboardingWizard({ triggerToast, onComplete }) {
             onClick={handleNext}
             disabled={isSubmitting}
             style={{
-              background: '#1FE477',
-              color: '#06070a',
+              background: '#2457FF',
+              color: '#ffffff',
               borderRadius: '12px',
               border: 'none',
               padding: '0.75rem 1.75rem',
@@ -907,12 +908,12 @@ export default function OnboardingWizard({ triggerToast, onComplete }) {
               display: 'inline-flex',
               alignItems: 'center',
               gap: '0.5rem',
-              boxShadow: '0 0 20px rgba(31, 228, 119, 0.45)',
+              boxShadow: '0 0 20px rgba(36, 87, 255, 0.45)',
               transition: 'all 0.2s ease'
             }}
           >
             {isSubmitting ? (
-              <RefreshCw size={16} className="spin-slow" />
+              <RefreshCw size={16} className="animate-spin" />
             ) : (
               <>
                 <span>{currentStep === 4 ? 'Complete Calibration & Launch' : 'Continue'}</span>

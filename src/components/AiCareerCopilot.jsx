@@ -126,13 +126,13 @@ export default function AiCareerCopilot({ userProfile, triggerToast }) {
           {/* Header */}
           <div className="bg-[#08152F] px-4 py-3.5 border-b border-white/10 flex items-center justify-between text-white flex-shrink-0">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-[#2457FF] flex items-center justify-center text-white shadow-sm">
-                <Bot size={18} />
+              <div className="w-8 h-8 rounded-lg bg-white/10 p-1 flex items-center justify-center shadow-sm flex-shrink-0">
+                <img src="/careerly-logo.png" alt="Careerly" className="w-full h-full object-contain" />
               </div>
               <div>
                 <div className="flex items-center gap-1.5">
                   <h3 className="text-[13px] font-semibold text-white leading-none">Careerly Copilot</h3>
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 </div>
                 <p className="text-[10px] text-white/60 mt-0.5">24/7 AI Career Intelligence Engine</p>
               </div>
@@ -186,21 +186,21 @@ export default function AiCareerCopilot({ userProfile, triggerToast }) {
               return (
                 <div key={index} className={`flex gap-2.5 ${isUser ? 'justify-end' : 'justify-start'}`}>
                   {!isUser && (
-                    <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center text-white text-xs font-bold flex-shrink-0 mt-0.5 shadow-sm" style={{ background: '#2457FF' }}>
+                    <div className="w-7 h-7 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary text-xs font-bold flex-shrink-0 mt-0.5 shadow-sm">
                       <Sparkles size={13} />
                     </div>
                   )}
 
                   <div className={`max-w-[85%] rounded-2xl p-3.5 text-[13px] leading-relaxed shadow-sm relative group ${
                     isUser 
-                      ? 'bg-primary text-primary-foreground rounded-br-none' 
+                      ? 'bg-primary text-white rounded-br-none' 
                       : 'bg-card text-foreground border border-border rounded-bl-none'
                   }`} style={isUser ? { background: '#2457FF' } : {}}>
                     {isUser ? (
                       <p>{msg.text}</p>
                     ) : (
                       <div>
-                        <FormattedMarkdown content={msg.text} />
+                        <FormattedMarkdown text={msg.text} />
                         <div className="flex items-center justify-end gap-1 mt-2 pt-2 border-t border-border/40 opacity-80 group-hover:opacity-100 transition-opacity">
                           <button 
                             onClick={() => copyMessage(msg.text, index)}
