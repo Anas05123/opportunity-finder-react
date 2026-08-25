@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   ShieldCheck, Activity, Database, CheckCircle2, AlertTriangle, 
   RefreshCw, Plus, Edit2, Play, Pause, Trash2, ExternalLink, Sliders, Layers, Check, Globe,
-  Shield, Server, Lock, Brain
+  Shield, Server, Lock, Brain, Search, ChevronLeft, ChevronRight, Filter
 } from 'lucide-react';
 import SecurityCenter from './Admin/SecurityCenter.jsx';
 import OpportunityIntelligence from './Admin/OpportunityIntelligence.jsx';
@@ -32,10 +32,40 @@ export default function AdminDashboard({ triggerToast }) {
   const [showAddSourceModal, setShowAddSourceModal] = useState(false);
   const [sourceFilter, setSourceFilter] = useState('all');
 
+  // Moderation Queue Pagination & Filter States
+  const [modSearch, setModSearch] = useState('');
+  const [modTypeFilter, setModTypeFilter] = useState('all');
+  const [modStatusFilter, setModStatusFilter] = useState('all');
+  const [modPage, setModPage] = useState(1);
+  const [modPageSize, setModPageSize] = useState(10);
+
   const filteredSources = (sources || []).filter(src => {
     if (sourceFilter === 'all') return true;
     return String(src.tier) === String(sourceFilter);
   });
+
+  const filteredModerationOpps = (opportunities || []).filter(op => {
+    if (modSearch && modSearch.trim()) {
+      const q = modSearch.toLowerCase().trim();
+      const matchTitle = (op.title || '').toLowerCase().includes(q);
+      const matchCompany = (op.organization || op.company || '').toLowerCase().includes(q);
+      const matchField = (op.field_of_study || op.category || op.opportunity_type || '').toLowerCase().includes(q);
+      if (!matchTitle && !matchCompany && !matchField) return false;
+    }
+    if (modTypeFilter !== 'all') {
+      const oppType = (op.opportunity_type || op.type || '').toLowerCase();
+      if (oppType !== modTypeFilter.toLowerCase()) return false;
+    }
+    if (modStatusFilter === 'verified') {
+      if (op.verification_status !== 'official_verified' && op.verification_level < 4) return false;
+    } else if (modStatusFilter === 'unverified') {
+      if (op.verification_status === 'official_verified' || op.verification_level >= 4) return false;
+    }
+    return true;
+  });
+
+  const totalModPages = Math.ceil(filteredModerationOpps.length / modPageSize) || 1;
+  const paginatedModerationOpps = filteredModerationOpps.slice((modPage - 1) * modPageSize, modPage * modPageSize);
 
   // New source form state
   const [newSource, setNewSource] = useState({
@@ -341,25 +371,70 @@ export default function AdminDashboard({ triggerToast }) {
         </div>
       </div>
 
-      {/* 2. SECTION 36: OPPORTUNITY MODERATION & APPROVAL QUEUE (PLACED AFTER SOURCES) */}
+      {/* 2. SECTION 36: OPPORTUNITY MODERATION & APPROVAL QUEUE (PAGINATED & ORGANIZED) */}
       <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.75rem', marginBottom: '2.25rem', boxShadow: 'var(--shadow-card)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
           <div>
             <h3 style={{ fontSize: '1.2rem', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '0.55rem', color: 'var(--text-headings)' }}>
-              <Layers size={22} color="var(--accent-violet)" /> Opportunity Moderation & One-Click Approval Queue (Section 36)
+              <Layers size={22} color="var(--accent-violet)" /> Opportunity Moderation & Approval Queue ({filteredModerationOpps.length})
             </h3>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: '0.2rem' }}>
-              Review, edit, and approve extracted opportunities with instant official verification.
+              Review, filter, and approve extracted opportunities with instant official verification.
             </p>
+          </div>
+
+          <div className="flex items-center gap-2 flex-wrap">
+            <div className="relative">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="Search title, company..."
+                value={modSearch}
+                onChange={(e) => { setModSearch(e.target.value); setModPage(1); }}
+                className="pl-8 pr-3 py-1.5 bg-secondary text-foreground text-xs rounded-lg border border-border focus:outline-hidden focus:ring-1 focus:ring-primary w-44 sm:w-56"
+              />
+            </div>
+
+            <select
+              value={modTypeFilter}
+              onChange={(e) => { setModTypeFilter(e.target.value); setModPage(1); }}
+              className="px-2.5 py-1.5 bg-secondary text-foreground text-xs rounded-lg border border-border"
+            >
+              <option value="all">All Types</option>
+              <option value="job">Jobs</option>
+              <option value="internship">Internships</option>
+              <option value="scholarship">Scholarships</option>
+              <option value="fellowship">Fellowships</option>
+            </select>
+
+            <select
+              value={modStatusFilter}
+              onChange={(e) => { setModStatusFilter(e.target.value); setModPage(1); }}
+              className="px-2.5 py-1.5 bg-secondary text-foreground text-xs rounded-lg border border-border"
+            >
+              <option value="all">All Statuses</option>
+              <option value="verified">Verified Official</option>
+              <option value="unverified">Pending / Unverified</option>
+            </select>
+
+            <select
+              value={modPageSize}
+              onChange={(e) => { setModPageSize(Number(e.target.value)); setModPage(1); }}
+              className="px-2.5 py-1.5 bg-secondary text-foreground text-xs rounded-lg border border-border"
+            >
+              <option value={10}>10 / page</option>
+              <option value={25}>25 / page</option>
+              <option value={50}>50 / page</option>
+            </select>
           </div>
         </div>
 
-        <div style={{ overflowX: 'auto', maxHeight: '440px', overflowY: 'auto' }}>
+        <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.86rem' }}>
-            <thead style={{ position: 'sticky', top: 0, background: 'var(--bg-card)', zIndex: 10 }}>
+            <thead>
               <tr style={{ borderBottom: '1.5px solid var(--border)', color: 'var(--text-tertiary)', textAlign: 'left' }}>
                 <th style={{ padding: '0.75rem 0.85rem' }}>Opportunity Title</th>
-                <th style={{ padding: '0.75rem 0.85rem' }}>Field</th>
+                <th style={{ padding: '0.75rem 0.85rem' }}>Type & Domain</th>
                 <th style={{ padding: '0.75rem 0.85rem' }}>Funding & Stipend</th>
                 <th style={{ padding: '0.75rem 0.85rem' }}>Verification Status</th>
                 <th style={{ padding: '0.75rem 0.85rem' }}>Trust Score</th>
@@ -367,55 +442,98 @@ export default function AdminDashboard({ triggerToast }) {
               </tr>
             </thead>
             <tbody>
-              {opportunities.map(op => {
-                const isApproved = op.verification_status === 'official_verified';
-                return (
-                  <tr key={op.id} style={{ borderBottom: '1px solid var(--border)', transition: 'background 0.15s ease' }}>
-                    <td style={{ padding: '0.85rem', fontWeight: '700', color: 'var(--text-headings)' }}>
-                      {op.title}
-                      <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>{op.organization} • {op.location_country}</div>
-                    </td>
-                    <td style={{ padding: '0.85rem', textTransform: 'capitalize', color: 'var(--accent-primary)', fontWeight: '600' }}>{op.field_of_study || op.field}</td>
-                    <td style={{ padding: '0.85rem', color: 'var(--accent-emerald)', fontWeight: '700' }}>{op.stipend_text || op.stipend}</td>
-                    <td style={{ padding: '0.85rem' }}>
-                      <span style={{ fontSize: '0.72rem', background: isApproved ? 'var(--accent-emerald-light)' : 'var(--accent-primary-light)', color: isApproved ? 'var(--accent-emerald)' : 'var(--accent-primary)', border: `1px solid ${isApproved ? 'rgba(16,185,129,0.3)' : 'rgba(99,102,241,0.3)'}`, padding: '0.25rem 0.6rem', borderRadius: 'var(--radius-xs)', fontWeight: '800', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
-                        <CheckCircle2 size={12} /> {isApproved ? '✓ Official Verified' : 'Trusted Source'}
-                      </span>
-                    </td>
-                    <td style={{ padding: '0.85rem', fontWeight: '800', color: isApproved ? 'var(--accent-emerald)' : 'var(--accent-primary)' }}>
-                      {op.trust_score || 85}/100
-                    </td>
-                    <td style={{ padding: '0.85rem' }}>
-                      <div style={{ display: 'flex', gap: '0.45rem' }}>
-                        <button 
-                          className="btn" 
-                          style={{ 
-                            padding: '0.35rem 0.85rem', 
-                            fontSize: '0.78rem', 
-                            background: isApproved ? 'var(--accent-emerald)' : 'var(--accent-emerald-light)', 
-                            color: isApproved ? '#fff' : 'var(--accent-emerald)', 
-                            border: '1px solid rgba(16,185,129,0.4)',
-                            fontWeight: '800',
-                            cursor: 'pointer'
-                          }} 
-                          onClick={() => handleVerifyOpportunity(op.id)}
-                        >
-                          <Check size={13} /> {isApproved ? '✓ Approved Official' : 'Approve Official'}
-                        </button>
-                        <button 
-                          className="btn btn-outline" 
-                          style={{ padding: '0.35rem 0.65rem', fontSize: '0.75rem', color: 'var(--accent-rose)', borderColor: 'rgba(244,63,94,0.3)' }} 
-                          onClick={() => handleArchiveOpportunity(op.id)}
-                        >
-                          Archive
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
+              {paginatedModerationOpps.length === 0 ? (
+                <tr>
+                  <td colSpan={6} style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                    No opportunities match the selected filters.
+                  </td>
+                </tr>
+              ) : (
+                paginatedModerationOpps.map(op => {
+                  const isApproved = op.verification_status === 'official_verified' || op.verification_level >= 4;
+                  return (
+                    <tr key={op.id} style={{ borderBottom: '1px solid var(--border)', transition: 'background 0.15s ease' }}>
+                      <td style={{ padding: '0.85rem', fontWeight: '700', color: 'var(--text-headings)' }}>
+                        {op.title}
+                        <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>{op.organization || op.company} • {op.location_country || 'Global'}</div>
+                      </td>
+                      <td style={{ padding: '0.85rem' }}>
+                        <span className="px-2 py-0.5 rounded-md text-[11px] font-bold capitalize bg-primary/10 text-primary border border-primary/20 inline-block">
+                          {op.opportunity_type || op.type || 'Job'}
+                        </span>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
+                          {op.category || op.field_of_study || op.field || 'General / Tech'}
+                        </div>
+                      </td>
+                      <td style={{ padding: '0.85rem', color: 'var(--accent-emerald)', fontWeight: '700' }}>
+                        {op.stipend_text || op.stipend || 'Competitive'}
+                      </td>
+                      <td style={{ padding: '0.85rem' }}>
+                        <span style={{ fontSize: '0.72rem', background: isApproved ? 'var(--accent-emerald-light)' : 'var(--accent-primary-light)', color: isApproved ? 'var(--accent-emerald)' : 'var(--accent-primary)', border: `1px solid ${isApproved ? 'rgba(16,185,129,0.3)' : 'rgba(99,102,241,0.3)'}`, padding: '0.25rem 0.6rem', borderRadius: 'var(--radius-xs)', fontWeight: '800', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+                          <CheckCircle2 size={12} /> {isApproved ? '✓ Official Verified' : 'Trusted Source'}
+                        </span>
+                      </td>
+                      <td style={{ padding: '0.85rem', fontWeight: '800', color: isApproved ? 'var(--accent-emerald)' : 'var(--accent-primary)' }}>
+                        {op.trust_score || 95}/100
+                      </td>
+                      <td style={{ padding: '0.85rem' }}>
+                        <div style={{ display: 'flex', gap: '0.45rem' }}>
+                          <button 
+                            className="btn" 
+                            style={{ 
+                              padding: '0.35rem 0.85rem', 
+                              fontSize: '0.78rem', 
+                              background: isApproved ? 'var(--accent-emerald)' : 'var(--accent-emerald-light)', 
+                              color: isApproved ? '#fff' : 'var(--accent-emerald)', 
+                              border: '1px solid rgba(16,185,129,0.4)',
+                              fontWeight: '800',
+                              cursor: 'pointer'
+                            }} 
+                            onClick={() => handleVerifyOpportunity(op.id)}
+                          >
+                            <Check size={13} /> {isApproved ? '✓ Approved' : 'Approve Official'}
+                          </button>
+                          <button 
+                            className="btn btn-outline" 
+                            style={{ padding: '0.35rem 0.65rem', fontSize: '0.75rem', color: 'var(--accent-rose)', borderColor: 'rgba(244,63,94,0.3)' }} 
+                            onClick={() => handleArchiveOpportunity(op.id)}
+                          >
+                            Archive
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
+        </div>
+
+        {/* Pagination Controls */}
+        <div className="flex items-center justify-between pt-4 mt-3 border-t border-border flex-wrap gap-2 text-xs">
+          <span className="text-muted-foreground">
+            Showing {filteredModerationOpps.length > 0 ? (modPage - 1) * modPageSize + 1 : 0} to {Math.min(modPage * modPageSize, filteredModerationOpps.length)} of {filteredModerationOpps.length} opportunities
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              disabled={modPage <= 1}
+              onClick={() => setModPage(p => Math.max(1, p - 1))}
+              className="flex items-center gap-1 px-3 py-1.5 bg-secondary text-foreground rounded-lg border border-border disabled:opacity-40 cursor-pointer font-semibold"
+            >
+              <ChevronLeft size={14} /> Previous
+            </button>
+            <span className="font-bold text-foreground px-2">
+              Page {modPage} of {totalModPages}
+            </span>
+            <button
+              disabled={modPage >= totalModPages}
+              onClick={() => setModPage(p => Math.min(totalModPages, p + 1))}
+              className="flex items-center gap-1 px-3 py-1.5 bg-secondary text-foreground rounded-lg border border-border disabled:opacity-40 cursor-pointer font-semibold"
+            >
+              Next <ChevronRight size={14} />
+            </button>
+          </div>
         </div>
       </div>
 
