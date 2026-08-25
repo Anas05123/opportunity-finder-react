@@ -14,15 +14,24 @@ export function isTestOrMockEmail(email = '') {
   return (
     process.env.NODE_ENV === 'test' ||
     process.env.MUTE_TEST_EMAILS === 'true' ||
+    lower.endsWith('@careerly.net') ||
+    lower.endsWith('@careerly.io') ||
+    lower.includes('@careerly.') ||
     lower.endsWith('@example.com') ||
     lower.endsWith('@example.org') ||
     lower.endsWith('@example.net') ||
     lower.endsWith('@test.com') ||
     lower.endsWith('@test.local') ||
     lower.includes('.test.') ||
+    lower.includes('test.') ||
     lower.includes('audit.') ||
-    lower.startsWith('test.') ||
-    lower.startsWith('mock.')
+    lower.includes('mock.') ||
+    lower.includes('fake.') ||
+    lower.includes('tenant.') ||
+    lower.includes('rate_test') ||
+    lower.includes('spam_test') ||
+    lower.startsWith('test') ||
+    lower.startsWith('mock')
   );
 }
 
