@@ -455,11 +455,11 @@ export default function SettingsView({ triggerToast }) {
                 </p>
                 <button
                   type="button"
-                  onClick={() => {
-                    logout();
+                  onClick={async () => {
+                    await logout();
                     window.location.href = '/';
                   }}
-                  className="px-4 py-2 bg-red-600 text-white text-[12px] font-semibold rounded-lg hover:bg-red-700 transition-all shadow-sm flex items-center gap-1.5"
+                  className="px-4 py-2 bg-red-600 text-white text-[12px] font-semibold rounded-lg hover:bg-red-700 transition-all shadow-sm flex items-center gap-1.5 cursor-pointer"
                 >
                   <LogOut size={13} /> Sign Out Everywhere
                 </button>
