@@ -457,7 +457,7 @@ export default function SettingsView({ triggerToast }) {
                   type="button"
                   onClick={() => {
                     logout();
-                    window.location.href = '/login';
+                    window.location.href = '/';
                   }}
                   className="px-4 py-2 bg-red-600 text-white text-[12px] font-semibold rounded-lg hover:bg-red-700 transition-all shadow-sm flex items-center gap-1.5"
                 >
