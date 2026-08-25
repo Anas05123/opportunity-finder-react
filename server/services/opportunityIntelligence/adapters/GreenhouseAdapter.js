@@ -20,8 +20,8 @@ export class GreenhouseAdapter extends BaseSourceAdapter {
   }
 
   async parse() {
-    const endpoint = `https://boards-api.greenhouse.io/v1/boards/${encodeURIComponent(this.boardToken)}/jobs?content=true`;
-    const res = await this.fetch(endpoint, { timeout: 8000 });
+    const endpoint = `https://boards-api.greenhouse.io/v1/boards/${encodeURIComponent(this.boardToken)}/jobs`;
+    const res = await this.fetch(endpoint, { timeout: 15000 });
     const data = typeof res.data === 'string' ? JSON.parse(res.data) : res.data;
     if (!data || !Array.isArray(data.jobs)) return [];
     return data.jobs;

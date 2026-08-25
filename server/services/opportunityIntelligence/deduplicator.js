@@ -21,15 +21,16 @@ export function deduplicateAndMergeOpportunity(newOpp) {
     `).get(sourceId, externalId);
 
     if (existingByExternal) {
-      // Update temporal heartbeat
+      // Update temporal heartbeat and provenance
       db.prepare(`
         UPDATE opportunities
         SET last_seen_at = CURRENT_TIMESTAMP,
             last_verified_at = CURRENT_TIMESTAMP,
             status = 'active',
-            lifecycle_status = 'ACTIVE'
+            lifecycle_status = 'ACTIVE',
+            scrape_run_id = COALESCE(?, scrape_run_id)
         WHERE id = ?
-      `).run(existingByExternal.id);
+      `).run(newOpp.scrape_run_id || null, existingByExternal.id);
 
       return { isDuplicate: true, matchType: 'EXTERNAL_ID', canonicalId: existingByExternal.id };
     }
@@ -53,6 +54,7 @@ export function deduplicateAndMergeOpportunity(newOpp) {
               source_authority_level = ?,
               trust_score = ?,
               verification_level = ?,
+              scrape_run_id = COALESCE(?, scrape_run_id),
               last_seen_at = CURRENT_TIMESTAMP
           WHERE id = ?
         `).run(
@@ -61,18 +63,29 @@ export function deduplicateAndMergeOpportunity(newOpp) {
           newOpp.source_authority_level,
           newOpp.trust_score,
           newOpp.verification_level,
+          newOpp.scrape_run_id || null,
           existingByUrl.id
         );
       } else {
-        db.prepare(`UPDATE opportunities SET last_seen_at = CURRENT_TIMESTAMP WHERE id = ?`).run(existingByUrl.id);
+        db.prepare(`
+          UPDATE opportunities 
+          SET last_seen_at = CURRENT_TIMESTAMP,
+              last_verified_at = CURRENT_TIMESTAMP,
+              status = 'active',
+              lifecycle_status = 'ACTIVE',
+              source_id = COALESCE(opportunities.source_id, ?),
+              external_id = COALESCE(opportunities.external_id, ?),
+              scrape_run_id = COALESCE(?, scrape_run_id)
+          WHERE id = ?
+        `).run(newOpp.source_id || null, newOpp.external_id || null, newOpp.scrape_run_id || null, existingByUrl.id);
       }
 
       return { isDuplicate: true, matchType: 'CANONICAL_URL', canonicalId: existingByUrl.id };
     }
   }
 
-  // 3. Stage 3: Normalized Composite Key Match
-  if (normCompany && normTitle) {
+  // 3. Stage 3: Normalized Composite Key Match (Excludes generic fallback tokens)
+  if (normCompany && normTitle && normCompany.length > 2 && normTitle.length > 3 && normCompany !== 'Enterprise' && normTitle !== 'Opportunity') {
     const existingByComposite = db.prepare(`
       SELECT id, source_authority_level, location_country
       FROM opportunities
@@ -82,7 +95,17 @@ export function deduplicateAndMergeOpportunity(newOpp) {
     if (existingByComposite) {
       const sameCountry = !normLocation || !existingByComposite.location_country || existingByComposite.location_country.toLowerCase().includes(normLocation) || normLocation.includes(existingByComposite.location_country.toLowerCase());
       if (sameCountry) {
-        db.prepare(`UPDATE opportunities SET last_seen_at = CURRENT_TIMESTAMP WHERE id = ?`).run(existingByComposite.id);
+        db.prepare(`
+          UPDATE opportunities 
+          SET last_seen_at = CURRENT_TIMESTAMP,
+              last_verified_at = CURRENT_TIMESTAMP,
+              status = 'active',
+              lifecycle_status = 'ACTIVE',
+              source_id = COALESCE(opportunities.source_id, ?),
+              external_id = COALESCE(opportunities.external_id, ?),
+              scrape_run_id = COALESCE(?, scrape_run_id)
+          WHERE id = ?
+        `).run(newOpp.source_id || null, newOpp.external_id || null, newOpp.scrape_run_id || null, existingByComposite.id);
         return { isDuplicate: true, matchType: 'COMPOSITE_FINGERPRINT', canonicalId: existingByComposite.id };
       }
     }
