@@ -162,6 +162,7 @@ export function initSqliteDatabase() {
     ['raw_data', 'TEXT'],
     ['first_seen_at', 'TEXT'],
     ['last_seen_at', 'TEXT'],
+    ['posted_at', 'TEXT'],
     ['scrape_run_id', 'TEXT'],
     ['lifecycle_status', 'TEXT DEFAULT "ACTIVE"']
   ];

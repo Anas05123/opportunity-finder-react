@@ -153,76 +153,82 @@ export async function executeScrapeRun(runId) {
         }
 
         // 6. Persistence into SQLite Canonical Opportunities Table
-        db.prepare(`
-          INSERT OR REPLACE INTO opportunities (
-            id, source_id, source_name, source_type, external_id, source_url,
-            title, normalized_title, company, normalized_company, organization,
-            description, opportunity_type, employment_type, location_country,
-            location_city, location_raw, normalized_location, is_remote, work_mode,
-            stipend_text, is_paid, skills_required, skills_preferred, posted_at,
-            deadline_utc, job_page_url, official_apply_url, official_program_url,
-            application_url_type, contact_email, source_tier, source_authority_level,
-            trust_score, confidence_score, verification_level, verification_status,
-            status, lifecycle_status, first_seen_at, last_seen_at, last_verified_at,
-            scrape_run_id, raw_data, created_at, updated_at
-          ) VALUES (
-            ?, ?, ?, ?, ?, ?,
-            ?, ?, ?, ?, ?,
-            ?, ?, ?, ?,
-            ?, ?, ?, ?, ?,
-            ?, ?, ?, ?, ?,
-            ?, ?, ?, ?,
-            ?, ?, ?, ?,
-            ?, ?, ?, ?,
-            ?, ?, ?, ?, ?,
-            ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
-          )
-        `).run(
-          normalized.id,
-          normalized.source_id,
-          normalized.source_name,
-          normalized.source_type,
-          normalized.external_id,
-          normalized.source_url,
-          normalized.title,
-          normalized.normalized_title,
-          normalized.company,
-          normalized.normalized_company,
-          normalized.organization,
-          normalized.description,
-          normalized.opportunity_type,
-          normalized.employment_type,
-          normalized.location_country,
-          normalized.location_city,
-          normalized.location_raw,
-          normalized.normalized_location,
-          normalized.is_remote,
-          normalized.work_mode,
-          normalized.stipend_text,
-          normalized.is_paid,
-          normalized.skills_required,
-          normalized.skills_preferred,
-          normalized.posted_at,
-          normalized.deadline_utc,
-          normalized.job_page_url,
-          normalized.official_apply_url,
-          normalized.official_program_url,
-          normalized.application_url_type,
-          normalized.contact_email,
-          normalized.source_tier,
-          normalized.source_authority_level,
-          normalized.trust_score,
-          normalized.confidence_score,
-          normalized.verification_level,
-          normalized.verification_status,
-          normalized.status,
-          normalized.lifecycle_status,
-          normalized.first_seen_at,
-          normalized.last_seen_at,
-          normalized.last_verified_at,
-          normalized.scrape_run_id,
-          normalized.raw_data
-        );
+        try {
+          db.prepare(`
+            INSERT OR REPLACE INTO opportunities (
+              id, source_id, source_name, source_type, external_id, source_url,
+              title, normalized_title, company, normalized_company, organization,
+              description, opportunity_type, employment_type, location_country,
+              location_city, location_raw, normalized_location, is_remote, work_mode,
+              stipend_text, is_paid, skills_required, skills_preferred, posted_at,
+              deadline_utc, job_page_url, official_apply_url, official_program_url,
+              application_url_type, contact_email, source_tier, source_authority_level,
+              trust_score, confidence_score, verification_level, verification_status,
+              status, lifecycle_status, first_seen_at, last_seen_at, last_verified_at,
+              scrape_run_id, raw_data, created_at, updated_at
+            ) VALUES (
+              ?, ?, ?, ?, ?, ?,
+              ?, ?, ?, ?, ?,
+              ?, ?, ?, ?,
+              ?, ?, ?, ?, ?,
+              ?, ?, ?, ?, ?,
+              ?, ?, ?, ?,
+              ?, ?, ?, ?,
+              ?, ?, ?, ?,
+              ?, ?, ?, ?, ?,
+              ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+            )
+          `).run(
+            normalized.id,
+            normalized.source_id,
+            normalized.source_name,
+            normalized.source_type,
+            normalized.external_id,
+            normalized.source_url,
+            normalized.title,
+            normalized.normalized_title,
+            normalized.company,
+            normalized.normalized_company,
+            normalized.organization,
+            normalized.description,
+            normalized.opportunity_type,
+            normalized.employment_type,
+            normalized.location_country,
+            normalized.location_city,
+            normalized.location_raw,
+            normalized.normalized_location,
+            normalized.is_remote,
+            normalized.work_mode,
+            normalized.stipend_text,
+            normalized.is_paid,
+            normalized.skills_required,
+            normalized.skills_preferred,
+            normalized.posted_at,
+            normalized.deadline_utc,
+            normalized.job_page_url,
+            normalized.official_apply_url,
+            normalized.official_program_url,
+            normalized.application_url_type,
+            normalized.contact_email,
+            normalized.source_tier,
+            normalized.source_authority_level,
+            normalized.trust_score,
+            normalized.confidence_score,
+            normalized.verification_level,
+            normalized.verification_status,
+            normalized.status,
+            normalized.lifecycle_status,
+            normalized.first_seen_at,
+            normalized.last_seen_at,
+            normalized.last_verified_at,
+            normalized.scrape_run_id,
+            normalized.raw_data
+          );
+        } catch (insertErr) {
+          console.warn(`[Ingestion Orchestrator] Opportunity insert note (${normalized.id}):`, insertErr.message);
+          rejected++;
+          continue;
+        }
       }
 
       sourcesSucceeded++;
@@ -233,6 +239,7 @@ export async function executeScrapeRun(runId) {
             last_success_at = CURRENT_TIMESTAMP,
             consecutive_failures = 0,
             health_status = 'HEALTHY',
+            last_error = NULL,
             records_found_total = records_found_total + ?,
             records_normalized_total = records_normalized_total + ?,
             updated_at = CURRENT_TIMESTAMP
