@@ -17,6 +17,7 @@ import AdminRoute from './components/Auth/AdminRoute.jsx';
 import PublicOnlyRoute from './components/Auth/PublicOnlyRoute.jsx';
 import LoadingScreen from './components/Common/LoadingScreen.jsx';
 import Toast from './components/Common/Toast.jsx';
+import { setSentryArea } from './services/sentry.js';
 
 // Code-split dynamic on-demand loaded page views
 const PublicLandingView = lazy(() => import('./components/Landing/PublicLandingView.jsx'));
@@ -157,6 +158,22 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
     }
     if (isAuthenticated) {
       fetchUserData();
+    }
+    const areaMap = {
+      landing: 'home',
+      dashboard: 'dashboard',
+      explore: 'opportunities',
+      saved: 'opportunities',
+      tracker: 'applications',
+      cv_studio: 'cv-studio',
+      interview: 'interview-coach',
+      calendar: 'calendar',
+      profile: 'profile',
+      settings: 'settings',
+      admin: 'admin'
+    };
+    if (areaMap[activeTab]) {
+      setSentryArea(areaMap[activeTab]);
     }
   }, [isAuthenticated, activeTab]);
 
