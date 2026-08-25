@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   ShieldCheck, Activity, Database, CheckCircle2, AlertTriangle, 
   RefreshCw, Plus, Edit2, Play, Pause, Trash2, ExternalLink, Sliders, Layers, Check, Globe,
@@ -9,7 +10,13 @@ import { API_BASE_URL } from '../config/api.js';
 import { sanitizeUrl } from '../utils/sanitizeUrl.js';
 
 export default function AdminDashboard({ triggerToast }) {
-  const [adminSection, setAdminSection] = useState('security'); // 'security' | 'sources'
+  const navigate = useNavigate();
+  const location = useLocation();
+  
+  const adminSection = location.pathname.includes('/sources') ? 'sources' : 'security';
+  const setAdminSection = (sec) => {
+    navigate(sec === 'sources' ? '/admin/sources' : '/admin/security');
+  };
   const [sources, setSources] = useState([]);
   const [stats, setStats] = useState({});
   const [opportunities, setOpportunities] = useState([]);

@@ -44,6 +44,7 @@ async function testProductionRouting() {
     'path="/applications"',
     'path="/saved"',
     'path="/cv-studio"',
+    'path="/interview-coach"',
     'path="/interview"',
     'path="/calendar"',
     'path="/profile"',
@@ -69,6 +70,8 @@ async function testProductionRouting() {
   console.log('\n3. Checking SPA Base & History Fallback Config...');
   const viteConfig = fs.readFileSync(path.join(ROOT_DIR, 'vite.config.js'), 'utf8');
   assert(viteConfig.includes("base: '/'"), "vite.config.js sets base: '/' for deep nested routing");
+  assert(fs.existsSync(path.join(ROOT_DIR, 'public/_redirects')), 'public/_redirects SPA fallback rule exists');
+  assert(fs.existsSync(path.join(ROOT_DIR, 'vercel.json')), 'vercel.json SPA rewrite rule exists');
 
   // 4. Verify Built HTML index fallback
   const distIndex = path.join(ROOT_DIR, 'dist/index.html');
