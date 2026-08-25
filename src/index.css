@@ -175,3 +175,92 @@ textarea:disabled,
   line-height: 1.2;
   color: var(--foreground, #10213D);
 }
+
+/* ── Standard Button System ────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.55rem 1rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1.25;
+  border-radius: 0.625rem;
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.15s ease-in-out;
+  white-space: nowrap;
+}
+.btn:hover {
+  transform: translateY(-1px);
+}
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn-outline {
+  background: var(--card, #ffffff);
+  border-color: var(--border, rgba(16, 33, 61, 0.18));
+  color: var(--foreground, #10213D);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+.btn-outline:hover {
+  background: var(--secondary, #EEF4FF);
+  border-color: var(--border-hover, rgba(16, 33, 61, 0.28));
+  color: var(--foreground, #10213D);
+}
+
+.btn-primary {
+  background: #2457FF;
+  color: #ffffff !important;
+  border-color: #2457FF;
+  box-shadow: 0 2px 6px rgba(36, 87, 255, 0.25);
+}
+.btn-primary:hover {
+  background: #1B45CC;
+  border-color: #1B45CC;
+}
+
+.btn-emerald {
+  background: #059669;
+  color: #ffffff !important;
+  border-color: #059669;
+  box-shadow: 0 2px 6px rgba(5, 150, 105, 0.25);
+}
+.btn-emerald:hover {
+  background: #047857;
+  border-color: #047857;
+}
+
+.btn-secondary {
+  background: var(--secondary, #EEF4FF);
+  color: var(--foreground, #10213D);
+  border-color: var(--border, rgba(16, 33, 61, 0.1));
+}
+.btn-secondary:hover {
+  background: var(--secondary-hover, #DDE7FA);
+}
+
+/* ── App Kit / Drawer Footer ───────────────────────────── */
+.app-kit-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--border, rgba(16, 33, 61, 0.1));
+  background: var(--card, #ffffff);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.responsive-grid-2col {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.75rem;
+}

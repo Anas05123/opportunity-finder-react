@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   X, Bookmark, ExternalLink, Calendar, MapPin, Building2, 
-  Coins, CheckCircle2, ShieldCheck, Zap, Mail, ArrowUpRight, Award, Compass, RefreshCw, FileText, Globe, Sparkles
+  Coins, CheckCircle2, ShieldCheck, Zap, Mail, ArrowUpRight, Award, Compass, RefreshCw, FileText, Globe, Sparkles, Check
 } from 'lucide-react';
 import { resolveSafeJobUrl, resolveLinkedInSearchUrl, resolveGoogleJobsUrl } from '../utils/urlResolver.js';
 import FormattedMarkdown from '../utils/FormattedMarkdown.jsx';
@@ -26,7 +26,7 @@ export default function OpportunityDrawer({
   const cleanCompany = cleanHtmlText(opportunity.organization || opportunity.company);
 
   const [activeTab, setActiveTab] = useState('overview');
-  const [isOfficial, setIsOfficial] = useState(opportunity.verification_status === 'official_verified');
+  const [isOfficial, setIsOfficial] = useState(opportunity.verification_status === 'official_verified' || opportunity.verification_level >= 4);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -45,19 +45,6 @@ export default function OpportunityDrawer({
   const safePortalUrl = resolveSafeJobUrl(opportunity);
   const liveLinkedInUrl = resolveLinkedInSearchUrl(opportunity);
 
-  const handleVerify = async () => {
-    setIsOfficial(true);
-    try {
-      const token = localStorage.getItem('careerly_token');
-      await fetch(`${API_BASE_URL}/admin/opportunities/${opportunity.id}/verify`, { 
-        method: 'POST',
-        headers: token ? { Authorization: `Bearer ${token}` } : {}
-      });
-      if (onVerifiedUpdate) onVerifiedUpdate(opportunity.id);
-      if (triggerToast) triggerToast('✓ Approved as Official Verified Source!');
-    } catch (e) {}
-  };
-
   return (
     <div className="drawer-backdrop" onClick={onClose} role="presentation">
       <div 
@@ -68,187 +55,151 @@ export default function OpportunityDrawer({
         aria-labelledby="op-drawer-title"
       >
         
-        {/* Header */}
+        {/* ── Header ────────────────────────────────────────── */}
         <div className="app-kit-header">
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginBottom: '0.45rem' }}>
-              <span className="bento-tag" style={{ textTransform: 'uppercase', fontWeight: '800' }}>
+          <div className="space-y-1.5 max-w-[85%]">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="bento-tag text-[10px] font-extrabold uppercase tracking-wider bg-primary/10 text-primary border-primary/20">
                 {opportunity.opportunity_type || opportunity.type || 'Opportunity'}
               </span>
-              <span className="bento-tag" style={{ background: 'var(--accent-emerald-subtle)', color: 'var(--accent-emerald)', borderColor: 'var(--accent-emerald)', fontWeight: '800' }}>
-                <CheckCircle2 size={12} style={{ display: 'inline', marginRight: '0.2rem' }} /> Verified Active
+              <span className="bento-tag text-[10px] font-extrabold bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30">
+                <CheckCircle2 size={12} className="inline mr-1 text-emerald-600" /> Verified Active
               </span>
+              {opportunity.source_tier && (
+                <span className="bento-tag text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-muted-foreground border-border">
+                  Tier {opportunity.source_tier} Source
+                </span>
+              )}
             </div>
             
-            <h2 id="op-drawer-title" className="type-h2">
-              {opportunity.title}
+            <h2 id="op-drawer-title" className="text-xl font-bold text-foreground leading-snug">
+              {cleanTitle}
             </h2>
             
-            <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: 'var(--text-primary)', fontWeight: '700' }}>
-                <Building2 size={14} color="var(--primary)" /> {opportunity.organization || opportunity.company}
+            <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap pt-0.5">
+              <span className="flex items-center gap-1 font-bold text-foreground">
+                <Building2 size={14} className="text-primary" /> {cleanCompany}
               </span>
               <span>•</span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                <MapPin size={14} color="var(--accent-emerald)" /> {opportunity.location_city || opportunity.location_country || 'Malaysia'}
+              <span className="flex items-center gap-1 text-muted-foreground">
+                <MapPin size={14} className="text-emerald-600 dark:text-emerald-400" /> {opportunity.location_city || opportunity.location_country || 'Global / Remote'}
               </span>
             </div>
           </div>
 
-          <button className="icon-button" onClick={onClose} aria-label="Close details drawer" title="Close Drawer">
-            <X size={16} />
+          <button 
+            className="icon-button hover:bg-secondary rounded-xl text-muted-foreground hover:text-foreground transition-colors" 
+            onClick={onClose} 
+            aria-label="Close details drawer" 
+            title="Close Drawer"
+          >
+            <X size={18} />
           </button>
         </div>
 
-        {/* Tab Switcher */}
+        {/* ── Tab Navigation Bar ──────────────────────────────── */}
         <div className="app-kit-tabs-bar">
-          <button 
-            className={`app-kit-tab-btn ${activeTab === 'overview' ? 'active' : ''}`}
-            onClick={() => setActiveTab('overview')}
-          >
-            Overview
-          </button>
-          <button 
-            className={`app-kit-tab-btn ${activeTab === 'benefits' ? 'active' : ''}`}
-            onClick={() => setActiveTab('benefits')}
-          >
-            Compensation & Benefits
-          </button>
-          <button 
-            className={`app-kit-tab-btn ${activeTab === 'eligibility' ? 'active' : ''}`}
-            onClick={() => setActiveTab('eligibility')}
-          >
-            Eligibility & Criteria
-          </button>
-          <button 
-            className={`app-kit-tab-btn ${activeTab === 'evidence' ? 'active' : ''}`}
-            onClick={() => setActiveTab('evidence')}
-          >
-            Evidence & Audit
-          </button>
+          {[
+            { id: 'overview', label: 'Overview', icon: Compass },
+            { id: 'benefits', label: 'Compensation & Benefits', icon: Coins },
+            { id: 'eligibility', label: 'Eligibility & Criteria', icon: CheckCircle2 },
+            { id: 'evidence', label: 'Evidence & Provenance', icon: ShieldCheck },
+          ].map(({ id, label, icon: Icon }) => (
+            <button 
+              key={id}
+              className={`app-kit-tab-btn flex items-center gap-1.5 ${activeTab === id ? 'active' : ''}`}
+              onClick={() => setActiveTab(id)}
+            >
+              <Icon size={13} />
+              <span>{label}</span>
+            </button>
+          ))}
         </div>
 
-        {/* Body Content */}
-        <div className="app-kit-body">
+        {/* ── Scrollable Body Content ─────────────────────────── */}
+        <div className="app-kit-body space-y-5">
           
           {/* TAB 1: OVERVIEW */}
           {activeTab === 'overview' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              {/* Stipend Banner */}
-              <div style={{ background: 'var(--accent-emerald-subtle)', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: 'var(--radius-xl)', padding: '1.15rem 1.35rem' }}>
-                <div style={{ fontSize: '1.25rem', fontWeight: '900', color: (displayStipend !== 'Compensation not disclosed') ? 'var(--accent-emerald)' : 'var(--text-secondary)' }}>
-                  {displayStipend}
+            <div className="space-y-4">
+              {/* Compensation & Deadline Card */}
+              <div className="p-4 bg-card border border-border rounded-xl shadow-xs space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Compensation & Stipend</span>
+                  <span className="text-[11px] font-semibold text-muted-foreground">
+                    Deadline: <strong className="text-foreground">{opportunity.deadline_raw || opportunity.deadline_utc || 'Open until filled'}</strong>
+                  </span>
                 </div>
-                <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginTop: '0.35rem' }}>
-                  Application Deadline: <strong style={{ color: 'var(--text-primary)' }}>{opportunity.deadline_raw || opportunity.deadline_utc || 'Open until filled'}</strong>
+                <div className="text-xl font-black text-foreground">
+                  {displayStipend !== 'Compensation not disclosed' ? (
+                    <span className="text-emerald-600 dark:text-emerald-400">{displayStipend}</span>
+                  ) : (
+                    <span className="text-muted-foreground text-base font-bold">Competitive Market Rate / Disclosed upon application</span>
+                  )}
                 </div>
               </div>
 
-              {/* Tailored CV Application Strategy Banner (If matched from CV) */}
-              {opportunity.application_tips && (
-                <div style={{ background: 'var(--bg-surface-elevated)', border: '1px solid var(--primary)', borderRadius: 'var(--radius-xl)', padding: '1.25rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.65rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.88rem', fontWeight: '800', color: 'var(--primary)' }}>
-                      <Sparkles size={16} /> Tailored CV Application Strategy
-                    </div>
-                    {opportunity.cv_match_score && (
-                      <span className="bento-tag" style={{ background: 'var(--accent-emerald-subtle)', color: 'var(--accent-emerald)', borderColor: 'rgba(16, 185, 129, 0.3)', fontWeight: '800' }}>
-                        {opportunity.cv_match_score}% CV Match
-                      </span>
-                    )}
+              {/* Match Fit & Strategy (if provided) */}
+              {opportunity.why_matches_you && (
+                <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl space-y-2">
+                  <div className="flex items-center gap-2 text-xs font-bold text-primary">
+                    <Sparkles size={15} /> Why Your Profile Fits This Role
                   </div>
-
-                  {opportunity.application_tips.why_you_match && (
-                    <div style={{ marginBottom: '0.65rem' }}>
-                      <span style={{ fontSize: '0.72rem', fontWeight: '800', textTransform: 'uppercase', color: 'var(--accent-emerald)' }}>
-                        Why Your Profile Fits:
-                      </span>
-                      <ul style={{ margin: '0.2rem 0 0 1rem', padding: 0, fontSize: '0.82rem', color: 'var(--text-primary)', lineHeight: '1.5' }}>
-                        {opportunity.application_tips.why_you_match.map((pt, idx) => (
-                          <li key={idx}>{pt}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-
-                  {opportunity.application_tips.tailored_star_bullet && (
-                    <div style={{ background: 'var(--bg-surface)', border: '1px dashed var(--border-default)', padding: '0.65rem 0.85rem', borderRadius: 'var(--radius-md)', marginTop: '0.5rem' }}>
-                      <div style={{ fontSize: '0.72rem', fontWeight: '800', textTransform: 'uppercase', color: 'var(--accent-blue)', marginBottom: '0.2rem' }}>
-                        ✨ Recommended Resume Bullet for this Role:
-                      </div>
-                      <div style={{ fontSize: '0.84rem', fontWeight: '700', color: 'var(--text-primary)' }}>
-                        • {opportunity.application_tips.tailored_star_bullet}
-                      </div>
-                    </div>
-                  )}
+                  <p className="text-xs text-foreground leading-relaxed">
+                    {opportunity.why_matches_you}
+                  </p>
                 </div>
               )}
 
-              {/* Description */}
-              <div>
-                <h4 className="type-h3" style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
-                  Role Scope & Mission
+              {/* Specs & Academic Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="p-3 bg-secondary/50 border border-border rounded-xl">
+                  <span className="text-[11px] font-bold text-muted-foreground block">Academic Standing</span>
+                  <strong className="text-xs font-bold text-foreground capitalize mt-0.5 block">
+                    {opportunity.degree_level === 'undergrad' ? 'Bachelor / Undergraduate' : (opportunity.degree_level || 'Any Degree Level')}
+                  </strong>
+                </div>
+                <div className="p-3 bg-secondary/50 border border-border rounded-xl">
+                  <span className="text-[11px] font-bold text-muted-foreground block">Work Modality</span>
+                  <strong className="text-xs font-bold text-foreground capitalize mt-0.5 block">
+                    {opportunity.work_mode || (opportunity.is_remote ? 'Remote' : 'Onsite / Hybrid')}
+                  </strong>
+                </div>
+              </div>
+
+              {/* Role Scope & Mission */}
+              <div className="space-y-2">
+                <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                  Role Scope & Description
                 </h4>
-                <FormattedMarkdown text={opportunity.description || opportunity.description_text || 'No additional description provided in the original listing.'} />
-              </div>
-
-              {/* Specs Grid */}
-              <div className="responsive-grid-2col">
-                <div style={{ background: 'var(--bg-surface-elevated)', border: '1px solid var(--border-subtle)', padding: '0.85rem 1rem', borderRadius: 'var(--radius-md)' }}>
-                  <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.74rem', fontWeight: '700' }}>Academic Standing</span>
-                  <strong style={{ textTransform: 'capitalize', color: 'var(--text-primary)', fontSize: '0.88rem' }}>
-                    {opportunity.degree_level === 'undergrad' ? 'Bachelor of Arts / Undergrad' : opportunity.degree_level}
-                  </strong>
-                </div>
-                <div style={{ background: 'var(--bg-surface-elevated)', border: '1px solid var(--border-subtle)', padding: '0.85rem 1rem', borderRadius: 'var(--radius-md)' }}>
-                  <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.74rem', fontWeight: '700' }}>Field / Specialization</span>
-                  <strong style={{ textTransform: 'capitalize', color: 'var(--text-primary)', fontSize: '0.88rem' }}>
-                    {opportunity.field_of_study || 'Advertising & Marketing / Finance'}
-                  </strong>
+                <div className="text-xs text-foreground leading-relaxed p-4 bg-card border border-border rounded-xl">
+                  <FormattedMarkdown text={opportunity.description || opportunity.description_text || 'Verified opportunity listing from official company career repository.'} />
                 </div>
               </div>
-
-              {/* Benefits Summary */}
-              {opportunity.benefits_summary && (
-                <div style={{ background: 'var(--bg-surface-elevated)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-xl)', padding: '1.15rem' }}>
-                  <h4 className="type-h3" style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.45rem' }}>
-                    Key Highlights & Mentorship
-                  </h4>
-                  <FormattedMarkdown text={opportunity.benefits_summary} />
-                </div>
-              )}
             </div>
           )}
 
           {/* TAB 2: FINANCIAL BENEFITS */}
           {activeTab === 'benefits' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <div style={{ background: 'var(--bg-surface-elevated)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-xl)', padding: '1.35rem' }}>
-                <div style={{ fontSize: '0.82rem', fontWeight: '800', color: 'var(--accent-emerald)', marginBottom: '0.35rem' }}>
-                  Funding & Allowance Breakdown
-                </div>
-                <div style={{ fontSize: '1.2rem', fontWeight: '900', color: opportunity.stipend_text ? 'var(--text-primary)' : 'var(--text-secondary)', marginBottom: '1rem' }}>
-                  {opportunity.stipend_text || 'Compensation not disclosed in listing'}
+            <div className="space-y-4">
+              <div className="p-4 bg-card border border-border rounded-xl space-y-3">
+                <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Funding & Allowance Breakdown</h4>
+                <div className="text-lg font-bold text-foreground">
+                  {opportunity.stipend_text || displayStipend}
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.88rem' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: '1px solid var(--border-subtle)' }}>
-                    <span style={{ color: 'var(--text-muted)' }}>Salary / Stipend</span>
-                    <strong style={{ color: opportunity.stipend_text ? 'var(--accent-emerald)' : 'var(--text-muted)' }}>
-                      {opportunity.stipend_text || 'Not disclosed'}
-                    </strong>
+                <div className="divide-y divide-border text-xs space-y-2 pt-2">
+                  <div className="flex justify-between py-2">
+                    <span className="text-muted-foreground">Compensation Model:</span>
+                    <strong className="text-foreground">{opportunity.is_paid ? 'Paid Placement / Stipend' : 'Standard Market Compensation'}</strong>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: '1px solid var(--border-subtle)' }}>
-                    <span style={{ color: 'var(--text-muted)' }}>Work Mode</span>
-                    <strong style={{ color: 'var(--text-primary)' }}>
-                      {opportunity.work_mode || 'Hybrid / Onsite'}
-                    </strong>
+                  <div className="flex justify-between py-2">
+                    <span className="text-muted-foreground">Work Mode:</span>
+                    <strong className="text-foreground capitalize">{opportunity.work_mode || 'Flexible / Hybrid'}</strong>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0' }}>
-                    <span style={{ color: 'var(--text-muted)' }}>English Requirement</span>
-                    <strong style={{ color: opportunity.no_ielts ? 'var(--accent-emerald)' : 'var(--text-primary)' }}>
-                      {opportunity.no_ielts ? '✓ English Medium of Instruction Waiver Accepted' : 'IELTS / TOEFL Required'}
-                    </strong>
+                  <div className="flex justify-between py-2">
+                    <span className="text-muted-foreground">Language Requirement:</span>
+                    <strong className="text-foreground">{opportunity.no_ielts ? 'English Medium Waiver Accepted' : 'Standard English Proficiency'}</strong>
                   </div>
                 </div>
               </div>
@@ -257,96 +208,97 @@ export default function OpportunityDrawer({
 
           {/* TAB 3: ELIGIBILITY */}
           {activeTab === 'eligibility' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <div style={{ background: 'var(--bg-surface-elevated)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-xl)', padding: '1.35rem' }}>
-                <h4 className="type-h3" style={{ fontSize: '0.85rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.65rem' }}>
-                  Eligibility Criteria & Academic Pre-requisites
-                </h4>
-                <p className="type-body" style={{ color: 'var(--text-primary)', lineHeight: '1.65' }}>
-                  {opportunity.eligibility_summary || 'Open to enrolled undergraduate students and recent graduates in relevant disciplines.'}
+            <div className="space-y-4">
+              <div className="p-4 bg-card border border-border rounded-xl space-y-2.5">
+                <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Eligibility Criteria & Academic Prerequisites</h4>
+                <p className="text-xs text-foreground leading-relaxed">
+                  {opportunity.eligibility_summary || 'Open to enrolled students and recent graduates in relevant disciplines. Applicants must meet standard hiring criteria and possess working rights for the target location.'}
                 </p>
               </div>
+
+              {opportunity.skills_required && (
+                <div className="p-4 bg-card border border-border rounded-xl space-y-2">
+                  <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Required Skills & Capabilities</h4>
+                  <div className="flex flex-wrap gap-1.5 pt-1">
+                    {(() => {
+                      let skills = [];
+                      try {
+                        skills = typeof opportunity.skills_required === 'string' ? JSON.parse(opportunity.skills_required) : opportunity.skills_required;
+                      } catch (e) {}
+                      if (!Array.isArray(skills) || skills.length === 0) {
+                        return <span className="text-xs text-muted-foreground">General discipline expertise required.</span>;
+                      }
+                      return skills.map((s, idx) => (
+                        <span key={idx} className="px-2.5 py-1 bg-secondary text-foreground text-xs font-semibold rounded-lg border border-border">
+                          {s}
+                        </span>
+                      ));
+                    })()}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
           {/* TAB 4: EVIDENCE & AUDIT */}
           {activeTab === 'evidence' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <div style={{ background: 'var(--bg-surface-elevated)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-xl)', padding: '1.25rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                  <span style={{ fontSize: '0.78rem', fontWeight: '800', color: 'var(--accent-emerald)' }}>
-                    <ShieldCheck size={14} style={{ display: 'inline', marginRight: '0.25rem' }} /> Level {opportunity.source_authority_level || 1} Provenance
+            <div className="space-y-4">
+              <div className="p-4 bg-card border border-border rounded-xl space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
+                    <ShieldCheck size={16} /> Level {opportunity.source_authority_level || 1} Provenance
                   </span>
-                  <span style={{ fontSize: '0.76rem', color: 'var(--text-muted)' }}>
-                    Verified: {new Date(opportunity.last_verified_at || Date.now()).toLocaleTimeString()}
+                  <span className="text-[11px] text-muted-foreground">
+                    Authority Tier {opportunity.source_tier || 1}
                   </span>
                 </div>
-                <div style={{ fontSize: '0.88rem', fontWeight: '700', color: 'var(--text-primary)' }}>
-                  Source: {opportunity.source_name || 'Official ATS Board'}
+                <div className="text-xs text-foreground">
+                  <strong>Source Authority:</strong> {opportunity.source_name || 'Official ATS Board'}
                 </div>
-                <div style={{ marginTop: '0.5rem' }}>
-                  <a
-                    href={sanitizeUrl(opportunity.application_url || opportunity.source_url)}
-                    target="_blank"
-                    rel="noreferrer noopener"
-                    className="btn btn-outline"
-                    style={{ height: '32px', fontSize: '0.78rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
-                  >
-                    Open Direct Application Form <ExternalLink size={12} />
-                  </a>
+                <div className="text-xs text-muted-foreground">
+                  <strong>Canonical Application URL:</strong>
+                  <p className="font-mono text-[11px] truncate mt-0.5 text-primary">
+                    {opportunity.official_apply_url || opportunity.source_url}
+                  </p>
                 </div>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                {(opportunity.evidence_records && opportunity.evidence_records.length > 0) ? (
-                  opportunity.evidence_records.map((ev, idx) => (
-                    <div key={idx} style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-md)', padding: '0.85rem' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.76rem', fontWeight: '800', color: 'var(--primary)', textTransform: 'uppercase', marginBottom: '0.25rem' }}>
-                        <span>{ev.field_name}</span>
-                        <span style={{ color: 'var(--text-muted)' }}>{ev.extraction_method}</span>
-                      </div>
-                      <div style={{ fontSize: '0.82rem', fontFamily: 'monospace', color: 'var(--text-primary)' }}>
-                        {ev.evidence_text}
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div style={{ padding: '1rem', background: 'var(--bg-surface)', borderRadius: 'var(--radius-md)', textAlign: 'center', fontSize: '0.84rem', color: 'var(--text-secondary)' }}>
-                    No field-level evidence records extracted from source.
-                  </div>
-                )}
               </div>
             </div>
           )}
 
         </div>
 
-        {/* Footer Actions */}
+        {/* ── Footer Actions ─────────────────────────────────── */}
         <div className="app-kit-footer">
-          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <div className="flex items-center gap-2 flex-wrap">
             <button 
-              className="btn btn-outline"
+              className={`btn btn-outline ${isSaved ? 'text-primary border-primary/40 bg-primary/5' : ''}`}
               onClick={() => onToggleSave(opportunity)}
             >
-              <Bookmark size={14} fill={isSaved ? 'var(--primary)' : 'none'} />
-              {isSaved ? 'Saved in CRM' : 'Save to CRM'}
+              <Bookmark size={15} className={isSaved ? 'fill-primary text-primary' : ''} />
+              <span>{isSaved ? 'Saved in CRM' : 'Save to CRM'}</span>
             </button>
             <button 
               className="btn btn-outline"
               onClick={() => onEmailOutreach(opportunity)}
             >
-              <Mail size={14} /> Email Recruiter
+              <Mail size={15} />
+              <span>Email Recruiter</span>
             </button>
           </div>
 
           <a 
-            href={sanitizeUrl(opportunity.application_url || opportunity.source_url)}
+            href={sanitizeUrl(opportunity.official_apply_url || opportunity.application_url || opportunity.source_url)}
             target="_blank"
             rel="noreferrer noopener"
             className="btn btn-emerald"
-            style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
           >
-            <Zap size={14} /> {opportunity.application_url_type === 'EXACT_JOB_APPLICATION' ? 'Apply on Official Portal' : (opportunity.application_url_type === 'OFFICIAL_CAREER_PAGE' ? 'Visit Careers Portal' : 'View Official Source')} <ExternalLink size={13} />
+            <Zap size={15} />
+            <span>
+              {opportunity.application_url_type === 'EXACT_JOB_APPLICATION' 
+                ? 'Apply on Official Portal' 
+                : 'View Official Source'}
+            </span>
+            <ExternalLink size={14} />
           </a>
         </div>
 
