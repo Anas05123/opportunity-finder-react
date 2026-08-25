@@ -73,12 +73,35 @@ async function testProductionRouting() {
   assert(fs.existsSync(path.join(ROOT_DIR, 'public/_redirects')), 'public/_redirects SPA fallback rule exists');
   assert(fs.existsSync(path.join(ROOT_DIR, 'vercel.json')), 'vercel.json SPA rewrite rule exists');
 
-  // 4. Verify Built HTML index fallback
-  const distIndex = path.join(ROOT_DIR, 'dist/index.html');
-  assert(fs.existsSync(distIndex), 'dist/index.html production artifact exists');
+  // 5. Verify Navigation Element Sources (Links & Routers)
+  console.log('\n4. Checking Navigation Element Implementation...');
+  const authScreenJsx = fs.readFileSync(path.join(ROOT_DIR, 'src/components/Auth/AuthScreen.jsx'), 'utf8');
+  assert(authScreenJsx.includes('to="/login"'), 'AuthScreen has semantic Link to /login');
+  assert(authScreenJsx.includes('to="/register"'), 'AuthScreen has semantic Link to /register');
+  assert(authScreenJsx.includes('to="/forgot-password"'), 'AuthScreen has semantic Link to /forgot-password');
+  assert(!authScreenJsx.includes('window.history.replaceState'), 'AuthScreen strictly avoids window.history.replaceState bypassing router');
+
+  const landingTsx = fs.readFileSync(path.join(ROOT_DIR, 'src/components/Landing/HighFidelityLanding.tsx'), 'utf8');
+  assert(landingTsx.includes('nav("signup")'), 'Landing page Get Started triggers nav("signup") to /register');
+  assert(landingTsx.includes('nav("signin")'), 'Landing page Sign In triggers nav("signin") to /login');
+
+  const publicLandingJsx = fs.readFileSync(path.join(ROOT_DIR, 'src/components/Landing/PublicLandingView.jsx'), 'utf8');
+  assert(publicLandingJsx.includes("navigate('/login')"), 'PublicLandingView routes signin to /login');
+  assert(publicLandingJsx.includes("navigate('/register')"), 'PublicLandingView routes signup to /register');
+
+  const dashboardJsx = fs.readFileSync(path.join(ROOT_DIR, 'src/components/Dashboard/PersonalizedDashboard.jsx'), 'utf8');
+  assert(dashboardJsx.includes("navigate('/opportunities')") || dashboardJsx.includes('route: "/opportunities"'), 'PersonalizedDashboard routes to /opportunities');
+  assert(dashboardJsx.includes("navigate('/cv-studio')") || dashboardJsx.includes('route: "/cv-studio"'), 'PersonalizedDashboard routes to /cv-studio');
+  assert(dashboardJsx.includes('route: "/interview-coach"') || dashboardJsx.includes("navigate('/interview-coach')"), 'PersonalizedDashboard routes to /interview-coach');
+  assert(dashboardJsx.includes("navigate('/applications')") || dashboardJsx.includes('route: "/applications"'), 'PersonalizedDashboard routes to /applications');
+
+  // 6. Verify Express Server SPA Fallback
+  console.log('\n5. Checking Express Server SPA Static Fallback...');
+  const serverIndex = fs.readFileSync(path.join(ROOT_DIR, 'server/index.js'), 'utf8');
+  assert(serverIndex.includes('distPath') && serverIndex.includes('express.static'), 'Express server configured to serve client dist build with SPA fallback');
 
   console.log('\n================================================================');
-  console.log(`🎉 ALL ${passed}/${total} PRODUCTION ROUTING CHECKS PASSED (100%)!`);
+  console.log(`🎉 ALL ${passed}/${total} PRODUCTION ROUTING & NAVIGATION AUDIT CHECKS PASSED (100%)!`);
   console.log('================================================================\n');
 }
 

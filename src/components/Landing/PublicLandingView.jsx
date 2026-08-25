@@ -14,12 +14,12 @@ export default function PublicLandingView({
   const navigate = useNavigate();
 
   const handleNav = (screen) => {
-    if (screen === 'signin') {
-      if (typeof onOpenAuth === 'function') {
-        onOpenAuth('login');
-      } else {
-        navigate('/login');
-      }
+    if (screen === 'signin' || screen === 'login') {
+      navigate('/login');
+      return;
+    }
+    if (screen === 'signup' || screen === 'register') {
+      navigate('/register');
       return;
     }
 

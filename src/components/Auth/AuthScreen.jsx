@@ -225,8 +225,8 @@ export default function AuthScreen({ triggerToast }) {
         navigate('/onboarding', { replace: true });
       } else if (mode === 'forgot') {
         await forgotPassword(email);
-        setMode('reset');
         setSuccessMsg(`✓ A 6-digit recovery code has been sent to ${email}. Please enter it below along with your new password.`);
+        navigate(`/reset-password?email=${encodeURIComponent(email)}`);
       } else if (mode === 'reset') {
         const codeToSend = resetCode.trim();
         if (!codeToSend) {
@@ -243,8 +243,7 @@ export default function AuthScreen({ triggerToast }) {
         if (triggerToast) triggerToast('✓ Password successfully reset! You can now sign in.');
         setSuccessMsg('Your password has been successfully reset! Redirecting to sign in...');
         setTimeout(() => {
-          setMode('login');
-          window.history.replaceState(null, '', '/login');
+          navigate('/login', { replace: true });
         }, 1500);
       }
     } catch (err) {
@@ -254,13 +253,12 @@ export default function AuthScreen({ triggerToast }) {
     }
   };
 
-  // Smooth switch mode without reload or route flashing
+  // Smooth switch mode via router navigation
   const switchMode = (newMode) => {
     if (newMode === mode) return;
-    setMode(newMode);
     setErrorMsg('');
     setSuccessMsg('');
-    window.history.replaceState(null, '', newMode === 'signup' ? '/register' : '/login');
+    navigate(newMode === 'signup' ? '/register' : newMode === 'forgot' ? '/forgot-password' : newMode === 'reset' ? '/reset-password' : '/login');
   };
 
   const isAuthMode = mode === 'login' || mode === 'signup';
@@ -366,28 +364,26 @@ export default function AuthScreen({ triggerToast }) {
                 }`} 
               />
 
-              <button 
-                type="button"
-                onClick={() => switchMode('login')}
-                className={`relative z-10 flex-1 py-2 rounded-lg text-[13.5px] font-semibold transition-colors duration-200 text-center ${
+              <Link 
+                to="/login"
+                className={`relative z-10 flex-1 py-2 rounded-lg text-[13.5px] font-semibold transition-colors duration-200 text-center no-underline ${
                   mode === 'login' 
                     ? 'text-foreground' 
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 Sign In
-              </button>
-              <button 
-                type="button"
-                onClick={() => switchMode('signup')}
-                className={`relative z-10 flex-1 py-2 rounded-lg text-[13.5px] font-semibold transition-colors duration-200 text-center ${
+              </Link>
+              <Link 
+                to="/register"
+                className={`relative z-10 flex-1 py-2 rounded-lg text-[13.5px] font-semibold transition-colors duration-200 text-center no-underline ${
                   mode === 'signup' 
                     ? 'text-foreground' 
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 Register
-              </button>
+              </Link>
             </div>
           )}
 
@@ -491,13 +487,12 @@ export default function AuthScreen({ triggerToast }) {
                     {mode === 'reset' ? 'New Password' : 'Password'}
                   </label>
                   {mode === 'login' && (
-                    <button
-                      type="button"
-                      onClick={() => switchMode('forgot')}
-                      className="text-[11.5px] text-primary hover:underline font-semibold"
+                    <Link
+                      to="/forgot-password"
+                      className="text-[11.5px] text-primary hover:underline font-semibold no-underline"
                     >
                       Forgot password?
-                    </button>
+                    </Link>
                   )}
                 </div>
                 <div className="relative">
@@ -591,26 +586,24 @@ export default function AuthScreen({ triggerToast }) {
           {isAuthMode && (
             <p className="text-center text-[12.5px] text-muted-foreground mt-3.5">
               {mode === 'login' ? "Don't have an account? " : "Already have an account? "}
-              <button 
-                type="button"
-                onClick={() => switchMode(mode === 'login' ? 'signup' : 'login')}
-                className="text-foreground font-bold hover:text-primary transition-colors underline ml-1"
+              <Link 
+                to={mode === 'login' ? '/register' : '/login'}
+                className="text-foreground font-bold hover:text-primary transition-colors underline ml-1 no-underline"
               >
                 {mode === 'login' ? 'Register now' : 'Sign In'}
-              </button>
+              </Link>
             </p>
           )}
 
           {(mode === 'forgot' || mode === 'reset') && (
             <p className="text-center text-[12.5px] text-muted-foreground mt-3.5">
               Remember your password?{' '}
-              <button 
-                type="button"
-                onClick={() => switchMode('login')}
-                className="text-foreground font-bold hover:text-primary transition-colors underline ml-1"
+              <Link 
+                to="/login"
+                className="text-foreground font-bold hover:text-primary transition-colors underline ml-1 no-underline"
               >
                 Back to Sign In
-              </button>
+              </Link>
             </p>
           )}
 
