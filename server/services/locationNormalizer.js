@@ -191,10 +191,17 @@ export function normalizeLocation(raw = '') {
   // If comma separated like "City, Country"
   if (s.includes(',')) {
     const parts = s.split(',').map(p => p.trim());
-    return { city: parts[0], country: parts[parts.length - 1], is_remote: false, raw: s };
+    if (parts[0].length < 40 && parts[parts.length - 1].length < 40) {
+      return { city: parts[0], country: parts[parts.length - 1], is_remote: false, raw: s };
+    }
   }
 
-  return { city: s, country: 'Worldwide', is_remote: false, raw: s };
+  // Only assign city if short string and does not look like a sentence
+  if (s.length < 35 && !s.includes('.') && !s.includes('\n')) {
+    return { city: s, country: 'Worldwide', is_remote: false, raw: s };
+  }
+
+  return { city: null, country: 'Worldwide', is_remote: false, raw: s };
 }
 
 export default { normalizeLocation, detectLocationAndCountryCode };

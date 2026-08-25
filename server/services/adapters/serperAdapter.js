@@ -58,7 +58,7 @@ export async function searchGoogleJobsViaSerper(query, location = '') {
 
     return res.data.organic.map((item, idx) => {
       const locationRaw = (locInfo.isExplicit && locInfo.country !== 'Worldwide') ? (locInfo.city ? `${locInfo.city}, ${locInfo.country}` : locInfo.country) : null;
-      const normalizedLoc = normalizeLocation(locationRaw || item.snippet || (locInfo.country !== 'Worldwide' ? locInfo.country : null));
+      const normalizedLoc = normalizeLocation(locationRaw || (locInfo.country !== 'Worldwide' ? locInfo.country : ''));
       const cleanDesc = sanitizeHtmlToText(item.snippet || '');
       const oppType = classifyOpportunityType(item.title, cleanDesc);
       const salaryText = extractSalaryFromText(item.snippet || '');
