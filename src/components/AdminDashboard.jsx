@@ -24,6 +24,11 @@ export default function AdminDashboard({ triggerToast }) {
   const [showAddSourceModal, setShowAddSourceModal] = useState(false);
   const [sourceFilter, setSourceFilter] = useState('all');
 
+  const filteredSources = (sources || []).filter(src => {
+    if (sourceFilter === 'all') return true;
+    return String(src.tier) === String(sourceFilter);
+  });
+
   // New source form state
   const [newSource, setNewSource] = useState({
     name: '',
