@@ -109,6 +109,18 @@ router.get('/scrape-runs/:id', (req, res) => {
         source_tier, source_authority_level, created_at, updated_at
       FROM opportunities 
       WHERE scrape_run_id = ? 
+        AND LOWER(COALESCE(location_country, '')) NOT LIKE '%israel%'
+        AND LOWER(COALESCE(location_city, '')) NOT LIKE '%tel aviv%'
+        AND LOWER(COALESCE(location_city, '')) NOT LIKE '%jerusalem%'
+        AND LOWER(COALESCE(location_city, '')) NOT LIKE '%herzliya%'
+        AND LOWER(COALESCE(location_city, '')) NOT LIKE '%haifa%'
+        AND LOWER(COALESCE(location_raw, '')) NOT LIKE '%israel%'
+        AND LOWER(COALESCE(title, '')) NOT LIKE '%israel%'
+        AND LOWER(COALESCE(company, '')) NOT LIKE '%israel%'
+        AND LOWER(COALESCE(description, '')) NOT LIKE '%israel%'
+        AND LOWER(COALESCE(official_apply_url, '')) NOT LIKE '%.il/%'
+        AND LOWER(COALESCE(official_apply_url, '')) NOT LIKE '%.il'
+        AND LOWER(COALESCE(source_url, '')) NOT LIKE '%.il%'
       ORDER BY created_at DESC 
       LIMIT 300
     `).all(req.params.id);
@@ -118,6 +130,12 @@ router.get('/scrape-runs/:id', (req, res) => {
       SELECT id, source_id, external_id, source_url, normalization_status, ai_extraction_status, scraped_at, raw_payload
       FROM raw_source_records 
       WHERE scrape_run_id = ? 
+        AND LOWER(COALESCE(raw_payload, '')) NOT LIKE '%israel%'
+        AND LOWER(COALESCE(raw_payload, '')) NOT LIKE '%tel aviv%'
+        AND LOWER(COALESCE(raw_payload, '')) NOT LIKE '%jerusalem%'
+        AND LOWER(COALESCE(raw_payload, '')) NOT LIKE '%herzliya%'
+        AND LOWER(COALESCE(raw_payload, '')) NOT LIKE '%haifa%'
+        AND LOWER(COALESCE(source_url, '')) NOT LIKE '%.il%'
       ORDER BY scraped_at DESC 
       LIMIT 100
     `).all(req.params.id).map(rec => {
@@ -285,7 +303,22 @@ router.get('/opportunities', (req, res) => {
     const { search, type, source_id, status, page = 1, limit = 20 } = req.query;
     const offset = (parseInt(page, 10) - 1) * parseInt(limit, 10);
 
-    let query = "SELECT * FROM opportunities WHERE 1=1";
+    let query = `
+      SELECT * FROM opportunities 
+      WHERE 1=1
+        AND LOWER(COALESCE(location_country, '')) NOT LIKE '%israel%'
+        AND LOWER(COALESCE(location_city, '')) NOT LIKE '%tel aviv%'
+        AND LOWER(COALESCE(location_city, '')) NOT LIKE '%jerusalem%'
+        AND LOWER(COALESCE(location_city, '')) NOT LIKE '%herzliya%'
+        AND LOWER(COALESCE(location_city, '')) NOT LIKE '%haifa%'
+        AND LOWER(COALESCE(location_raw, '')) NOT LIKE '%israel%'
+        AND LOWER(COALESCE(title, '')) NOT LIKE '%israel%'
+        AND LOWER(COALESCE(company, '')) NOT LIKE '%israel%'
+        AND LOWER(COALESCE(description, '')) NOT LIKE '%israel%'
+        AND LOWER(COALESCE(official_apply_url, '')) NOT LIKE '%.il/%'
+        AND LOWER(COALESCE(official_apply_url, '')) NOT LIKE '%.il'
+        AND LOWER(COALESCE(source_url, '')) NOT LIKE '%.il%'
+    `;
     const params = [];
 
     if (search && search.trim()) {
