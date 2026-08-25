@@ -36,7 +36,13 @@ export const APPROVED_SOURCE_CATALOG = [
   { id: 'chevening-uk', name: 'Chevening UK Government Scholarships', domain: 'chevening.org', base_url: 'https://www.chevening.org/scholarships/', tier: 1, type: 'feed', adapter: 'academic', country: 'United Kingdom', trust_score: 99, config: { sourceId: 'chevening-uk', sourceName: 'Chevening Scholarships UK', domain: 'chevening.org', baseUrl: 'https://www.chevening.org', country: 'United Kingdom', defaultType: 'scholarship' } },
   { id: 'mext-japan', name: 'MEXT Japanese Government Scholarship', domain: 'studyinjapan.go.jp', base_url: 'https://www.studyinjapan.go.jp/en/planning/scholarship/', tier: 1, type: 'feed', adapter: 'academic', country: 'Japan', trust_score: 99, config: { sourceId: 'mext-japan', sourceName: 'MEXT Japan', domain: 'studyinjapan.go.jp', baseUrl: 'https://www.studyinjapan.go.jp', country: 'Japan', defaultType: 'scholarship' } },
 
-  // 5. Composio Tool Integrations
+  // 5. Serper Google Jobs Real-Time Ingestion
+  { id: 'serper-tech', name: 'Google Jobs: Software & Engineering', domain: 'google.serper.dev', base_url: 'https://google.serper.dev/search', tier: 1, type: 'api', adapter: 'serper', country: 'Global', trust_score: 95, config: { sourceId: 'serper-tech', sourceName: 'Google Jobs: Software & Engineering', query: 'software engineer developer intern 2026', location: 'Global' } },
+  { id: 'serper-ai-ml', name: 'Google Jobs: AI & Data Science', domain: 'google.serper.dev', base_url: 'https://google.serper.dev/search', tier: 1, type: 'api', adapter: 'serper', country: 'Global', trust_score: 95, config: { sourceId: 'serper-ai-ml', sourceName: 'Google Jobs: AI & Data Science', query: 'machine learning AI research data science intern', location: 'Global' } },
+  { id: 'serper-business', name: 'Google Jobs: Product & Marketing', domain: 'google.serper.dev', base_url: 'https://google.serper.dev/search', tier: 1, type: 'api', adapter: 'serper', country: 'Global', trust_score: 94, config: { sourceId: 'serper-business', sourceName: 'Google Jobs: Product & Marketing', query: 'product manager marketing finance analyst internship', location: 'Global' } },
+  { id: 'serper-scholarships', name: 'Google Search: Global Scholarships', domain: 'google.serper.dev', base_url: 'https://google.serper.dev/search', tier: 1, type: 'api', adapter: 'serper', country: 'Global', trust_score: 96, config: { sourceId: 'serper-scholarships', sourceName: 'Google Search: Global Scholarships', query: 'fully funded international scholarships fellowships 2026', location: 'Global' } },
+
+  // 6. Composio Tool Integrations
   { id: 'composio-google', name: 'Google Careers (Composio Integration)', domain: 'careers.google.com', base_url: 'https://careers.google.com', tier: 2, type: 'composio', adapter: 'composio', country: 'Global', trust_score: 96, config: { sourceId: 'composio-google', sourceName: 'Google Careers', domain: 'careers.google.com', targetUrl: 'https://careers.google.com' } },
   { id: 'composio-apple', name: 'Apple Careers (Composio Integration)', domain: 'jobs.apple.com', base_url: 'https://jobs.apple.com', tier: 2, type: 'composio', adapter: 'composio', country: 'Global', trust_score: 96, config: { sourceId: 'composio-apple', sourceName: 'Apple Careers', domain: 'jobs.apple.com', targetUrl: 'https://jobs.apple.com' } }
 ];
@@ -46,7 +52,7 @@ export const APPROVED_SOURCE_CATALOG = [
  */
 export function seedSourceRegistry() {
   const insertStmt = db.prepare(`
-    INSERT OR IGNORE INTO sources (
+    INSERT OR REPLACE INTO sources (
       id, name, type, adapter, domain, base_url, tier, trust_score,
       access_method, country, status, enabled, rate_limit_ms, health_status,
       scrape_frequency_minutes, config_json, created_at, updated_at

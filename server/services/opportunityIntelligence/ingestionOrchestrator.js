@@ -33,7 +33,13 @@ export async function executeScrapeRun(runId) {
     const placeholders = selectedSourceIds.map(() => '?').join(',');
     sourcesToScrape = db.prepare(`SELECT * FROM sources WHERE id IN (${placeholders}) AND enabled = 1`).all(...selectedSourceIds);
   } else {
-    sourcesToScrape = db.prepare("SELECT * FROM sources WHERE enabled = 1 ORDER BY tier ASC LIMIT 10").all();
+    // Select an active balanced mix of ATS, Serper Google Jobs, and Academic sources
+    sourcesToScrape = db.prepare(`
+      SELECT * FROM sources 
+      WHERE enabled = 1 
+      ORDER BY tier ASC, created_at DESC 
+      LIMIT 16
+    `).all();
   }
 
   let sourcesAttempted = 0;
@@ -50,6 +56,9 @@ export async function executeScrapeRun(runId) {
   console.log(`[Ingestion Orchestrator] Starting ScrapeRun ${runId} across ${sourcesToScrape.length} sources...`);
 
   for (const sourceRecord of sourcesToScrape) {
+    // Yield event loop between sources to keep server responsive
+    await new Promise(resolve => setImmediate(resolve));
+
     if (activeCancellations.has(runId)) {
       console.log(`[Ingestion Orchestrator] Run ${runId} was cancelled.`);
       activeCancellations.delete(runId);
@@ -84,6 +93,11 @@ export async function executeScrapeRun(runId) {
       for (const raw of rawItems) {
         if (config.max_records && recordsValidated >= config.max_records) {
           break;
+        }
+
+        // Periodic event loop yield for high-volume batches
+        if (recordsNormalized % 20 === 0) {
+          await new Promise(resolve => setImmediate(resolve));
         }
 
         const rawRecordId = `raw-${crypto.randomUUID().slice(0, 10)}`;
