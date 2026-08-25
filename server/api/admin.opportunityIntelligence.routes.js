@@ -93,11 +93,45 @@ router.get('/scrape-runs', (req, res) => {
 
 /**
  * 3. GET /api/v1/admin/opportunity-intelligence/scrape-runs/:id
+ * Full deep-dive details: Telemetry, extracted opportunities, sources breakdown, and raw payloads
  */
 router.get('/scrape-runs/:id', (req, res) => {
   try {
     const run = db.prepare("SELECT * FROM scrape_runs WHERE id = ?").get(req.params.id);
     if (!run) return res.status(404).json({ error: 'Scrape run not found' });
+
+    // 1. Ingested & Updated Opportunities in this Run
+    const opportunities = db.prepare(`
+      SELECT 
+        id, title, company, organization, opportunity_type, category,
+        location_country, location_city, stipend_text, is_paid, trust_score,
+        verification_status, lifecycle_status, official_apply_url, source_name,
+        source_tier, source_authority_level, created_at, updated_at
+      FROM opportunities 
+      WHERE scrape_run_id = ? 
+      ORDER BY created_at DESC 
+      LIMIT 300
+    `).all(req.params.id);
+
+    // 2. Raw Source Records Captured
+    const rawRecords = db.prepare(`
+      SELECT id, source_id, external_id, source_url, normalization_status, ai_extraction_status, scraped_at, raw_payload
+      FROM raw_source_records 
+      WHERE scrape_run_id = ? 
+      ORDER BY scraped_at DESC 
+      LIMIT 100
+    `).all(req.params.id).map(rec => {
+      let parsedPayload = {};
+      try {
+        parsedPayload = JSON.parse(rec.raw_payload);
+      } catch (e) {
+        parsedPayload = { text: rec.raw_payload };
+      }
+      return {
+        ...rec,
+        payload: parsedPayload
+      };
+    });
 
     const rawRecordsCount = db.prepare("SELECT COUNT(*) as count FROM raw_source_records WHERE scrape_run_id = ?").get(req.params.id)?.count || 0;
 
@@ -108,7 +142,9 @@ router.get('/scrape-runs/:id', (req, res) => {
         configuration: JSON.parse(run.configuration_json || '{}'),
         errors: JSON.parse(run.errors_json || '[]'),
         raw_records_count: rawRecordsCount
-      }
+      },
+      opportunities,
+      raw_records: rawRecords
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
