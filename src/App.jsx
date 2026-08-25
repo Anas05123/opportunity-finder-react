@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { 
   BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation, useParams, Link 
 } from 'react-router-dom';
@@ -15,18 +15,25 @@ import { LanguageProvider, useLanguage } from './context/LanguageContext.jsx';
 import ProtectedRoute from './components/Auth/ProtectedRoute.jsx';
 import AdminRoute from './components/Auth/AdminRoute.jsx';
 import PublicOnlyRoute from './components/Auth/PublicOnlyRoute.jsx';
-import AuthModal from './components/Auth/AuthModal.jsx';
-import AuthScreen from './components/Auth/AuthScreen.jsx';
-import OnboardingWizard from './components/Onboarding/OnboardingWizard.jsx';
-import PublicLandingView from './components/Landing/PublicLandingView.jsx';
-import PersonalizedDashboard from './components/Dashboard/PersonalizedDashboard.jsx';
-import DiscoverScreen from './components/Discovery/DiscoverScreen.jsx';
-import ProfileView from './components/Profile/ProfileView.jsx';
-import SettingsView from './components/Settings/SettingsView.jsx';
-import NotFoundPage from './components/NotFoundPage.jsx';
 import LoadingScreen from './components/Common/LoadingScreen.jsx';
 import Toast from './components/Common/Toast.jsx';
 
+// Code-split dynamic on-demand loaded page views
+const PublicLandingView = lazy(() => import('./components/Landing/PublicLandingView.jsx'));
+const AuthScreen = lazy(() => import('./components/Auth/AuthScreen.jsx'));
+const OnboardingWizard = lazy(() => import('./components/Onboarding/OnboardingWizard.jsx'));
+const PersonalizedDashboard = lazy(() => import('./components/Dashboard/PersonalizedDashboard.jsx'));
+const DiscoverScreen = lazy(() => import('./components/Discovery/DiscoverScreen.jsx'));
+const ProfileView = lazy(() => import('./components/Profile/ProfileView.jsx'));
+const SettingsView = lazy(() => import('./components/Settings/SettingsView.jsx'));
+const NotFoundPage = lazy(() => import('./components/NotFoundPage.jsx'));
+const AdminDashboard = lazy(() => import('./components/AdminDashboard.jsx'));
+const CvStudio = lazy(() => import('./components/CvStudio.jsx'));
+const InterviewCoach = lazy(() => import('./components/InterviewCoach.jsx'));
+const AiCareerCopilot = lazy(() => import('./components/AiCareerCopilot.jsx'));
+
+// Modal & Overlay Components
+import AuthModal from './components/Auth/AuthModal.jsx';
 import ConversationalHero from './components/SearchInterface/ConversationalHero.jsx';
 import AIQuestionModal from './components/SearchInterface/AIQuestionModal.jsx';
 import SearchProgressExperience from './components/SearchInterface/SearchProgressExperience.jsx';
@@ -35,13 +42,9 @@ import OpportunityGridView from './components/OpportunityGridView.jsx';
 import OpportunityListView from './components/OpportunityListView.jsx';
 import OpportunityDrawer from './components/OpportunityDrawer.jsx';
 import ApplicationKitDrawer from './components/ApplicationAssistant/ApplicationKitDrawer.jsx';
-import AdminDashboard from './components/AdminDashboard.jsx';
 import AutoApplyModal from './components/AutoApplyModal.jsx';
 import EmailOutreachModal from './components/EmailOutreachModal.jsx';
 import ComparisonModal from './components/ComparisonModal.jsx';
-import CvStudio from './components/CvStudio.jsx';
-import InterviewCoach from './components/InterviewCoach.jsx';
-import AiCareerCopilot from './components/AiCareerCopilot.jsx';
 import EvidenceInspectorModal from './components/EvidenceInspectorModal.jsx';
 import Footer from './components/Footer.jsx';
 import { API_BASE_URL, API_V3_URL } from './config/api.js';
@@ -149,11 +152,13 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
   };
 
   useEffect(() => {
-    fetchOpportunities();
+    if (activeTab === 'explore' || activeTab === 'dashboard') {
+      fetchOpportunities();
+    }
     if (isAuthenticated) {
       fetchUserData();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, activeTab]);
 
   // Deep-link opportunity handling: /opportunities/:id
   useEffect(() => {
@@ -949,7 +954,11 @@ function HomeRoute({ theme, toggleTheme, triggerToast }) {
     if (needsOnboarding) return <Navigate to="/onboarding" replace />;
     return <Navigate to="/dashboard" replace />;
   }
-  return <CareerlyWorkspace activeTab="landing" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />;
+  return (
+    <div className="min-h-screen bg-background overflow-x-hidden" style={{ fontFamily: 'var(--font-sans)' }}>
+      <PublicLandingView triggerToast={triggerToast} />
+    </div>
+  );
 }
 
 function OnboardingRoute({ triggerToast }) {
@@ -980,119 +989,121 @@ export default function App() {
     <BrowserRouter>
       <LanguageProvider>
         <AuthProvider>
-          <Routes>
-            {/* Public Home & Landing */}
-            <Route path="/" element={
-              <HomeRoute theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
-            } />
+          <Suspense fallback={<LoadingScreen message="Launching Careerly" subMessage="Loading calibrated experience..." />}>
+            <Routes>
+              {/* Public Home & Landing */}
+              <Route path="/" element={
+                <HomeRoute theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
+              } />
 
-            {/* Authentication Dedicated Pages */}
-            <Route path="/login" element={
-              <PublicOnlyRoute>
-                <AuthScreen triggerToast={triggerToast} theme={theme} toggleTheme={toggleTheme} />
-              </PublicOnlyRoute>
-            } />
-            <Route path="/register" element={
-              <PublicOnlyRoute>
-                <AuthScreen triggerToast={triggerToast} theme={theme} toggleTheme={toggleTheme} />
-              </PublicOnlyRoute>
-            } />
-            <Route path="/signup" element={<Navigate to="/register" replace />} />
-            <Route path="/verify-email" element={
-              <PublicOnlyRoute>
-                <AuthScreen triggerToast={triggerToast} theme={theme} toggleTheme={toggleTheme} />
-              </PublicOnlyRoute>
-            } />
-            <Route path="/forgot-password" element={
-              <PublicOnlyRoute>
-                <AuthScreen triggerToast={triggerToast} theme={theme} toggleTheme={toggleTheme} />
-              </PublicOnlyRoute>
-            } />
-            <Route path="/reset-password" element={
-              <PublicOnlyRoute>
-                <AuthScreen triggerToast={triggerToast} theme={theme} toggleTheme={toggleTheme} />
-              </PublicOnlyRoute>
-            } />
+              {/* Authentication Dedicated Pages */}
+              <Route path="/login" element={
+                <PublicOnlyRoute>
+                  <AuthScreen triggerToast={triggerToast} theme={theme} toggleTheme={toggleTheme} />
+                </PublicOnlyRoute>
+              } />
+              <Route path="/register" element={
+                <PublicOnlyRoute>
+                  <AuthScreen triggerToast={triggerToast} theme={theme} toggleTheme={toggleTheme} />
+                </PublicOnlyRoute>
+              } />
+              <Route path="/signup" element={<Navigate to="/register" replace />} />
+              <Route path="/verify-email" element={
+                <PublicOnlyRoute>
+                  <AuthScreen triggerToast={triggerToast} theme={theme} toggleTheme={toggleTheme} />
+                </PublicOnlyRoute>
+              } />
+              <Route path="/forgot-password" element={
+                <PublicOnlyRoute>
+                  <AuthScreen triggerToast={triggerToast} theme={theme} toggleTheme={toggleTheme} />
+                </PublicOnlyRoute>
+              } />
+              <Route path="/reset-password" element={
+                <PublicOnlyRoute>
+                  <AuthScreen triggerToast={triggerToast} theme={theme} toggleTheme={toggleTheme} />
+                </PublicOnlyRoute>
+              } />
 
-            {/* 4-Step Academic & Career Calibration Onboarding */}
-            <Route path="/onboarding" element={
-              <ProtectedRoute>
-                <OnboardingRoute triggerToast={triggerToast} />
-              </ProtectedRoute>
-            } />
+              {/* 4-Step Academic & Career Calibration Onboarding */}
+              <Route path="/onboarding" element={
+                <ProtectedRoute>
+                  <OnboardingRoute triggerToast={triggerToast} />
+                </ProtectedRoute>
+              } />
 
-            {/* Authenticated Core Workspace Routes */}
-            <Route path="/dashboard" element={
-              <ProtectedRoute>
-                <CareerlyWorkspace activeTab="dashboard" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
-              </ProtectedRoute>
-            } />
+              {/* Authenticated Core Workspace Routes */}
+              <Route path="/dashboard" element={
+                <ProtectedRoute>
+                  <CareerlyWorkspace activeTab="dashboard" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
+                </ProtectedRoute>
+              } />
 
-            {/* Authenticated Opportunity Discovery */}
-            <Route path="/opportunities" element={
-              <ProtectedRoute>
-                <CareerlyWorkspace activeTab="explore" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
-              </ProtectedRoute>
-            } />
-            <Route path="/opportunities/:id" element={
-              <ProtectedRoute>
-                <CareerlyWorkspace activeTab="explore" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
-              </ProtectedRoute>
-            } />
+              {/* Authenticated Opportunity Discovery */}
+              <Route path="/opportunities" element={
+                <ProtectedRoute>
+                  <CareerlyWorkspace activeTab="explore" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
+                </ProtectedRoute>
+              } />
+              <Route path="/opportunities/:id" element={
+                <ProtectedRoute>
+                  <CareerlyWorkspace activeTab="explore" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
+                </ProtectedRoute>
+              } />
 
-            {/* Authenticated Feature Routes */}
-            <Route path="/applications" element={
-              <ProtectedRoute>
-                <CareerlyWorkspace activeTab="tracker" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
-              </ProtectedRoute>
-            } />
-            <Route path="/saved" element={
-              <ProtectedRoute>
-                <CareerlyWorkspace activeTab="saved" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
-              </ProtectedRoute>
-            } />
-            <Route path="/cv-studio" element={
-              <ProtectedRoute>
-                <CareerlyWorkspace activeTab="cv_studio" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
-              </ProtectedRoute>
-            } />
-            <Route path="/interview-coach" element={
-              <ProtectedRoute>
-                <CareerlyWorkspace activeTab="interview" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
-              </ProtectedRoute>
-            } />
-            <Route path="/interview" element={<Navigate to="/interview-coach" replace />} />
-            <Route path="/calendar" element={
-              <ProtectedRoute>
-                <CareerlyWorkspace activeTab="calendar" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
-              </ProtectedRoute>
-            } />
-            <Route path="/profile" element={
-              <ProtectedRoute>
-                <CareerlyWorkspace activeTab="profile" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
-              </ProtectedRoute>
-            } />
-            <Route path="/settings" element={
-              <ProtectedRoute>
-                <CareerlyWorkspace activeTab="settings" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
-              </ProtectedRoute>
-            } />
+              {/* Authenticated Feature Routes */}
+              <Route path="/applications" element={
+                <ProtectedRoute>
+                  <CareerlyWorkspace activeTab="tracker" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
+                </ProtectedRoute>
+              } />
+              <Route path="/saved" element={
+                <ProtectedRoute>
+                  <CareerlyWorkspace activeTab="saved" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
+                </ProtectedRoute>
+              } />
+              <Route path="/cv-studio" element={
+                <ProtectedRoute>
+                  <CareerlyWorkspace activeTab="cv_studio" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
+                </ProtectedRoute>
+              } />
+              <Route path="/interview-coach" element={
+                <ProtectedRoute>
+                  <CareerlyWorkspace activeTab="interview" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
+                </ProtectedRoute>
+              } />
+              <Route path="/interview" element={<Navigate to="/interview-coach" replace />} />
+              <Route path="/calendar" element={
+                <ProtectedRoute>
+                  <CareerlyWorkspace activeTab="calendar" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
+                </ProtectedRoute>
+              } />
+              <Route path="/profile" element={
+                <ProtectedRoute>
+                  <CareerlyWorkspace activeTab="profile" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
+                </ProtectedRoute>
+              } />
+              <Route path="/settings" element={
+                <ProtectedRoute>
+                  <CareerlyWorkspace activeTab="settings" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
+                </ProtectedRoute>
+              } />
 
-            {/* Administrative Security Operations Routes */}
-            <Route path="/admin" element={
-              <AdminRoute>
-                <CareerlyWorkspace activeTab="admin" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
-              </AdminRoute>
-            } />
-            <Route path="/admin/*" element={
-              <AdminRoute>
-                <CareerlyWorkspace activeTab="admin" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
-              </AdminRoute>
-            } />
+              {/* Administrative Security Operations Routes */}
+              <Route path="/admin" element={
+                <AdminRoute>
+                  <CareerlyWorkspace activeTab="admin" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
+                </AdminRoute>
+              } />
+              <Route path="/admin/*" element={
+                <AdminRoute>
+                  <CareerlyWorkspace activeTab="admin" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
+                </AdminRoute>
+              } />
 
-            {/* 404 Catch-All */}
-            <Route path="*" element={<NotFoundPage />} />
-          </Routes>
+              {/* 404 Catch-All */}
+              <Route path="*" element={<NotFoundPage />} />
+            </Routes>
+          </Suspense>
 
           {/* Global Toast Notification */}
           <Toast message={toastMessage} onClose={() => setToastMessage('')} />
