@@ -39,7 +39,19 @@ router.get('/', optionalAuth, (req, res) => {
     const { search, type, field } = req.query;
     const userProfile = req.careerProfile || { major: 'Computer Science', gpa: 3.5, degree_level: 'undergrad' };
 
-    let query = "SELECT * FROM opportunities WHERE status = 'active'";
+    let query = `
+      SELECT * FROM opportunities 
+      WHERE status = 'active'
+        AND LOWER(COALESCE(location_country, '')) NOT LIKE '%israel%'
+        AND LOWER(COALESCE(location_city, '')) NOT LIKE '%tel aviv%'
+        AND LOWER(COALESCE(location_city, '')) NOT LIKE '%jerusalem%'
+        AND LOWER(COALESCE(location_raw, '')) NOT LIKE '%israel%'
+        AND LOWER(COALESCE(title, '')) NOT LIKE '%israel%'
+        AND LOWER(COALESCE(company, '')) NOT LIKE '%israel%'
+        AND LOWER(COALESCE(official_apply_url, '')) NOT LIKE '%.il/%'
+        AND LOWER(COALESCE(official_apply_url, '')) NOT LIKE '%.il'
+        AND LOWER(COALESCE(source_url, '')) NOT LIKE '%.il%'
+    `;
     const params = [];
 
     if (type && type !== 'all') {

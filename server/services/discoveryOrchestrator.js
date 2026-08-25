@@ -61,6 +61,15 @@ export async function discoverOpportunities({
     SELECT * FROM opportunities 
     WHERE verification_status NOT IN ('DEAD', 'EXPIRED', 'CLOSED', 'verification_failed')
       AND status = 'active'
+      AND LOWER(COALESCE(location_country, '')) NOT LIKE '%israel%'
+      AND LOWER(COALESCE(location_city, '')) NOT LIKE '%tel aviv%'
+      AND LOWER(COALESCE(location_city, '')) NOT LIKE '%jerusalem%'
+      AND LOWER(COALESCE(location_raw, '')) NOT LIKE '%israel%'
+      AND LOWER(COALESCE(title, '')) NOT LIKE '%israel%'
+      AND LOWER(COALESCE(company, '')) NOT LIKE '%israel%'
+      AND LOWER(COALESCE(official_apply_url, '')) NOT LIKE '%.il/%'
+      AND LOWER(COALESCE(official_apply_url, '')) NOT LIKE '%.il'
+      AND LOWER(COALESCE(source_url, '')) NOT LIKE '%.il%'
   `;
 
   if (!isAnywhere) {

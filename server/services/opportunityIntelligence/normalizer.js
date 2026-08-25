@@ -41,6 +41,18 @@ export function normalizeRawOpportunity(rawItem, sourceMeta = {}, runId = null) 
   const extId = String(rawItem.id || rawItem.external_id || Math.random().toString(36).substring(2, 10));
   const applyUrl = rawItem.official_apply_url || rawItem.application_url || rawItem.source_url || rawItem.url || sourceMeta.base_url;
 
+  // Exclusion Guard
+  const combinedText = `${cleanTitle} ${cleanCompany} ${rawLocation} ${normLoc.country} ${normLoc.city} ${applyUrl}`.toLowerCase();
+  if (
+    combinedText.includes('israel') ||
+    combinedText.includes('tel aviv') ||
+    combinedText.includes('jerusalem') ||
+    applyUrl.includes('.il/') ||
+    applyUrl.endsWith('.il')
+  ) {
+    return null; // Excluded from ingestion
+  }
+
   return {
     id: `opp-${sourceMeta.id || 'src'}-${extId}`,
     source_id: sourceMeta.id || 'custom-source',
