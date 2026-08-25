@@ -28,9 +28,10 @@ const GREENHOUSE_BOARDS = [
 const LEVER_COMPANIES = ['spotify', 'coupa', 'anchorage'];
 
 /**
- * Opportunity Discovery Orchestrator (V4)
- * Executes live multi-source discovery, normalization, verification,
- * deduplication against SQLite cache, hard filtering, matching, and ranking.
+ * Opportunity Discovery & Search Orchestrator (V4 Database-Driven)
+ * Executes lightning-fast database-driven discovery from canonical SQLite repository,
+ * evaluating hard constraints, matching scores, and ranking.
+ * Zero live external scraping is triggered during user requests.
  */
 export async function discoverOpportunities({
   query = '',
@@ -42,260 +43,16 @@ export async function discoverOpportunities({
   const effectiveConstraints = compiledConstraints || compileSearchConstraints(effectiveQuery, userProfile);
   const searchPlan = expandSearchProfile(effectiveConstraints);
 
-  console.log(`[Discovery Orchestrator] Starting Live Discovery for: "${effectiveQuery}" (${searchPlan.queries.length} expanded queries)`);
+  console.log(`[Discovery Orchestrator] Executing DB-Driven Search for: "${effectiveQuery}"`);
 
-  // 1. Parallel Source Discovery (Fast async with timeout)
-  let sourcesAttempted = 0;
-  let sourcesSucceeded = 0;
-  let sourcesFailed = 0;
-  const rawCandidates = [];
+  const sourcesAttempted = 0;
+  const sourcesSucceeded = 1;
+  const sourcesFailed = 0;
+  const candidatesDiscovered = 0;
+  const extracted = 0;
+  const verified = 0;
 
-  // A. Greenhouse ATS Boards
-  const ghPromises = GREENHOUSE_BOARDS.map(async (board) => {
-    sourcesAttempted++;
-    try {
-      const jobs = await fetchGreenhouseBoardJobs(board);
-      sourcesSucceeded++;
-      return jobs;
-    } catch (err) {
-      sourcesFailed++;
-      return [];
-    }
-  });
-
-  // B. Lever ATS Feeds
-  const leverPromises = LEVER_COMPANIES.map(async (company) => {
-    sourcesAttempted++;
-    try {
-      const jobs = await fetchLeverPostings(company);
-      sourcesSucceeded++;
-      return jobs;
-    } catch (err) {
-      sourcesFailed++;
-      return [];
-    }
-  });
-
-  // C. Live Remote & Specialized Job Feeds
-  const liveFeedsPromise = (async () => {
-    sourcesAttempted++;
-    try {
-      const liveJobs = await scrapeLiveJobsForQuery(effectiveQuery, userProfile);
-      sourcesSucceeded++;
-      return liveJobs || [];
-    } catch (err) {
-      sourcesFailed++;
-      return [];
-    }
-  })();
-
-  // D. Google Jobs via Serper (if key configured)
-  const serperPromise = (async () => {
-    if (process.env.SERPER_API_KEY) {
-      sourcesAttempted++;
-      try {
-        const targetLoc = (effectiveConstraints.predicates?.location?.target_city !== 'Anywhere' ? effectiveConstraints.predicates?.location?.target_city : null) 
-          || (effectiveConstraints.predicates?.location?.target_country !== 'Anywhere' ? effectiveConstraints.predicates?.location?.target_country : null) 
-          || '';
-        const serperJobs = await searchGoogleJobsViaSerper(effectiveQuery, targetLoc);
-        sourcesSucceeded++;
-        return serperJobs || [];
-      } catch (err) {
-        sourcesFailed++;
-        return [];
-      }
-    }
-    return [];
-  })();
-
-  const settled = await Promise.allSettled([
-    ...ghPromises,
-    ...leverPromises,
-    liveFeedsPromise,
-    serperPromise
-  ]);
-
-  for (const res of settled) {
-    if (res.status === 'fulfilled' && Array.isArray(res.value)) {
-      rawCandidates.push(...res.value);
-    }
-  }
-
-  const candidatesDiscovered = rawCandidates.length;
-
-  // 2. Normalization
-  const normalizedCandidates = rawCandidates.map(c => {
-    const loc = normalizeLocation(c.location_raw || c.location_city || c.location_country);
-    const oppType = classifyOpportunityType(c.title, c.description_text || '');
-    return {
-      ...c,
-      location_country: loc.country || c.location_country || null,
-      location_city: loc.city || c.location_city || null,
-      is_remote: loc.is_remote ? 1 : (c.is_remote ? 1 : 0),
-      work_modality: loc.is_remote ? 'remote' : (c.work_modality || 'onsite'),
-      opportunity_type: oppType,
-      is_live_discovered: true
-    };
-  });
-
-  const extracted = normalizedCandidates.length;
-
-  // 3. Identity Validation & Liveness URL Check
-  const identityValidated = [];
-  for (const c of normalizedCandidates) {
-    let appUrlType = c.application_url_type || 'JOB_PAGE_WITH_APPLY_BUTTON';
-    if (c.application_url) {
-      const idCheck = verifyJobIdentity(
-        { company_name: c.company_name, title: c.title, job_id: c.id },
-        { company_name: c.company_name, title: c.title, application_url: c.application_url }
-      );
-      if (idCheck.is_match) {
-        appUrlType = 'EXACT_JOB_APPLICATION';
-      }
-    }
-    identityValidated.push({ ...c, application_url_type: appUrlType });
-  }
-
-  const verified = identityValidated.length;
-
-  // 4. Deduplication & SQLite Cache Integration
-  const insertOpp = db.prepare(`
-    INSERT OR REPLACE INTO opportunities (
-      id, title, company, organization, opportunity_type, category,
-      location_country, location_city, location_raw, is_remote, work_mode,
-      is_paid, salary_min, salary_max, salary_currency, stipend_text,
-      description, job_page_url, official_apply_url, application_url_type,
-      source_name, source_authority_level, source_url, verification_level,
-      verification_status, confidence_score, last_verified_at
-    ) VALUES (
-      ?, ?, ?, ?, ?, ?,
-      ?, ?, ?, ?, ?,
-      ?, ?, ?, ?, ?,
-      ?, ?, ?, ?,
-      ?, ?, ?, ?,
-      ?, ?, ?
-    )
-  `);
-
-  const insertEvidence = db.prepare(`
-    INSERT OR REPLACE INTO opportunity_evidence (
-      id, opportunity_id, field_name, source_url, source_type,
-      evidence_text, extracted_value, retrieved_at, extraction_method, confidence, is_verified
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `);
-
-  const now = new Date().toISOString();
-
-  // Ingest/update live candidates into SQLite cache
-  for (const opp of identityValidated) {
-    try {
-      insertOpp.run(
-        opp.id,
-        opp.title || null,
-        opp.company_name || opp.company || null,
-        opp.company_name || opp.company || null,
-        opp.opportunity_type || 'job',
-        opp.category || null,
-        opp.location_country || null,
-        opp.location_city || null,
-        opp.location_raw || null,
-        opp.is_remote ? 1 : 0,
-        opp.work_modality || 'onsite',
-        opp.is_paid !== undefined ? opp.is_paid : null,
-        opp.salary_min ?? null,
-        opp.salary_max ?? null,
-        opp.salary_currency || null,
-        opp.stipend_text || null,
-        opp.description_text || null,
-        opp.job_page_url || opp.source_url || null,
-        opp.application_url || opp.source_url || null,
-        opp.application_url_type || 'JOB_PAGE_WITH_APPLY_BUTTON',
-        opp.source_name || 'Official ATS',
-        opp.source_authority_level || 1,
-        opp.source_url || null,
-        opp.verification_level || 5,
-        'VERIFIED_ACTIVE',
-        opp.confidence_score || 95.0,
-        now
-      );
-
-      const evs = extractFieldEvidence({
-        ...opp,
-        official_apply_url: opp.application_url || opp.source_url
-      });
-      for (const ev of evs) {
-        insertEvidence.run(
-          ev.id,
-          opp.id,
-          ev.field_name,
-          ev.source_url || '',
-          ev.source_type || 'official_ats',
-          ev.evidence_text || '',
-          typeof ev.extracted_value === 'string' ? ev.extracted_value : JSON.stringify(ev.extracted_value || {}),
-          now,
-          ev.extraction_method || 'structured_api',
-          ev.confidence || 0.95,
-          ev.is_verified ? 1 : 0
-        );
-      }
-    } catch (dbErr) {
-      // Ignore
-    }
-  }
-
-  // Non-blocking sync to opportunities_db.json for newly discovered opportunities
-  if (identityValidated.length > 0) {
-    setTimeout(() => {
-      try {
-        if (fs.existsSync(jsonDbPath)) {
-          const fileContent = JSON.parse(fs.readFileSync(jsonDbPath, 'utf-8'));
-          if (Array.isArray(fileContent.opportunities)) {
-            const existingIds = new Set(fileContent.opportunities.map(o => o.id));
-            let added = 0;
-            for (const opp of identityValidated) {
-              if (!existingIds.has(opp.id)) {
-                fileContent.opportunities.push({
-                  id: opp.id,
-                  title: opp.title,
-                  company: opp.company_name || opp.company,
-                  organization: opp.company_name || opp.company,
-                  opportunity_type: opp.opportunity_type || 'job',
-                  type: opp.opportunity_type || 'job',
-                  category: opp.category || 'General',
-                  location_country: opp.location_country || 'Malaysia',
-                  location_city: opp.location_city || 'Kuala Lumpur',
-                  is_remote: opp.is_remote ? 1 : 0,
-                  work_mode: opp.work_modality || 'onsite',
-                  salary_min: opp.salary_min ?? null,
-                  salary_max: opp.salary_max ?? null,
-                  salary_currency: opp.salary_currency || null,
-                  stipend_text: opp.stipend_text || null,
-                  description: opp.description_text || '',
-                  official_apply_url: opp.application_url || opp.source_url || '',
-                  official_program_url: opp.job_page_url || opp.source_url || '',
-                  source_name: opp.source_name || 'Official ATS',
-                  source_url: opp.source_url || '',
-                  trust_score: opp.trust_score || 95,
-                  confidence_score: opp.confidence_score || 95.0,
-                  verification_status: 'VERIFIED_ACTIVE',
-                  last_verified_at: now
-                });
-                existingIds.add(opp.id);
-                added++;
-              }
-            }
-            if (added > 0) {
-              fs.writeFileSync(jsonDbPath, JSON.stringify(fileContent, null, 2), 'utf-8');
-            }
-          }
-        }
-      } catch (syncErr) {
-        // Non-blocking
-      }
-    }, 100);
-  }
-
-  // Retrieve full candidate pool from SQLite (Live Discovered + Cached)
+  // Retrieve full candidate pool from SQLite relational store
   const isAnywhere = effectiveConstraints.predicates?.location?.mode === 'ANYWHERE';
   const targetCountryParam = `%${effectiveConstraints.predicates?.location?.target_country || 'Malaysia'}%`;
   const targetCityParam = `%${effectiveConstraints.predicates?.location?.target_city || 'Kuala Lumpur'}%`;
@@ -303,6 +60,7 @@ export async function discoverOpportunities({
   let masterPoolQuery = `
     SELECT * FROM opportunities 
     WHERE verification_status NOT IN ('DEAD', 'EXPIRED', 'CLOSED', 'verification_failed')
+      AND status = 'active'
   `;
 
   if (!isAnywhere) {

@@ -3,9 +3,10 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   ShieldCheck, Activity, Database, CheckCircle2, AlertTriangle, 
   RefreshCw, Plus, Edit2, Play, Pause, Trash2, ExternalLink, Sliders, Layers, Check, Globe,
-  Shield, Server, Lock
+  Shield, Server, Lock, Brain
 } from 'lucide-react';
 import SecurityCenter from './Admin/SecurityCenter.jsx';
+import OpportunityIntelligence from './Admin/OpportunityIntelligence.jsx';
 import { API_BASE_URL } from '../config/api.js';
 import { sanitizeUrl } from '../utils/sanitizeUrl.js';
 
@@ -13,9 +14,16 @@ export default function AdminDashboard({ triggerToast }) {
   const navigate = useNavigate();
   const location = useLocation();
   
-  const adminSection = location.pathname.includes('/sources') ? 'sources' : 'security';
+  const adminSection = location.pathname.includes('/opportunity-intelligence') || location.pathname.includes('/intelligence')
+    ? 'intelligence'
+    : location.pathname.includes('/sources')
+      ? 'sources'
+      : 'security';
+
   const setAdminSection = (sec) => {
-    navigate(sec === 'sources' ? '/admin/sources' : '/admin/security');
+    if (sec === 'intelligence') navigate('/admin/opportunity-intelligence');
+    else if (sec === 'sources') navigate('/admin/sources');
+    else navigate('/admin/security');
   };
   const [sources, setSources] = useState([]);
   const [stats, setStats] = useState({});
@@ -151,7 +159,19 @@ export default function AdminDashboard({ triggerToast }) {
   return (
     <div className="w-full p-5 sm:p-8 space-y-7" style={{ fontFamily: 'var(--font-sans)' }}>
       {/* Top Admin Section Tabs */}
-      <div className="flex items-center gap-1.5 p-1.5 bg-slate-100/80 dark:bg-slate-900/80 border border-border rounded-xl w-fit shadow-xs">
+      <div className="flex items-center gap-1.5 p-1.5 bg-slate-100/80 dark:bg-slate-900/80 border border-border rounded-xl w-fit shadow-xs flex-wrap">
+        <button
+          onClick={() => setAdminSection('intelligence')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+            adminSection === 'intelligence'
+              ? 'bg-[#2457FF] text-white shadow-xs'
+              : 'text-muted-foreground hover:text-foreground hover:bg-white/60 dark:hover:bg-slate-800/60'
+          }`}
+          style={adminSection === 'intelligence' ? { background: '#2457FF' } : {}}
+        >
+          <Brain size={15} />
+          <span>Opportunity Intelligence Engine</span>
+        </button>
         <button
           onClick={() => setAdminSection('security')}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
@@ -159,6 +179,7 @@ export default function AdminDashboard({ triggerToast }) {
               ? 'bg-[#2457FF] text-white shadow-xs'
               : 'text-muted-foreground hover:text-foreground hover:bg-white/60 dark:hover:bg-slate-800/60'
           }`}
+          style={adminSection === 'security' ? { background: '#2457FF' } : {}}
         >
           <ShieldCheck size={15} />
           <span>Enterprise Security Center</span>
@@ -170,13 +191,16 @@ export default function AdminDashboard({ triggerToast }) {
               ? 'bg-[#2457FF] text-white shadow-xs'
               : 'text-muted-foreground hover:text-foreground hover:bg-white/60 dark:hover:bg-slate-800/60'
           }`}
+          style={adminSection === 'sources' ? { background: '#2457FF' } : {}}
         >
           <Globe size={15} />
           <span>Scraper Sources & Registry</span>
         </button>
       </div>
 
-      {adminSection === 'security' ? (
+      {adminSection === 'intelligence' ? (
+        <OpportunityIntelligence triggerToast={triggerToast} />
+      ) : adminSection === 'security' ? (
         <SecurityCenter triggerToast={triggerToast} />
       ) : (
         <>

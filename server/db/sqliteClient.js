@@ -151,7 +151,19 @@ export function initSqliteDatabase() {
     ['application_url_type', 'TEXT DEFAULT "EXACT_JOB_APPLICATION"'],
     ['source_authority_level', 'INTEGER DEFAULT 1'],
     ['confidence_score', 'REAL DEFAULT 95.0'],
-    ['verification_level', 'INTEGER DEFAULT 5']
+    ['verification_level', 'INTEGER DEFAULT 5'],
+    ['source_id', 'TEXT'],
+    ['source_type', 'TEXT DEFAULT "ats"'],
+    ['external_id', 'TEXT'],
+    ['normalized_title', 'TEXT'],
+    ['normalized_company', 'TEXT'],
+    ['normalized_location', 'TEXT'],
+    ['employment_type', 'TEXT DEFAULT "full_time"'],
+    ['raw_data', 'TEXT'],
+    ['first_seen_at', 'TEXT'],
+    ['last_seen_at', 'TEXT'],
+    ['scrape_run_id', 'TEXT'],
+    ['lifecycle_status', 'TEXT DEFAULT "ACTIVE"']
   ];
 
   for (const [col, def] of columnsToAdd) {
@@ -162,23 +174,147 @@ export function initSqliteDatabase() {
     }
   }
 
+  // Additional indexes for fast intelligence lookup & deduplication
+  try {
+    db.exec(`
+      CREATE INDEX IF NOT EXISTS idx_opps_source_ext ON opportunities(source_id, external_id);
+      CREATE INDEX IF NOT EXISTS idx_opps_norm_lookup ON opportunities(normalized_company, normalized_title);
+      CREATE INDEX IF NOT EXISTS idx_opps_scrape_run ON opportunities(scrape_run_id);
+      CREATE INDEX IF NOT EXISTS idx_opps_lifecycle ON opportunities(lifecycle_status, last_seen_at);
+    `);
+  } catch (e) {}
+
   // 2. Sources Registry Table (48+ Sources)
   db.exec(`
     CREATE TABLE IF NOT EXISTS sources (
       id TEXT PRIMARY KEY,
       name TEXT NOT NULL,
+      type TEXT DEFAULT 'ats',
+      adapter TEXT DEFAULT 'greenhouse',
       domain TEXT NOT NULL,
       base_url TEXT NOT NULL,
       tier INTEGER DEFAULT 1,
       trust_score INTEGER DEFAULT 95,
-      access_method TEXT DEFAULT 'html',
+      access_method TEXT DEFAULT 'api',
       country TEXT DEFAULT 'Global',
       status TEXT DEFAULT 'active',
+      enabled INTEGER DEFAULT 1,
+      rate_limit_ms INTEGER DEFAULT 1500,
+      health_status TEXT DEFAULT 'HEALTHY',
       scrape_frequency_minutes INTEGER DEFAULT 240,
       last_scraped_at TEXT,
       last_success_at TEXT,
-      created_at TEXT DEFAULT CURRENT_TIMESTAMP
+      last_failed_at TEXT,
+      consecutive_failures INTEGER DEFAULT 0,
+      last_error TEXT,
+      records_found_total INTEGER DEFAULT 0,
+      records_normalized_total INTEGER DEFAULT 0,
+      config_json TEXT DEFAULT '{}',
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP
     );
+  `);
+
+  const sourceColsToAdd = [
+    ['type', 'TEXT DEFAULT "ats"'],
+    ['adapter', 'TEXT DEFAULT "greenhouse"'],
+    ['enabled', 'INTEGER DEFAULT 1'],
+    ['rate_limit_ms', 'INTEGER DEFAULT 1500'],
+    ['health_status', 'TEXT DEFAULT "HEALTHY"'],
+    ['last_failed_at', 'TEXT'],
+    ['consecutive_failures', 'INTEGER DEFAULT 0'],
+    ['last_error', 'TEXT'],
+    ['records_found_total', 'INTEGER DEFAULT 0'],
+    ['records_normalized_total', 'INTEGER DEFAULT 0'],
+    ['config_json', 'TEXT DEFAULT "{}"'],
+    ['updated_at', 'TEXT DEFAULT CURRENT_TIMESTAMP']
+  ];
+  for (const [col, def] of sourceColsToAdd) {
+    try {
+      db.exec(`ALTER TABLE sources ADD COLUMN ${col} ${def}`);
+    } catch (e) {}
+  }
+
+  try {
+    db.exec(`
+      CREATE INDEX IF NOT EXISTS idx_sources_health ON sources(health_status, status);
+      CREATE INDEX IF NOT EXISTS idx_sources_tier ON sources(tier);
+    `);
+  } catch (e) {}
+
+  // 2B. Scrape Jobs (Saved Configurations & Schedules)
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS scrape_jobs (
+      id TEXT PRIMARY KEY,
+      admin_id TEXT NOT NULL,
+      name TEXT NOT NULL,
+      opportunity_type TEXT DEFAULT 'all',
+      roles_json TEXT DEFAULT '[]',
+      keywords_json TEXT DEFAULT '[]',
+      locations_json TEXT DEFAULT '[]',
+      countries_json TEXT DEFAULT '[]',
+      remote_mode TEXT DEFAULT 'any',
+      employment_type TEXT DEFAULT 'all',
+      excluded_keywords_json TEXT DEFAULT '[]',
+      selected_sources_json TEXT DEFAULT '[]',
+      max_records INTEGER DEFAULT 500,
+      schedule TEXT DEFAULT 'once',
+      custom_interval_hours INTEGER DEFAULT 24,
+      is_enabled INTEGER DEFAULT 1,
+      last_run_at TEXT,
+      next_run_at TEXT,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_scrape_jobs_enabled ON scrape_jobs(is_enabled, schedule);
+  `);
+
+  // 2C. Scrape Runs (Execution Tracker & Provenance)
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS scrape_runs (
+      id TEXT PRIMARY KEY,
+      job_id TEXT,
+      admin_id TEXT NOT NULL,
+      configuration_json TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'QUEUED' CHECK (status IN ('QUEUED', 'RUNNING', 'COMPLETED', 'PARTIAL', 'FAILED', 'CANCELLED')),
+      started_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      completed_at TEXT,
+      sources_attempted INTEGER DEFAULT 0,
+      sources_succeeded INTEGER DEFAULT 0,
+      sources_failed INTEGER DEFAULT 0,
+      pages_scanned INTEGER DEFAULT 0,
+      records_found INTEGER DEFAULT 0,
+      records_normalized INTEGER DEFAULT 0,
+      records_validated INTEGER DEFAULT 0,
+      duplicates INTEGER DEFAULT 0,
+      rejected INTEGER DEFAULT 0,
+      errors_json TEXT DEFAULT '[]',
+      duration_ms INTEGER DEFAULT 0,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_scrape_runs_status ON scrape_runs(status, started_at);
+  `);
+
+  // 2D. Raw Source Records (Audit Provenance & Review Store)
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS raw_source_records (
+      id TEXT PRIMARY KEY,
+      scrape_run_id TEXT NOT NULL,
+      source_id TEXT NOT NULL,
+      external_id TEXT,
+      source_url TEXT NOT NULL,
+      raw_payload TEXT NOT NULL,
+      normalization_status TEXT DEFAULT 'PENDING' CHECK (normalization_status IN ('PENDING', 'NORMALIZED', 'VALIDATED', 'NEEDS_REVIEW', 'REJECTED')),
+      validation_errors_json TEXT DEFAULT '[]',
+      ai_extraction_status TEXT DEFAULT 'NONE' CHECK (ai_extraction_status IN ('NONE', 'SUCCESS', 'SKIPPED', 'FAILED')),
+      scraped_at TEXT DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_raw_records_run ON raw_source_records(scrape_run_id, normalization_status);
+    CREATE INDEX IF NOT EXISTS idx_raw_records_source ON raw_source_records(source_id, external_id);
   `);
 
   // 3. Multi-User Authentication & Identity Tables

@@ -37,10 +37,12 @@ import securityRouter from './api/security.routes.js';
 import adminRouter from './api/admin.routes.js';
 import { executeSecurityAudit } from './services/securityAuditRunner.js';
 import { authenticateToken, optionalAuth, requireAdmin } from './middleware/auth.js';
+import { seedSourceRegistry } from './services/opportunityIntelligence/sourceRegistry.js';
 
-// Initialize Databases
+// Initialize Databases & Source Registry
 initSqliteDatabase();
 initDatabase();
+seedSourceRegistry();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
