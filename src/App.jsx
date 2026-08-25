@@ -7,7 +7,7 @@ import {
   LayoutGrid, List, Sun, Moon, RefreshCw, Sparkles, Filter, 
   Megaphone, Zap, Mail, CheckCircle, Scale, Building2, MapPin, Clock, Coins, 
   ArrowRight, ExternalLink, Menu, X, Globe, Award, Briefcase, GraduationCap, 
-  ChevronLeft, ChevronRight, FileText, Mic, Bot, LogOut, Settings, Bookmark, CheckCircle2
+  ChevronLeft, ChevronRight, FileText, Mic, Bot, LogOut, Settings, Bookmark, CheckCircle2, Brain
 } from 'lucide-react';
 
 import { AuthProvider, useAuth } from './context/AuthContext.jsx';
@@ -513,9 +513,14 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
                 <Settings size={15} /> Settings
               </Link>
               {isAdmin && (
-                <Link to="/admin/security" className={navCls('admin')}>
-                  <ShieldCheck size={15} /> Security Ops
-                </Link>
+                <>
+                  <Link to="/admin/opportunity-intelligence" className={navCls('admin')}>
+                    <Brain size={15} /> Opp Intelligence
+                  </Link>
+                  <Link to="/admin/security" className={navCls('admin')}>
+                    <ShieldCheck size={15} /> Security Ops
+                  </Link>
+                </>
               )}
             </div>
           </nav>

@@ -4,14 +4,16 @@ import { authenticateToken, requireAdmin, revokeAllUserTokens } from '../middlew
 import { runScraperPipeline } from '../services/scheduler.js';
 import { recordSecurityEvent, getSafeClientIp } from '../services/security/securityEvents.js';
 import securityRouter from './security.routes.js';
+import opportunityIntelligenceRouter from './admin.opportunityIntelligence.routes.js';
 
 const router = express.Router();
 
 // Enforce authentication + administrative authorization across ALL /api/v1/admin routes
 router.use(authenticateToken, requireAdmin);
 
-// Mount Security Center routes under /api/v1/admin/security
+// Mount Security Center & Opportunity Intelligence sub-routers
 router.use('/security', securityRouter);
+router.use('/opportunity-intelligence', opportunityIntelligenceRouter);
 
 /**
  * 1. POST /api/v1/admin/scrape
