@@ -70,7 +70,11 @@ router.get('/', optionalAuth, (req, res) => {
       params.push(term, term, term, term, term);
     }
 
-    query += ' ORDER BY created_at DESC';
+    const limit = Math.min(parseInt(req.query.limit, 10) || 200, 500);
+    const offset = Math.max((parseInt(req.query.page, 10) || 1) - 1, 0) * limit;
+
+    query += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
+    params.push(limit, offset);
 
     const rows = db.prepare(query).all(...params);
     const enriched = rows.map(r => enrichOpportunity(r, userProfile));
