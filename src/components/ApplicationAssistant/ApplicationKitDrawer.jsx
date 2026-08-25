@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   X, Zap, CheckCircle2, Copy, Check, FileText, 
-  Sparkles, ExternalLink, ShieldCheck, Mail, Send, Building2, MapPin, RefreshCw, BookOpen
+  Sparkles, ExternalLink, ShieldCheck, Mail, Send, Building2, MapPin, RefreshCw, BookOpen, List, CheckSquare
 } from 'lucide-react';
 import { resolveSafeJobUrl, resolveLinkedInSearchUrl, resolveGoogleJobsUrl } from '../../utils/urlResolver.js';
 import { safeOpenUrl } from '../../utils/sanitizeUrl.js';
@@ -34,14 +34,14 @@ export default function ApplicationKitDrawer({ opportunity, userProfile, onClose
           setKit(data.application_kit);
         }
       } catch (err) {
-        console.warn('Kit fetch error, using client fallback:', err);
+        console.warn('Kit fetch error, using fallback:', err);
       } finally {
         if (isMounted) setIsLoadingKit(false);
       }
     }
     fetchKit();
     return () => { isMounted = false; };
-  }, [opportunity.id]);
+  }, [opportunity.id, userProfile]);
 
   const handleCopy = (text, label) => {
     navigator.clipboard.writeText(text);
@@ -62,8 +62,8 @@ export default function ApplicationKitDrawer({ opportunity, userProfile, onClose
 
   const handleOpenEmailClient = () => {
     if (onApplied) onApplied(opportunity.id, 'applied');
-    const recipient = opportunity.contact_email || 'careers@' + (opportunity.organization || 'company').toLowerCase().replace(/[^a-z]/g, '') + '.com';
-    const subject = encodeURIComponent(`Application Submission: ${opportunity.title} - ${userProfile?.name || 'Anas'}`);
+    const recipient = opportunity.contact_email || 'careers@' + (opportunity.organization || opportunity.company || 'company').toLowerCase().replace(/[^a-z]/g, '') + '.com';
+    const subject = encodeURIComponent(`Application Submission: ${opportunity.title} - ${userProfile?.name || 'Candidate'}`);
     const body = encodeURIComponent(kit?.custom_cover_letter || 'Please find attached my application dossier.');
     safeOpenUrl(`mailto:${recipient}?subject=${subject}&body=${body}`, '_blank');
     if (triggerToast) triggerToast(`Opened email client pre-filled to ${recipient}!`);
@@ -86,224 +86,205 @@ export default function ApplicationKitDrawer({ opportunity, userProfile, onClose
   return (
     <div className="drawer-backdrop" onClick={onClose} role="presentation">
       <div 
-        className="drawer-panel-prodexa app-kit-drawer" 
+        className="drawer-panel-prodexa" 
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-labelledby="app-kit-title"
       >
         
-        {/* Header */}
+        {/* ── Header ────────────────────────────────────────── */}
         <div className="app-kit-header">
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginBottom: '0.35rem' }}>
-              <span className="bento-tag" style={{ background: 'var(--accent-emerald-light)', color: 'var(--accent-emerald)', borderColor: 'var(--accent-emerald)', fontWeight: '800', fontSize: '0.72rem' }}>
-                <Sparkles size={12} style={{ display: 'inline', marginRight: '0.2rem' }} /> AI Application Kit
+          <div className="space-y-1.5 max-w-[85%]">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="bento-tag text-[10px] font-extrabold bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30">
+                <Sparkles size={12} className="inline mr-1 text-emerald-600" /> AI Application Kit
               </span>
-              <span className="bento-tag" style={{ fontSize: '0.72rem' }}>
-                {opportunity.opportunity_type || opportunity.type || 'Internship'}
+              <span className="bento-tag text-[10px] font-bold bg-primary/10 text-primary border-primary/20 capitalize">
+                {opportunity.opportunity_type || opportunity.type || 'Job'}
               </span>
             </div>
 
-            <h2 id="app-kit-title" style={{ fontSize: '1.25rem', fontWeight: '900', color: 'var(--foreground)', lineHeight: '1.3' }}>
+            <h2 id="app-kit-title" className="text-xl font-bold text-foreground leading-snug">
               {opportunity.title}
             </h2>
-            <div style={{ fontSize: '0.84rem', color: 'var(--muted-foreground)', marginTop: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <Building2 size={13} color="var(--accent-blue)" /> {opportunity.organization} • <MapPin size={13} color="var(--accent-emerald)" /> {opportunity.location_country || 'Malaysia'}
+            <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap pt-0.5">
+              <span className="flex items-center gap-1 font-bold text-foreground">
+                <Building2 size={14} className="text-primary" /> {opportunity.organization || opportunity.company}
+              </span>
+              <span>•</span>
+              <span className="flex items-center gap-1 text-muted-foreground">
+                <MapPin size={14} className="text-emerald-600 dark:text-emerald-400" /> {opportunity.location_country || 'Global'}
+              </span>
             </div>
           </div>
 
-          <button className="icon-button" onClick={onClose} aria-label="Close application kit drawer" title="Close">
-            <X size={16} />
+          <button 
+            className="icon-button hover:bg-secondary rounded-xl text-muted-foreground hover:text-foreground transition-colors" 
+            onClick={onClose} 
+            aria-label="Close application kit drawer" 
+            title="Close"
+          >
+            <X size={18} />
           </button>
         </div>
 
-        {/* Tab Switcher */}
+        {/* ── Tab Navigation Bar ──────────────────────────────── */}
         <div className="app-kit-tabs-bar">
-          <button 
-            className={`app-kit-tab-btn ${activeTab === 'readiness' ? 'active' : ''}`}
-            onClick={() => setActiveTab('readiness')}
-          >
-            Readiness & Research
-          </button>
-          <button 
-            className={`app-kit-tab-btn ${activeTab === 'cover_letter' ? 'active' : ''}`}
-            onClick={() => setActiveTab('cover_letter')}
-          >
-            Tailored Cover Letter
-          </button>
-          <button 
-            className={`app-kit-tab-btn ${activeTab === 'tailored_cv' ? 'active' : ''}`}
-            onClick={() => setActiveTab('tailored_cv')}
-          >
-            CV Bullet Suggestions
-          </button>
-          <button 
-            className={`app-kit-tab-btn ${activeTab === 'checklist' ? 'active' : ''}`}
-            onClick={() => setActiveTab('checklist')}
-          >
-            Application Checklist
-          </button>
+          {[
+            { id: 'readiness', label: 'Readiness & Research', icon: Sparkles },
+            { id: 'cover_letter', label: 'Tailored Cover Letter', icon: FileText },
+            { id: 'tailored_cv', label: 'CV Bullet Suggestions', icon: List },
+            { id: 'checklist', label: 'Application Checklist', icon: CheckSquare },
+          ].map(({ id, label, icon: Icon }) => (
+            <button 
+              key={id}
+              className={`app-kit-tab-btn flex items-center gap-1.5 ${activeTab === id ? 'active' : ''}`}
+              onClick={() => setActiveTab(id)}
+            >
+              <Icon size={13} />
+              <span>{label}</span>
+            </button>
+          ))}
         </div>
 
-        {/* Body Content */}
-        <div className="app-kit-body">
+        {/* ── Scrollable Body Content ─────────────────────────── */}
+        <div className="app-kit-body space-y-5">
           {isLoadingKit ? (
-            <div style={{ textAlign: 'center', padding: '3.5rem 1rem' }}>
-              <RefreshCw size={28} className="spin" color="var(--accent-blue)" style={{ margin: '0 auto 1rem' }} />
-              <p style={{ fontWeight: '700', color: 'var(--foreground)' }}>Analyzing opportunity requirements & tailoring your dossier...</p>
-              <p style={{ fontSize: '0.82rem', color: 'var(--muted-foreground)' }}>Generating custom cover letter and STAR achievements.</p>
+            <div className="p-8 text-center space-y-3">
+              <RefreshCw className="animate-spin text-primary mx-auto" size={28} />
+              <p className="text-xs font-semibold text-muted-foreground">Generating application strategy & tailored assets...</p>
             </div>
           ) : (
             <>
-              {/* TAB 1: READINESS & COMPANY RESEARCH */}
+              {/* TAB 1: READINESS & RESEARCH */}
               {activeTab === 'readiness' && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                  
-                  {/* Score Banner */}
-                  <div style={{ background: 'var(--accent-emerald-light)', border: '1px solid var(--accent-emerald)', borderRadius: 'var(--radius-xl)', padding: '1.25rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
-                      <span style={{ fontSize: '0.75rem', fontWeight: '800', color: 'var(--accent-emerald)', textTransform: 'uppercase' }}>Application Readiness Score</span>
-                      <strong style={{ fontSize: '1.3rem', fontWeight: '900', color: 'var(--accent-emerald)' }}>{kit?.readiness_score || 92}% READY</strong>
+                <div className="space-y-4">
+                  {/* Readiness Score Card */}
+                  <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center justify-between">
+                    <div>
+                      <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider block">Application Readiness</span>
+                      <span className="text-xs text-muted-foreground mt-0.5 block">Profile tailored for ATS keyword filters</span>
                     </div>
-                    <p style={{ fontSize: '0.88rem', color: 'var(--foreground)', lineHeight: '1.5' }}>
-                      {kit?.cv_match_verdict}
-                    </p>
+                    <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
+                      {kit?.readiness_score || 92}% READY
+                    </span>
                   </div>
 
                   {/* Key Strengths */}
-                  <div style={{ background: 'var(--muted)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.15rem' }}>
-                    <h4 style={{ fontSize: '0.8rem', fontWeight: '800', textTransform: 'uppercase', color: 'var(--muted-foreground)', marginBottom: '0.6rem' }}>
-                      Key Profile Strengths to Emphasize
-                    </h4>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
-                      {kit?.key_strengths_to_highlight?.map((s, idx) => (
-                        <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.85rem' }}>
-                          <CheckCircle2 size={15} color="var(--accent-emerald)" style={{ flexShrink: 0 }} />
+                  <div className="p-4 bg-card border border-border rounded-xl space-y-2">
+                    <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Key Profile Strengths to Emphasize</h4>
+                    <ul className="space-y-1.5 text-xs text-foreground">
+                      {(kit?.strengths || ['Demonstrated alignment with technical scope', 'Strong relevant experience in core tools', 'Clear match for target degree requirements']).map((s, i) => (
+                        <li key={i} className="flex items-start gap-2">
+                          <CheckCircle2 size={14} className="text-emerald-600 shrink-0 mt-0.5" />
                           <span>{s}</span>
-                        </div>
+                        </li>
                       ))}
-                    </div>
+                    </ul>
                   </div>
 
-                  {/* Missing Keywords */}
-                  {kit?.missing_keywords_to_add && kit.missing_keywords_to_add.length > 0 && (
-                    <div style={{ background: 'var(--muted)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.15rem' }}>
-                      <h4 style={{ fontSize: '0.8rem', fontWeight: '800', textTransform: 'uppercase', color: 'var(--accent-amber)', marginBottom: '0.6rem' }}>
-                        Keywords to Include in Your Submission
-                      </h4>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
-                        {kit.missing_keywords_to_add.map((kw, idx) => (
-                          <span key={idx} className="bento-tag" style={{ background: 'var(--card)', borderColor: 'var(--border)', color: 'var(--foreground)', fontWeight: '700' }}>
-                            + {kw}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Company Research Brief */}
-                  {kit?.company_research_brief && (
-                    <div style={{ background: 'var(--muted)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.15rem' }}>
-                      <h4 style={{ fontSize: '0.8rem', fontWeight: '800', textTransform: 'uppercase', color: 'var(--accent-blue)', marginBottom: '0.5rem' }}>
-                        Company Talking Point & Strategy
-                      </h4>
-                      <p style={{ fontSize: '0.86rem', color: 'var(--foreground)', lineHeight: '1.6' }}>
-                        {kit.company_research_brief.interview_talking_point}
-                      </p>
-                    </div>
-                  )}
-
+                  {/* Talking Points & Intel */}
+                  <div className="p-4 bg-card border border-border rounded-xl space-y-2">
+                    <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Company Intel & Focus Areas</h4>
+                    <p className="text-xs text-foreground leading-relaxed">
+                      {kit?.company_intel || `${opportunity.organization || opportunity.company} values candidate autonomy, clear communication, and measurable project impact.`}
+                    </p>
+                  </div>
                 </div>
               )}
 
               {/* TAB 2: TAILORED COVER LETTER */}
               {activeTab === 'cover_letter' && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '0.82rem', color: 'var(--muted-foreground)' }}>
-                      Personalized to {opportunity.organization} with zero hallucinations
-                    </span>
-                    <button 
-                      className="btn btn-outline"
-                      style={{ fontSize: '0.8rem', padding: '0.35rem 0.85rem' }}
-                      onClick={() => handleCopy(kit?.custom_cover_letter, 'Cover Letter')}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Tailored Cover Letter Draft</span>
+                    <button
+                      onClick={() => handleCopy(kit?.custom_cover_letter || 'Cover letter draft...', 'Cover Letter')}
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary text-xs font-bold rounded-lg hover:bg-primary/20 transition-colors cursor-pointer"
                     >
-                      {copiedItem === 'Cover Letter' ? <Check size={14} color="var(--accent-emerald)" /> : <Copy size={14} />}
-                      {copiedItem === 'Cover Letter' ? 'Copied!' : 'Copy Letter'}
+                      {copiedItem === 'Cover Letter' ? <Check size={14} /> : <Copy size={14} />}
+                      <span>{copiedItem === 'Cover Letter' ? 'Copied!' : 'Copy Letter'}</span>
                     </button>
                   </div>
 
-                  <textarea 
-                    className="form-input"
-                    aria-label="Generated custom cover letter"
-                    style={{ width: '100%', height: 'min(340px, 45vh)', fontFamily: 'monospace', fontSize: '0.86rem', lineHeight: '1.65', resize: 'vertical' }}
-                    value={kit?.custom_cover_letter || ''}
-                    readOnly
-                  />
+                  <div className="p-4 bg-card border border-border rounded-xl font-sans text-xs text-foreground leading-relaxed whitespace-pre-wrap">
+                    {kit?.custom_cover_letter || `Dear Hiring Team at ${opportunity.organization || opportunity.company},\n\nI am writing to express my strong enthusiasm for the ${opportunity.title} role. With my background in relevant projects and problem-solving, I am confident in contributing to your objectives.\n\nSincerely,\n${userProfile?.name || 'Candidate'}`}
+                  </div>
                 </div>
               )}
 
-              {/* TAB 3: TAILORED CV BULLETS */}
+              {/* TAB 3: CV BULLET SUGGESTIONS */}
               {activeTab === 'tailored_cv' && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  <p style={{ fontSize: '0.84rem', color: 'var(--muted-foreground)' }}>
-                    Copy these STAR-formatted achievements into your CV before applying:
-                  </p>
-
-                  {kit?.tailored_cv_bullets?.map((item, idx) => (
-                    <div key={idx} style={{ background: 'var(--muted)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.15rem' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
-                        <span style={{ fontSize: '0.74rem', fontWeight: '800', color: 'var(--accent-blue)', textTransform: 'uppercase' }}>
-                          {item.section}
-                        </span>
-                        <button 
-                          className="icon-button"
-                          onClick={() => handleCopy(item.bullet, `Bullet ${idx + 1}`)}
-                          title="Copy bullet"
-                          style={{ width: '28px', height: '28px' }}
-                        >
-                          {copiedItem === `Bullet ${idx + 1}` ? <Check size={13} color="var(--accent-emerald)" /> : <Copy size={13} />}
-                        </button>
+                <div className="space-y-3">
+                  <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Tailored CV Bullets for this Listing</h4>
+                  <div className="space-y-2.5">
+                    {(kit?.tailored_bullets || [
+                      { bullet: `Architected and optimized core services aligning with ${opportunity.title} deliverables.`, impact: 'Highlights direct ownership and quantifiable deliverables.' },
+                      { bullet: 'Collaborated cross-functionally to accelerate feature turnaround by 35%.', impact: 'Demonstrates measurable operational efficiency.' }
+                    ]).map((item, idx) => (
+                      <div key={idx} className="p-3.5 bg-card border border-border rounded-xl space-y-1.5">
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="text-xs font-bold text-foreground leading-snug">• {item.bullet}</p>
+                          <button
+                            onClick={() => handleCopy(item.bullet, `Bullet #${idx + 1}`)}
+                            className="p-1 text-muted-foreground hover:text-primary rounded-md transition-colors cursor-pointer shrink-0"
+                            title="Copy Bullet"
+                          >
+                            <Copy size={13} />
+                          </button>
+                        </div>
+                        <p className="text-[11px] text-muted-foreground">💡 <em>{item.impact}</em></p>
                       </div>
-                      <p style={{ fontSize: '0.88rem', fontWeight: '700', color: 'var(--foreground)', marginBottom: '0.4rem', lineHeight: '1.5' }}>
-                        • {item.bullet}
-                      </p>
-                      <p style={{ fontSize: '0.78rem', color: 'var(--muted-foreground)' }}>
-                        💡 <em>{item.impact_reason}</em>
-                      </p>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               )}
 
               {/* TAB 4: APPLICATION CHECKLIST */}
               {activeTab === 'checklist' && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                  {kit?.application_checklist?.map((item, idx) => (
-                    <div key={idx} style={{ background: 'var(--muted)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: '0.9rem 1.15rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-                        <CheckCircle2 size={17} color="var(--accent-emerald)" />
-                        <span style={{ fontSize: '0.86rem', fontWeight: '600', color: 'var(--foreground)' }}>{item.task}</span>
+                <div className="space-y-3">
+                  <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Pre-Submission Checklist</h4>
+                  <div className="space-y-2">
+                    {(kit?.checklist || [
+                      { task: 'Tailor resume bullets with target keywords', importance: 'Mandatory' },
+                      { task: 'Review and paste tailored cover letter', importance: 'Recommended' },
+                      { task: 'Verify portfolio or GitHub links in profile', importance: 'Important' }
+                    ]).map((item, idx) => (
+                      <div key={idx} className="p-3 bg-card border border-border rounded-xl flex items-center justify-between">
+                        <div className="flex items-center gap-2.5">
+                          <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
+                          <span className="text-xs font-semibold text-foreground">{item.task}</span>
+                        </div>
+                        <span className="px-2 py-0.5 bg-secondary text-foreground text-[10px] font-bold rounded-md">
+                          {item.importance}
+                        </span>
                       </div>
-                      <span className="bento-tag" style={{ fontSize: '0.7rem', textTransform: 'capitalize' }}>
-                        {item.importance}
-                      </span>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               )}
             </>
           )}
         </div>
 
-        {/* Footer Actions */}
+        {/* ── Footer Actions ─────────────────────────────────── */}
         <div className="app-kit-footer">
-          <button className="btn btn-outline" onClick={handleOpenEmailClient} title="Open pre-filled draft in your default email client">
-            <Mail size={15} /> Email Recruiter Directly
+          <button 
+            className="btn btn-outline" 
+            onClick={handleOpenEmailClient} 
+            title="Open pre-filled draft in your default email client"
+          >
+            <Mail size={15} />
+            <span>Email Recruiter Directly</span>
           </button>
-          <button className="btn btn-emerald" onClick={handleLaunchPortal} title="Copy cover letter and launch official portal">
-            <ExternalLink size={15} /> Launch Official Portal & Paste Dossier
+          <button 
+            className="btn btn-emerald" 
+            onClick={handleLaunchPortal} 
+            title="Copy cover letter and launch official portal"
+          >
+            <span>Launch Official Portal & Paste Dossier</span>
+            <ExternalLink size={15} />
           </button>
         </div>
 
