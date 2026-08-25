@@ -33,12 +33,19 @@ export async function executeScrapeRun(runId) {
     const placeholders = selectedSourceIds.map(() => '?').join(',');
     sourcesToScrape = db.prepare(`SELECT * FROM sources WHERE id IN (${placeholders}) AND enabled = 1`).all(...selectedSourceIds);
   } else {
-    // Select an active balanced mix of ATS, Serper Google Jobs, and Academic sources
+    // Ingest across all enabled approved sources (ATS, Serper Google Jobs, Academic, and Composio)
     sourcesToScrape = db.prepare(`
       SELECT * FROM sources 
       WHERE enabled = 1 
-      ORDER BY tier ASC, created_at DESC 
-      LIMIT 16
+      ORDER BY 
+        CASE 
+          WHEN adapter = 'serper' THEN 1
+          WHEN adapter = 'greenhouse' THEN 2
+          WHEN adapter = 'lever' THEN 3
+          WHEN adapter = 'smartrecruiters' THEN 4
+          ELSE 5
+        END ASC,
+        tier ASC
     `).all();
   }
 
