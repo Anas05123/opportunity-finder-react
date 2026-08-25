@@ -18,6 +18,10 @@ export default function OpportunityIntelligence({ triggerToast }) {
   const [jobs, setJobs] = useState([]);
   const [selectedProvenanceOpp, setSelectedProvenanceOpp] = useState(null);
   const [selectedRunDetail, setSelectedRunDetail] = useState(null);
+  const [selectedRunFullData, setSelectedRunFullData] = useState(null);
+  const [runDetailsTab, setRunDetailsTab] = useState('opps'); // 'opps' | 'sources' | 'raw' | 'config'
+  const [runOppsSearch, setRunOppsSearch] = useState('');
+  const [isLoadingRunDetail, setIsLoadingRunDetail] = useState(false);
   const [testSourceResult, setTestSourceResult] = useState(null);
 
   // Filter & Pagination States
@@ -234,6 +238,28 @@ export default function OpportunityIntelligence({ triggerToast }) {
       }
     } catch (err) {
       triggerToast?.('Test error: ' + err.message);
+    }
+  };
+
+  // View Deep-Dive Run Results & Ingested Opportunities
+  const handleViewRunDetails = async (runId) => {
+    setIsLoadingRunDetail(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/opportunity-intelligence/scrape-runs/${runId}`, {
+        headers: getAuthHeaders()
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setSelectedRunFullData(data);
+        setRunDetailsTab('opps');
+        setRunOppsSearch('');
+      } else {
+        triggerToast?.('Failed to load run details');
+      }
+    } catch (err) {
+      triggerToast?.('Error loading run details: ' + err.message);
+    } finally {
+      setIsLoadingRunDetail(false);
     }
   };
 
@@ -494,10 +520,10 @@ export default function OpportunityIntelligence({ triggerToast }) {
                       <td className="p-3.5 text-muted-foreground">{run.duration_ms ? `${(run.duration_ms / 1000).toFixed(1)}s` : 'Running...'}</td>
                       <td className="p-3.5">
                         <button
-                          onClick={() => setSelectedRunDetail(run)}
-                          className="px-2.5 py-1 bg-secondary text-foreground text-[11px] font-semibold rounded-lg hover:bg-secondary/80 border border-border transition-all cursor-pointer"
+                          onClick={() => handleViewRunDetails(run.id)}
+                          className="flex items-center gap-1 px-3 py-1.5 bg-primary/10 text-primary hover:bg-primary/20 text-xs font-bold rounded-xl border border-primary/20 transition-all cursor-pointer"
                         >
-                          Details & Errors ({run.errors?.length || 0})
+                          <Eye size={13} /> Results & Details ({run.records_validated})
                         </button>
                       </td>
                     </tr>
@@ -837,6 +863,259 @@ export default function OpportunityIntelligence({ triggerToast }) {
           </div>
         </div>
       )}
+
+      {/* ── MODAL: SCRAPE RUN DEEP DIVE & INGESTED OPPORTUNITIES ──── */}
+      {selectedRunFullData && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4" onClick={() => setSelectedRunFullData(null)}>
+          <div className="bg-card border border-border rounded-2xl w-full max-w-5xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
+            
+            {/* Header */}
+            <div className="p-5 border-b border-border flex items-start justify-between gap-4 bg-secondary/40">
+              <div>
+                <div className="flex items-center gap-2 flex-wrap mb-1">
+                  <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
+                    selectedRunFullData.run.status === 'COMPLETED' ? 'bg-emerald-500/15 text-emerald-600' :
+                    selectedRunFullData.run.status === 'PARTIAL' ? 'bg-amber-500/15 text-amber-600' :
+                    selectedRunFullData.run.status === 'RUNNING' ? 'bg-blue-500/15 text-blue-600 animate-pulse' :
+                    'bg-rose-500/15 text-rose-600'
+                  }`}>
+                    {selectedRunFullData.run.status}
+                  </span>
+                  <span className="font-mono text-xs font-bold text-foreground">{selectedRunFullData.run.id}</span>
+                  <span className="text-xs text-muted-foreground">• Triggered at {new Date(selectedRunFullData.run.created_at).toLocaleString()}</span>
+                </div>
+                <h3 className="text-base font-bold text-foreground">
+                  Scrape Run Results & Opportunity Audit Deep Dive
+                </h3>
+              </div>
+
+              <button 
+                onClick={() => setSelectedRunFullData(null)}
+                className="p-1.5 hover:bg-secondary rounded-lg text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Metrics Ribbon */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 bg-secondary/20 border-b border-border text-xs">
+              <div className="p-3 bg-card border border-border rounded-xl">
+                <span className="text-muted-foreground block text-[11px] font-bold">Records Scanned</span>
+                <strong className="text-base font-black text-foreground">{selectedRunFullData.run.records_found}</strong>
+              </div>
+              <div className="p-3 bg-card border border-border rounded-xl">
+                <span className="text-muted-foreground block text-[11px] font-bold">Validated & Saved</span>
+                <strong className="text-base font-black text-emerald-600">{selectedRunFullData.run.records_validated}</strong>
+              </div>
+              <div className="p-3 bg-card border border-border rounded-xl">
+                <span className="text-muted-foreground block text-[11px] font-bold">Duplicates Enriched</span>
+                <strong className="text-base font-black text-amber-600">{selectedRunFullData.run.duplicates}</strong>
+              </div>
+              <div className="p-3 bg-card border border-border rounded-xl">
+                <span className="text-muted-foreground block text-[11px] font-bold">Sources Success / Failed</span>
+                <strong className="text-base font-black text-foreground">
+                  <span className="text-emerald-600">{selectedRunFullData.run.sources_succeeded} ok</span> / <span className={selectedRunFullData.run.sources_failed > 0 ? 'text-rose-600' : 'text-muted-foreground'}>{selectedRunFullData.run.sources_failed} failed</span>
+                </strong>
+              </div>
+            </div>
+
+            {/* Tab Navigation */}
+            <div className="flex items-center gap-2 px-5 py-2.5 border-b border-border bg-secondary/30 text-xs font-bold overflow-x-auto">
+              <button
+                onClick={() => setRunDetailsTab('opps')}
+                className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                  runDetailsTab === 'opps' ? 'bg-primary text-white shadow-xs' : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Ingested Opportunities ({selectedRunFullData.opportunities?.length || 0})
+              </button>
+              <button
+                onClick={() => setRunDetailsTab('raw')}
+                className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                  runDetailsTab === 'raw' ? 'bg-primary text-white shadow-xs' : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Raw Source Records ({selectedRunFullData.raw_records?.length || 0})
+              </button>
+              <button
+                onClick={() => setRunDetailsTab('errors')}
+                className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                  runDetailsTab === 'errors' ? 'bg-primary text-white shadow-xs' : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Error Log & Diagnostics ({selectedRunFullData.run.errors?.length || 0})
+              </button>
+              <button
+                onClick={() => setRunDetailsTab('config')}
+                className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                  runDetailsTab === 'config' ? 'bg-primary text-white shadow-xs' : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Run Configuration
+              </button>
+            </div>
+
+            {/* Scrollable Body Content */}
+            <div className="flex-1 overflow-y-auto p-5 space-y-4 text-xs">
+              
+              {/* TAB 1: INGESTED OPPORTUNITIES */}
+              {runDetailsTab === 'opps' && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="relative flex-1 max-w-sm">
+                      <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                      <input
+                        type="text"
+                        placeholder="Search extracted opportunities..."
+                        value={runOppsSearch}
+                        onChange={e => setRunOppsSearch(e.target.value)}
+                        className="w-full pl-8 pr-3 py-1.5 bg-secondary text-foreground text-xs rounded-lg border border-border"
+                      />
+                    </div>
+                    <span className="text-muted-foreground">
+                      Showing {selectedRunFullData.opportunities?.filter(op => {
+                        if (!runOppsSearch) return true;
+                        const q = runOppsSearch.toLowerCase();
+                        return (op.title || '').toLowerCase().includes(q) || (op.company || '').toLowerCase().includes(q);
+                      }).length || 0} opportunities
+                    </span>
+                  </div>
+
+                  <div className="border border-border rounded-xl overflow-hidden bg-card">
+                    <table className="w-full text-left border-collapse text-xs">
+                      <thead className="bg-secondary/60 text-muted-foreground font-bold border-b border-border">
+                        <tr>
+                          <th className="p-3">Opportunity Title & Company</th>
+                          <th className="p-3">Type & Discipline</th>
+                          <th className="p-3">Location</th>
+                          <th className="p-3">Stipend</th>
+                          <th className="p-3">Trust Score</th>
+                          <th className="p-3">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border">
+                        {(selectedRunFullData.opportunities || [])
+                          .filter(op => {
+                            if (!runOppsSearch) return true;
+                            const q = runOppsSearch.toLowerCase();
+                            return (op.title || '').toLowerCase().includes(q) || (op.company || '').toLowerCase().includes(q);
+                          })
+                          .map(op => (
+                            <tr key={op.id} className="hover:bg-secondary/30 transition-colors">
+                              <td className="p-3 font-semibold text-foreground">
+                                <div>{op.title}</div>
+                                <div className="text-[11px] text-muted-foreground font-normal">{op.company || op.organization}</div>
+                              </td>
+                              <td className="p-3">
+                                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold capitalize bg-primary/10 text-primary border border-primary/20">
+                                  {op.opportunity_type || 'Job'}
+                                </span>
+                              </td>
+                              <td className="p-3 text-muted-foreground">{op.location_city ? `${op.location_city}, ` : ''}{op.location_country || 'Global'}</td>
+                              <td className="p-3 text-emerald-600 font-bold">{op.stipend_text || 'Market Competitive'}</td>
+                              <td className="p-3 font-bold text-foreground">{op.trust_score || 95}/100</td>
+                              <td className="p-3">
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    onClick={() => handleInspectProvenance(op.id)}
+                                    className="p-1 text-primary hover:bg-primary/10 rounded-md font-bold text-[11px] cursor-pointer flex items-center gap-1"
+                                    title="Inspect Provenance"
+                                  >
+                                    <Eye size={13} /> Provenance
+                                  </button>
+                                  {op.official_apply_url && (
+                                    <a
+                                      href={op.official_apply_url}
+                                      target="_blank"
+                                      rel="noreferrer noopener"
+                                      className="p-1 text-muted-foreground hover:text-foreground"
+                                      title="Open Direct Portal Link"
+                                    >
+                                      <ExternalLink size={13} />
+                                    </a>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        {selectedRunFullData.opportunities?.length === 0 && (
+                          <tr>
+                            <td colSpan={6} className="p-6 text-center text-muted-foreground">
+                              No distinct opportunities linked to this run ID yet. All items in this run were matched against existing records and refreshed.
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 2: RAW SOURCE RECORDS */}
+              {runDetailsTab === 'raw' && (
+                <div className="space-y-3">
+                  <p className="text-muted-foreground text-xs">
+                    Original unprocessed JSON payloads captured from external ATS endpoints before normalization.
+                  </p>
+                  <div className="space-y-3">
+                    {(selectedRunFullData.raw_records || []).map(rec => (
+                      <div key={rec.id} className="p-3.5 bg-card border border-border rounded-xl space-y-2">
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className="font-bold text-foreground">Source: <strong className="text-primary">{rec.source_id}</strong> (Ext ID: {rec.external_id || 'N/A'})</span>
+                          <span className="px-2 py-0.5 rounded-md font-bold bg-emerald-500/15 text-emerald-600">{rec.normalization_status}</span>
+                        </div>
+                        <pre className="p-2.5 bg-slate-950 text-emerald-400 font-mono text-[10px] rounded-lg overflow-x-auto max-h-36">
+                          {JSON.stringify(rec.payload, null, 2)}
+                        </pre>
+                      </div>
+                    ))}
+                    {selectedRunFullData.raw_records?.length === 0 && (
+                      <div className="p-6 text-center text-muted-foreground">
+                        No raw records captured for this run.
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 3: ERROR LOG & DIAGNOSTICS */}
+              {runDetailsTab === 'errors' && (
+                <div className="space-y-3">
+                  {(selectedRunFullData.run.errors && selectedRunFullData.run.errors.length > 0) ? (
+                    selectedRunFullData.run.errors.map((err, idx) => (
+                      <div key={idx} className="p-3.5 bg-rose-500/10 border border-rose-500/20 rounded-xl space-y-1">
+                        <div className="flex items-center gap-2 font-bold text-rose-700 dark:text-rose-400">
+                          <AlertTriangle size={15} /> Source Error: {err.source || 'Scraper Service'}
+                        </div>
+                        <p className="text-foreground font-mono text-[11px]">{err.error || JSON.stringify(err)}</p>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="p-8 text-center bg-emerald-500/10 border border-emerald-500/20 rounded-xl space-y-2">
+                      <CheckCircle2 size={24} className="text-emerald-600 mx-auto" />
+                      <p className="font-bold text-emerald-700 dark:text-emerald-400">Zero Ingestion Errors</p>
+                      <p className="text-muted-foreground text-xs">All attempted source adapters completed without exception.</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* TAB 4: RUN CONFIGURATION */}
+              {runDetailsTab === 'config' && (
+                <div className="p-4 bg-card border border-border rounded-xl space-y-2">
+                  <h4 className="font-bold text-foreground">Scraper Configuration Parameters:</h4>
+                  <pre className="p-3 bg-slate-950 text-blue-400 font-mono text-xs rounded-xl overflow-x-auto">
+                    {JSON.stringify(selectedRunFullData.run.configuration, null, 2)}
+                  </pre>
+                </div>
+              )}
+
+            </div>
+
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
