@@ -15,6 +15,7 @@
     "test:security": "node test/security.test.js"
   },
   "dependencies": {
+    "@sentry/react": "^10.71.0",
     "@supabase/supabase-js": "^2.112.3",
     "@tailwindcss/vite": "^4.3.3",
     "axios": "^1.19.0",

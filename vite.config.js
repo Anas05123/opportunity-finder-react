@@ -13,6 +13,7 @@ export default defineConfig({
       output: {
         manualChunks: {
           'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-sentry': ['@sentry/react'],
           'vendor-icons': ['lucide-react'],
           'vendor-motion': ['motion', 'motion/react']
         }

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { API_BASE_URL } from '../config/api.js';
 import { supabase } from '../config/supabase.js';
+import { setSentryUser, clearSentryUser } from '../services/sentry.js';
 
 const AuthContext = createContext(null);
 
@@ -85,6 +86,7 @@ export function AuthProvider({ children }) {
               setCareerProfile(data.careerProfile);
               setSearchProfile(data.searchProfile);
               setNeedsOnboarding(data.needsOnboarding || false);
+              setSentryUser(data.user?.id);
               
               // Clean up OAuth tokens from URL bar
               window.history.replaceState(null, document.title, window.location.pathname);
@@ -121,6 +123,7 @@ export function AuthProvider({ children }) {
             setCareerProfile(data.careerProfile);
             setSearchProfile(data.searchProfile);
             setNeedsOnboarding(data.needsOnboarding || false);
+            setSentryUser(data.user?.id);
             
             if (window.location.hash) {
               window.history.replaceState(null, document.title, window.location.pathname);
@@ -136,6 +139,7 @@ export function AuthProvider({ children }) {
       // 3. Standard saved session check
       const savedToken = localStorage.getItem('careerly_token');
       if (!savedToken) {
+        clearSentryUser();
         setIsLoading(false);
         return;
       }
@@ -152,6 +156,7 @@ export function AuthProvider({ children }) {
           setSearchProfile(data.searchProfile);
           setToken(savedToken);
           setNeedsOnboarding(data.needsOnboarding || false);
+          setSentryUser(data.user?.id);
         } else {
           localStorage.removeItem('careerly_token');
           setToken(null);
@@ -159,6 +164,7 @@ export function AuthProvider({ children }) {
           setCareerProfile(null);
           setSearchProfile(null);
           setNeedsOnboarding(false);
+          clearSentryUser();
         }
       } catch (err) {
         console.warn('[AuthContext] Session fetch error:', err.message);
@@ -204,6 +210,7 @@ export function AuthProvider({ children }) {
     setCareerProfile(data.careerProfile);
     setSearchProfile(data.searchProfile);
     setNeedsOnboarding(data.needsOnboarding || false);
+    setSentryUser(data.user?.id);
 
     return data;
   };
@@ -241,6 +248,7 @@ export function AuthProvider({ children }) {
     setCareerProfile(data.careerProfile);
     setSearchProfile(data.searchProfile);
     setNeedsOnboarding(true);
+    setSentryUser(data.user?.id);
 
     return data;
   };
@@ -278,6 +286,7 @@ export function AuthProvider({ children }) {
     setCareerProfile(data.careerProfile);
     setSearchProfile(data.searchProfile);
     setNeedsOnboarding(data.needsOnboarding || false);
+    setSentryUser(data.user?.id);
 
     return data;
   };
@@ -342,6 +351,7 @@ export function AuthProvider({ children }) {
     setCareerProfile(null);
     setSearchProfile(null);
     setNeedsOnboarding(false);
+    clearSentryUser();
     try {
       await supabase.auth.signOut();
     } catch (e) {}
