@@ -550,8 +550,12 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
 
             {/* Big Prominent Sign Out Button */}
             <button 
-              onClick={() => { logout(); navigate('/'); triggerToast(language === 'ar' ? 'تم تسجيل الخروج بنجاح.' : 'Signed out of Careerly.'); }} 
-              className="w-full flex items-center justify-center gap-2 py-2 px-3 bg-red-50 text-red-600 border border-red-200 hover:bg-red-600 hover:text-white rounded-lg text-[12px] font-bold transition-all shadow-xs"
+              onClick={async () => { 
+                await logout(); 
+                navigate('/', { replace: true }); 
+                triggerToast(language === 'ar' ? 'تم تسجيل الخروج بنجاح.' : 'Signed out of Careerly.'); 
+              }} 
+              className="w-full flex items-center justify-center gap-2 py-2 px-3 bg-red-50 text-red-600 border border-red-200 hover:bg-red-600 hover:text-white rounded-lg text-[12px] font-bold transition-all shadow-xs cursor-pointer"
               title="Sign Out of Account"
             >
               <LogOut size={13} />

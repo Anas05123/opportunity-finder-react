@@ -335,9 +335,6 @@ export function AuthProvider({ children }) {
   };
 
   const logout = async () => {
-    try {
-      await supabase.auth.signOut();
-    } catch (e) {}
     localStorage.removeItem('careerly_token');
     localStorage.removeItem('careerly_onboarding_draft');
     setToken(null);
@@ -345,6 +342,9 @@ export function AuthProvider({ children }) {
     setCareerProfile(null);
     setSearchProfile(null);
     setNeedsOnboarding(false);
+    try {
+      await supabase.auth.signOut();
+    } catch (e) {}
   };
 
   const updateCareerProfile = async (profileData) => {
