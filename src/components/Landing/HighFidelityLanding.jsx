@@ -473,18 +473,57 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
   const parallaxXArr = [c0x, c1x, c2x, c3x];
   const parallaxYArr = [c0y, c1y, c2y, c3y];
 
+  // Scroll detection for animated fixed navbar
+  const [isScrolled, setIsScrolled] = useState(false);
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
     <div className="min-h-screen overflow-x-hidden" style={{ background:C.bg, fontFamily:"var(--font-sans)", color:C.text }}>
 
-      {/* ── Navigation (Full-width edge-to-edge) ──────────────────── */}
-      <nav className="sticky top-0 z-50 backdrop-blur-md" style={{ background:"rgba(248,247,243,0.96)", borderBottom:`1px solid ${C.border}` }}>
-        <div className="w-full px-6 sm:px-10 lg:px-14 h-20 flex items-center justify-between gap-6">
+      {/* ── Navigation (Fixed with smooth scroll animations) ──────── */}
+      <motion.nav 
+        className="fixed top-0 left-0 right-0 z-50"
+        initial={{ y: -60, opacity: 0 }}
+        animate={{ 
+          y: 0, 
+          opacity: 1,
+          height: isScrolled ? "64px" : "80px",
+          backgroundColor: isScrolled ? "rgba(248,247,243,0.92)" : "rgba(248,247,243,0.98)",
+          boxShadow: isScrolled 
+            ? "0 8px 24px -4px rgba(16, 33, 61, 0.08), 0 2px 6px -1px rgba(16, 33, 61, 0.04)" 
+            : "none",
+          borderBottomColor: isScrolled ? "rgba(16,33,61,0.12)" : "rgba(16,33,61,0.06)"
+        }}
+        transition={{ 
+          height: { duration: 0.28, ease: [0.16, 1, 0.3, 1] },
+          backgroundColor: { duration: 0.25 },
+          boxShadow: { duration: 0.25 }
+        }}
+        style={{ 
+          backdropFilter: "blur(16px)",
+          WebkitBackdropFilter: "blur(16px)",
+          borderBottomWidth: "1px",
+          borderBottomStyle: "solid"
+        }}
+      >
+        <div className="w-full px-6 sm:px-10 lg:px-14 h-full flex items-center justify-between gap-6">
           <div className="flex items-center gap-8 min-w-0">
             {/* Logo pinned all the way to the left */}
-            <div className="flex items-center gap-3 cursor-pointer flex-shrink-0" onClick={()=>nav("landing")}>
-              <img src="/careerly-logo.png" alt="Careerly" className="w-9 h-9 object-contain flex-shrink-0" />
-              <span className="text-[20px] font-bold tracking-tight" style={{ color:C.text }}>Careerly</span>
-            </div>
+            <motion.div 
+              className="flex items-center gap-3 cursor-pointer flex-shrink-0" 
+              onClick={()=>nav("landing")}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <img src="/careerly-logo.png" alt="Careerly" className="w-8 sm:w-9 h-8 sm:h-9 object-contain flex-shrink-0" />
+              <span className="text-[19px] sm:text-[20px] font-bold tracking-tight" style={{ color:C.text }}>Careerly</span>
+            </motion.div>
 
             {/* Nav links */}
             <div className="hidden lg:flex items-center gap-6">
@@ -562,11 +601,11 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
             </motion.button>
           </div>
         </div>
-      </nav>
+      </motion.nav>
 
       {/* ── Hero ──────────────────────────────────────────────────── */}
       <section ref={heroRef} onMouseMove={onHeroMouse} onMouseLeave={()=>{ mouseX.set(0); mouseY.set(0); }}
-        className="relative overflow-hidden w-full sm:min-h-[90vh] flex items-center justify-center" style={{ background:C.hero }}>
+        className="relative overflow-hidden w-full sm:min-h-[90vh] flex items-center justify-center pt-20" style={{ background:C.hero }}>
 
         {/* Grid texture */}
         <div className="absolute inset-0 opacity-[0.045]"
