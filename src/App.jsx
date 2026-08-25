@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 
 import { AuthProvider, useAuth } from './context/AuthContext.jsx';
+import { LanguageProvider, useLanguage } from './context/LanguageContext.jsx';
 import ProtectedRoute from './components/Auth/ProtectedRoute.jsx';
 import AdminRoute from './components/Auth/AdminRoute.jsx';
 import PublicOnlyRoute from './components/Auth/PublicOnlyRoute.jsx';
@@ -390,22 +391,23 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
     if (feedTopRef.current) feedTopRef.current.scrollIntoView({ behavior: 'smooth' });
   };
 
+  const { language, toggleLanguage, isRtl, t } = useLanguage();
   const displayName = careerProfile?.full_name || user?.full_name || (user?.email ? user.email.split('@')[0] : 'Guest Member');
   const displayEmail = user?.email || 'guest@careerly.io';
   const userInitial = displayName.charAt(0).toUpperCase();
 
   const tabTitles = {
-    landing: 'Home',
-    dashboard: 'Workspace Overview',
-    explore: 'Opportunity Discovery',
-    saved: 'Saved Opportunities',
-    tracker: 'Application CRM',
-    cv_studio: 'AI CV Studio & ATS Tailor',
-    interview: 'STAR Interview Coach',
-    calendar: 'Deadlines Timeline',
-    profile: 'Professional Profile',
-    settings: 'Account & Security Settings',
-    admin: 'Enterprise Security Operations'
+    landing: t('nav.discover', 'Home'),
+    dashboard: t('nav.dashboard', 'Workspace Overview'),
+    explore: t('nav.discover', 'Opportunity Discovery'),
+    saved: t('nav.saved', 'Saved Opportunities'),
+    tracker: t('nav.applications', 'Application CRM'),
+    cv_studio: t('nav.cv_studio', 'AI CV Studio & ATS Tailor'),
+    interview: t('nav.interview_coach', 'STAR Interview Coach'),
+    calendar: t('nav.calendar', 'Deadlines Timeline'),
+    profile: t('nav.profile', 'Professional Profile'),
+    settings: t('nav.settings', 'Account & Security Settings'),
+    admin: t('nav.admin', 'Enterprise Security Operations')
   };
 
   const navCls = (tabKey) => {
@@ -459,22 +461,24 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
                 alt="Careerly Logo" 
                 className="w-7 h-7 object-contain flex-shrink-0" 
               />
-              <span className="text-[15px] font-semibold text-foreground tracking-tight">Careerly</span>
+              <span className="text-[15px] font-semibold text-foreground tracking-tight">{t('brand.name', 'Careerly')}</span>
             </Link>
           </div>
 
           {/* Navigation Links */}
           <nav className="flex-1 p-3 overflow-y-auto space-y-1">
             <div className="space-y-0.5">
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-2.5 py-1">Workspace</p>
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-2.5 py-1">
+                {language === 'ar' ? 'مساحة العمل' : 'Workspace'}
+              </p>
               <Link to="/dashboard" className={navCls('dashboard')}>
-                <LayoutGrid size={15} /> Dashboard
+                <LayoutGrid size={15} /> {t('nav.dashboard', 'Dashboard')}
               </Link>
               <Link to="/opportunities" className={navCls('explore')}>
-                <Compass size={15} /> Discover
+                <Compass size={15} /> {t('nav.discover', 'Discover')}
               </Link>
               <Link to="/applications" className={navCls('tracker')}>
-                <CheckSquare size={15} /> Applications
+                <CheckSquare size={15} /> {t('nav.applications', 'Applications')}
                 {applicationsList.length > 0 && (
                   <span className="ml-auto text-[10px] font-mono font-bold bg-secondary text-foreground px-1.5 py-0.5 rounded">
                     {applicationsList.length}
@@ -484,9 +488,11 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
             </div>
 
             <div className="pt-2.5 border-t border-border mt-2 space-y-0.5">
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-2.5 py-1">Tools</p>
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-2.5 py-1">
+                {language === 'ar' ? 'الأدوات' : 'Tools'}
+              </p>
               <Link to="/saved" className={navCls('saved')}>
-                <Bookmark size={15} /> Saved
+                <Bookmark size={15} /> {t('nav.saved', 'Saved')}
                 {savedOppsList.length > 0 && (
                   <span className="ml-auto text-[10px] font-mono font-bold bg-secondary text-foreground px-1.5 py-0.5 rounded">
                     {savedOppsList.length}
@@ -494,28 +500,30 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
                 )}
               </Link>
               <Link to="/cv-studio" className={navCls('cv_studio')}>
-                <FileText size={15} /> CV Studio
+                <FileText size={15} /> {t('nav.cv_studio', 'CV Studio')}
               </Link>
               <Link to="/interview-coach" className={navCls('interview')}>
-                <Mic size={15} /> Interview Coach
+                <Mic size={15} /> {t('nav.interview_coach', 'Interview Coach')}
               </Link>
               <Link to="/calendar" className={navCls('calendar')}>
-                <Calendar size={15} /> Calendar
+                <Calendar size={15} /> {t('nav.calendar', 'Calendar')}
               </Link>
             </div>
 
             <div className="pt-2.5 border-t border-border mt-2 space-y-0.5">
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-2.5 py-1">Account</p>
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-2.5 py-1">
+                {language === 'ar' ? 'الحساب' : 'Account'}
+              </p>
               <Link to="/profile" className={navCls('profile')}>
-                <User size={15} /> Profile
+                <User size={15} /> {t('nav.profile', 'Profile')}
               </Link>
               <Link to="/settings" className={navCls('settings')}>
-                <Settings size={15} /> Settings
+                <Settings size={15} /> {t('nav.settings', 'Settings')}
               </Link>
               {isAdmin && (
                 <>
                   <Link to="/admin/opportunity-intelligence" className={navCls('admin')}>
-                    <Brain size={15} /> Opp Intelligence
+                    <Brain size={15} /> {t('nav.admin', 'Opp Intelligence')}
                   </Link>
                   <Link to="/admin/security" className={navCls('admin')}>
                     <ShieldCheck size={15} /> Security Ops
@@ -542,12 +550,12 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
 
             {/* Big Prominent Sign Out Button */}
             <button 
-              onClick={() => { logout(); navigate('/login'); triggerToast('Signed out of Careerly.'); }} 
+              onClick={() => { logout(); navigate('/login'); triggerToast(language === 'ar' ? 'تم تسجيل الخروج بنجاح.' : 'Signed out of Careerly.'); }} 
               className="w-full flex items-center justify-center gap-2 py-2 px-3 bg-red-50 text-red-600 border border-red-200 hover:bg-red-600 hover:text-white rounded-lg text-[12px] font-bold transition-all shadow-xs"
               title="Sign Out of Account"
             >
               <LogOut size={13} />
-              <span>Sign Out</span>
+              <span>{t('nav.logout', 'Sign Out')}</span>
             </button>
           </div>
         </aside>
@@ -560,7 +568,9 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
         <header className="h-14 flex items-center justify-between px-6 border-b border-border bg-card flex-shrink-0">
           <div>
             <h1 className="text-[15px] font-semibold text-foreground leading-none">{tabTitles[activeTab] || 'Workspace'}</h1>
-            <p className="text-[11px] text-muted-foreground mt-1">Calibrated Career Intelligence</p>
+            <p className="text-[11px] text-muted-foreground mt-1">
+              {language === 'ar' ? 'استكشاف الفرص وتسريع المسار المهني' : 'Calibrated Career Intelligence'}
+            </p>
           </div>
 
           <div className="flex items-center gap-3">
@@ -568,7 +578,7 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
               <div className="relative hidden sm:block">
                 <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <input 
-                  placeholder="Search opportunities..." 
+                  placeholder={t('dashboard.search_placeholder', 'Search opportunities...')} 
                   className="bg-secondary border border-border rounded-lg pl-8 pr-3 py-1.5 text-[12px] text-foreground placeholder-muted-foreground outline-none focus:border-primary w-48 sm:w-64 transition-all"
                   onClick={() => {
                     if (feedTopRef.current) feedTopRef.current.scrollIntoView({ behavior: 'smooth' });
@@ -576,6 +586,16 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
                 />
               </div>
             )}
+
+            {/* Language Switcher */}
+            <button 
+              onClick={toggleLanguage}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary text-foreground hover:bg-secondary/80 border border-border text-xs font-bold transition-all cursor-pointer"
+              title={language === 'en' ? 'التحويل إلى العربية' : 'Switch to English'}
+            >
+              <Globe size={14} className="text-primary" />
+              <span>{language === 'en' ? 'العربية' : 'English'}</span>
+            </button>
 
             <Link 
               to="/settings"
@@ -955,124 +975,126 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <Routes>
-          {/* Public Home & Landing */}
-          <Route path="/" element={
-            <HomeRoute theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
-          } />
+      <LanguageProvider>
+        <AuthProvider>
+          <Routes>
+            {/* Public Home & Landing */}
+            <Route path="/" element={
+              <HomeRoute theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
+            } />
 
-          {/* Authentication Dedicated Pages */}
-          <Route path="/login" element={
-            <PublicOnlyRoute>
-              <AuthScreen triggerToast={triggerToast} theme={theme} toggleTheme={toggleTheme} />
-            </PublicOnlyRoute>
-          } />
-          <Route path="/register" element={
-            <PublicOnlyRoute>
-              <AuthScreen triggerToast={triggerToast} theme={theme} toggleTheme={toggleTheme} />
-            </PublicOnlyRoute>
-          } />
-          <Route path="/signup" element={<Navigate to="/register" replace />} />
-          <Route path="/verify-email" element={
-            <PublicOnlyRoute>
-              <AuthScreen triggerToast={triggerToast} theme={theme} toggleTheme={toggleTheme} />
-            </PublicOnlyRoute>
-          } />
-          <Route path="/forgot-password" element={
-            <PublicOnlyRoute>
-              <AuthScreen triggerToast={triggerToast} theme={theme} toggleTheme={toggleTheme} />
-            </PublicOnlyRoute>
-          } />
-          <Route path="/reset-password" element={
-            <PublicOnlyRoute>
-              <AuthScreen triggerToast={triggerToast} theme={theme} toggleTheme={toggleTheme} />
-            </PublicOnlyRoute>
-          } />
+            {/* Authentication Dedicated Pages */}
+            <Route path="/login" element={
+              <PublicOnlyRoute>
+                <AuthScreen triggerToast={triggerToast} theme={theme} toggleTheme={toggleTheme} />
+              </PublicOnlyRoute>
+            } />
+            <Route path="/register" element={
+              <PublicOnlyRoute>
+                <AuthScreen triggerToast={triggerToast} theme={theme} toggleTheme={toggleTheme} />
+              </PublicOnlyRoute>
+            } />
+            <Route path="/signup" element={<Navigate to="/register" replace />} />
+            <Route path="/verify-email" element={
+              <PublicOnlyRoute>
+                <AuthScreen triggerToast={triggerToast} theme={theme} toggleTheme={toggleTheme} />
+              </PublicOnlyRoute>
+            } />
+            <Route path="/forgot-password" element={
+              <PublicOnlyRoute>
+                <AuthScreen triggerToast={triggerToast} theme={theme} toggleTheme={toggleTheme} />
+              </PublicOnlyRoute>
+            } />
+            <Route path="/reset-password" element={
+              <PublicOnlyRoute>
+                <AuthScreen triggerToast={triggerToast} theme={theme} toggleTheme={toggleTheme} />
+              </PublicOnlyRoute>
+            } />
 
-          {/* 4-Step Academic & Career Calibration Onboarding */}
-          <Route path="/onboarding" element={
-            <ProtectedRoute>
-              <OnboardingRoute triggerToast={triggerToast} />
-            </ProtectedRoute>
-          } />
+            {/* 4-Step Academic & Career Calibration Onboarding */}
+            <Route path="/onboarding" element={
+              <ProtectedRoute>
+                <OnboardingRoute triggerToast={triggerToast} />
+              </ProtectedRoute>
+            } />
 
-          {/* Authenticated Core Workspace Routes */}
-          <Route path="/dashboard" element={
-            <ProtectedRoute>
-              <CareerlyWorkspace activeTab="dashboard" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
-            </ProtectedRoute>
-          } />
+            {/* Authenticated Core Workspace Routes */}
+            <Route path="/dashboard" element={
+              <ProtectedRoute>
+                <CareerlyWorkspace activeTab="dashboard" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
+              </ProtectedRoute>
+            } />
 
-          {/* Authenticated Opportunity Discovery */}
-          <Route path="/opportunities" element={
-            <ProtectedRoute>
-              <CareerlyWorkspace activeTab="explore" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
-            </ProtectedRoute>
-          } />
-          <Route path="/opportunities/:id" element={
-            <ProtectedRoute>
-              <CareerlyWorkspace activeTab="explore" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
-            </ProtectedRoute>
-          } />
+            {/* Authenticated Opportunity Discovery */}
+            <Route path="/opportunities" element={
+              <ProtectedRoute>
+                <CareerlyWorkspace activeTab="explore" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
+              </ProtectedRoute>
+            } />
+            <Route path="/opportunities/:id" element={
+              <ProtectedRoute>
+                <CareerlyWorkspace activeTab="explore" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
+              </ProtectedRoute>
+            } />
 
-          {/* Authenticated Feature Routes */}
-          <Route path="/applications" element={
-            <ProtectedRoute>
-              <CareerlyWorkspace activeTab="tracker" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
-            </ProtectedRoute>
-          } />
-          <Route path="/saved" element={
-            <ProtectedRoute>
-              <CareerlyWorkspace activeTab="saved" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
-            </ProtectedRoute>
-          } />
-          <Route path="/cv-studio" element={
-            <ProtectedRoute>
-              <CareerlyWorkspace activeTab="cv_studio" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
-            </ProtectedRoute>
-          } />
-          <Route path="/interview-coach" element={
-            <ProtectedRoute>
-              <CareerlyWorkspace activeTab="interview" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
-            </ProtectedRoute>
-          } />
-          <Route path="/interview" element={<Navigate to="/interview-coach" replace />} />
-          <Route path="/calendar" element={
-            <ProtectedRoute>
-              <CareerlyWorkspace activeTab="calendar" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
-            </ProtectedRoute>
-          } />
-          <Route path="/profile" element={
-            <ProtectedRoute>
-              <CareerlyWorkspace activeTab="profile" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
-            </ProtectedRoute>
-          } />
-          <Route path="/settings" element={
-            <ProtectedRoute>
-              <CareerlyWorkspace activeTab="settings" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
-            </ProtectedRoute>
-          } />
+            {/* Authenticated Feature Routes */}
+            <Route path="/applications" element={
+              <ProtectedRoute>
+                <CareerlyWorkspace activeTab="tracker" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
+              </ProtectedRoute>
+            } />
+            <Route path="/saved" element={
+              <ProtectedRoute>
+                <CareerlyWorkspace activeTab="saved" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
+              </ProtectedRoute>
+            } />
+            <Route path="/cv-studio" element={
+              <ProtectedRoute>
+                <CareerlyWorkspace activeTab="cv_studio" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
+              </ProtectedRoute>
+            } />
+            <Route path="/interview-coach" element={
+              <ProtectedRoute>
+                <CareerlyWorkspace activeTab="interview" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
+              </ProtectedRoute>
+            } />
+            <Route path="/interview" element={<Navigate to="/interview-coach" replace />} />
+            <Route path="/calendar" element={
+              <ProtectedRoute>
+                <CareerlyWorkspace activeTab="calendar" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
+              </ProtectedRoute>
+            } />
+            <Route path="/profile" element={
+              <ProtectedRoute>
+                <CareerlyWorkspace activeTab="profile" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
+              </ProtectedRoute>
+            } />
+            <Route path="/settings" element={
+              <ProtectedRoute>
+                <CareerlyWorkspace activeTab="settings" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
+              </ProtectedRoute>
+            } />
 
-          {/* Administrative Security Operations Routes */}
-          <Route path="/admin" element={
-            <AdminRoute>
-              <CareerlyWorkspace activeTab="admin" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
-            </AdminRoute>
-          } />
-          <Route path="/admin/*" element={
-            <AdminRoute>
-              <CareerlyWorkspace activeTab="admin" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
-            </AdminRoute>
-          } />
+            {/* Administrative Security Operations Routes */}
+            <Route path="/admin" element={
+              <AdminRoute>
+                <CareerlyWorkspace activeTab="admin" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
+              </AdminRoute>
+            } />
+            <Route path="/admin/*" element={
+              <AdminRoute>
+                <CareerlyWorkspace activeTab="admin" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
+              </AdminRoute>
+            } />
 
-          {/* 404 Catch-All */}
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
+            {/* 404 Catch-All */}
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
 
-        {/* Global Toast Notification */}
-        <Toast message={toastMessage} onClose={() => setToastMessage('')} />
-      </AuthProvider>
+          {/* Global Toast Notification */}
+          <Toast message={toastMessage} onClose={() => setToastMessage('')} />
+        </AuthProvider>
+      </LanguageProvider>
     </BrowserRouter>
   );
 }
