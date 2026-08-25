@@ -196,7 +196,7 @@ export default function PersonalizedDashboard({
         {[
           { label: "AI Search Pipeline", desc: "Serper + Google Jobs live scrape", icon: Sparkles, route: "/opportunities", color: "#2457FF" },
           { label: "ATS Resume Studio", desc: "Score & rewrite CV bullets", icon: FileText, route: "/cv-studio", color: "#7C3AED" },
-          { label: "STAR Interview Coach", desc: "Live behavioral simulator", icon: Mic, route: "/interview", color: "#0891B2" },
+          { label: "STAR Interview Coach", desc: "Live behavioral simulator", icon: Mic, route: "/interview-coach", color: "#0891B2" },
           { label: "Application CRM", desc: "Track offers and interview stages", icon: Layers, route: "/applications", color: "#18A66A" },
         ].map(({ label, desc, icon: Icon, route, color }) => (
           <button 

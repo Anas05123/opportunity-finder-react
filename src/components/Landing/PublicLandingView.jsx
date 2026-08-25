@@ -30,7 +30,7 @@ export default function PublicLandingView({
       crm: '/applications',
       saved: '/saved',
       cv: '/cv-studio',
-      coach: '/interview',
+      coach: '/interview-coach',
       calendar: '/calendar',
       profile: '/profile',
       dashboard: '/dashboard',

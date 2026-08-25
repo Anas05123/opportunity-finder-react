@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { 
   Sparkles, Compass, FileText, Mic, CheckSquare, 
   Calendar, ShieldCheck, ArrowUp, Heart, Globe, Zap, Mail, ExternalLink
@@ -38,24 +39,24 @@ export default function Footer({ onNavigateTab }) {
           <h4 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-3">Platform</h4>
           <ul className="space-y-2 text-[13px]">
             <li>
-              <button onClick={() => { onNavigateTab('explore'); scrollToTop(); }} className="text-muted-foreground hover:text-primary transition-colors">
+              <Link to="/opportunities" onClick={scrollToTop} className="text-muted-foreground hover:text-primary transition-colors no-underline">
                 Discover Opportunities
-              </button>
+              </Link>
             </li>
             <li>
-              <button onClick={() => { onNavigateTab('cv_studio'); scrollToTop(); }} className="text-muted-foreground hover:text-primary transition-colors">
+              <Link to="/cv-studio" onClick={scrollToTop} className="text-muted-foreground hover:text-primary transition-colors no-underline">
                 AI CV Studio & ATS
-              </button>
+              </Link>
             </li>
             <li>
-              <button onClick={() => { onNavigateTab('interview'); scrollToTop(); }} className="text-muted-foreground hover:text-primary transition-colors">
+              <Link to="/interview-coach" onClick={scrollToTop} className="text-muted-foreground hover:text-primary transition-colors no-underline">
                 STAR Interview Coach
-              </button>
+              </Link>
             </li>
             <li>
-              <button onClick={() => { onNavigateTab('tracker'); scrollToTop(); }} className="text-muted-foreground hover:text-primary transition-colors">
+              <Link to="/applications" onClick={scrollToTop} className="text-muted-foreground hover:text-primary transition-colors no-underline">
                 Application CRM
-              </button>
+              </Link>
             </li>
           </ul>
         </div>
@@ -65,14 +66,14 @@ export default function Footer({ onNavigateTab }) {
           <h4 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-3">Security</h4>
           <ul className="space-y-2 text-[13px]">
             <li>
-              <button onClick={() => { onNavigateTab('admin'); scrollToTop(); }} className="text-muted-foreground hover:text-primary transition-colors">
+              <Link to="/admin/security" onClick={scrollToTop} className="text-muted-foreground hover:text-primary transition-colors no-underline">
                 Security Operations Center
-              </button>
+              </Link>
             </li>
             <li>
-              <button onClick={() => { onNavigateTab('settings'); scrollToTop(); }} className="text-muted-foreground hover:text-primary transition-colors">
+              <Link to="/settings" onClick={scrollToTop} className="text-muted-foreground hover:text-primary transition-colors no-underline">
                 Academic & Profile Calibration
-              </button>
+              </Link>
             </li>
             <li className="text-[12px] text-muted-foreground pt-2">
               Protected by Multi-Tenant IDOR Isolation & OWASP ASVS 5.0

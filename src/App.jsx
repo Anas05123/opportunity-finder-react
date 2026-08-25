@@ -467,64 +467,64 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
           <nav className="flex-1 p-3 overflow-y-auto space-y-1">
             <div className="space-y-0.5">
               <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-2.5 py-1">Workspace</p>
-              <button onClick={() => navigate('/dashboard')} className={navCls('dashboard')}>
+              <Link to="/dashboard" className={navCls('dashboard')}>
                 <LayoutGrid size={15} /> Dashboard
-              </button>
-              <button onClick={() => navigate('/opportunities')} className={navCls('explore')}>
+              </Link>
+              <Link to="/opportunities" className={navCls('explore')}>
                 <Compass size={15} /> Discover
-              </button>
-              <button onClick={() => navigate('/applications')} className={navCls('tracker')}>
+              </Link>
+              <Link to="/applications" className={navCls('tracker')}>
                 <CheckSquare size={15} /> Applications
                 {applicationsList.length > 0 && (
                   <span className="ml-auto text-[10px] font-mono font-bold bg-secondary text-foreground px-1.5 py-0.5 rounded">
                     {applicationsList.length}
                   </span>
                 )}
-              </button>
+              </Link>
             </div>
 
             <div className="pt-2.5 border-t border-border mt-2 space-y-0.5">
               <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-2.5 py-1">Tools</p>
-              <button onClick={() => navigate('/saved')} className={navCls('saved')}>
+              <Link to="/saved" className={navCls('saved')}>
                 <Bookmark size={15} /> Saved
                 {savedOppsList.length > 0 && (
                   <span className="ml-auto text-[10px] font-mono font-bold bg-secondary text-foreground px-1.5 py-0.5 rounded">
                     {savedOppsList.length}
                   </span>
                 )}
-              </button>
-              <button onClick={() => navigate('/cv-studio')} className={navCls('cv_studio')}>
+              </Link>
+              <Link to="/cv-studio" className={navCls('cv_studio')}>
                 <FileText size={15} /> CV Studio
-              </button>
-              <button onClick={() => navigate('/interview')} className={navCls('interview')}>
+              </Link>
+              <Link to="/interview-coach" className={navCls('interview')}>
                 <Mic size={15} /> Interview Coach
-              </button>
-              <button onClick={() => navigate('/calendar')} className={navCls('calendar')}>
+              </Link>
+              <Link to="/calendar" className={navCls('calendar')}>
                 <Calendar size={15} /> Calendar
-              </button>
+              </Link>
             </div>
 
             <div className="pt-2.5 border-t border-border mt-2 space-y-0.5">
               <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-2.5 py-1">Account</p>
-              <button onClick={() => navigate('/profile')} className={navCls('profile')}>
+              <Link to="/profile" className={navCls('profile')}>
                 <User size={15} /> Profile
-              </button>
-              <button onClick={() => navigate('/settings')} className={navCls('settings')}>
+              </Link>
+              <Link to="/settings" className={navCls('settings')}>
                 <Settings size={15} /> Settings
-              </button>
+              </Link>
               {isAdmin && (
-                <button onClick={() => navigate('/admin/security')} className={navCls('admin')}>
+                <Link to="/admin/security" className={navCls('admin')}>
                   <ShieldCheck size={15} /> Security Ops
-                </button>
+                </Link>
               )}
             </div>
           </nav>
 
           {/* User Profile Footer */}
           <div className="p-2.5 border-t border-border space-y-2">
-            <div 
-              onClick={() => navigate('/profile')}
-              className="flex items-center gap-2.5 p-2 rounded-lg bg-secondary/50 hover:bg-secondary transition-colors cursor-pointer"
+            <Link 
+              to="/profile"
+              className="flex items-center gap-2.5 p-2 rounded-lg bg-secondary/50 hover:bg-secondary transition-colors cursor-pointer no-underline text-foreground"
             >
               <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-[11px] font-bold flex-shrink-0" style={{ background: '#2457FF' }}>
                 {userInitial}
@@ -533,7 +533,7 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
                 <p className="text-[12px] font-semibold text-foreground truncate">{displayName}</p>
                 <p className="text-[10px] text-muted-foreground truncate">{displayEmail}</p>
               </div>
-            </div>
+            </Link>
 
             {/* Big Prominent Sign Out Button */}
             <button 
@@ -572,14 +572,14 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
               </div>
             )}
 
-            <div 
-              className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-[11px] font-bold cursor-pointer shadow-sm"
+            <Link 
+              to="/settings"
+              className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-[11px] font-bold cursor-pointer shadow-sm no-underline"
               style={{ background: '#2457FF' }}
-              onClick={() => navigate('/settings')}
               title="Account Settings"
             >
               {userInitial}
-            </div>
+            </Link>
           </div>
         </header>
 
@@ -613,7 +613,7 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
                 saved: '/saved',
                 tracker: '/applications',
                 cv_studio: '/cv-studio',
-                interview: '/interview',
+                interview: '/interview-coach',
                 calendar: '/calendar',
                 settings: '/settings',
                 admin: '/admin/security'
@@ -994,12 +994,16 @@ export default function App() {
             </ProtectedRoute>
           } />
 
-          {/* Public & Authenticated Opportunity Discovery */}
+          {/* Authenticated Opportunity Discovery */}
           <Route path="/opportunities" element={
-            <CareerlyWorkspace activeTab="explore" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
+            <ProtectedRoute>
+              <CareerlyWorkspace activeTab="explore" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
+            </ProtectedRoute>
           } />
           <Route path="/opportunities/:id" element={
-            <CareerlyWorkspace activeTab="explore" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
+            <ProtectedRoute>
+              <CareerlyWorkspace activeTab="explore" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
+            </ProtectedRoute>
           } />
 
           {/* Authenticated Feature Routes */}
@@ -1018,11 +1022,12 @@ export default function App() {
               <CareerlyWorkspace activeTab="cv_studio" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
             </ProtectedRoute>
           } />
-          <Route path="/interview" element={
+          <Route path="/interview-coach" element={
             <ProtectedRoute>
               <CareerlyWorkspace activeTab="interview" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
             </ProtectedRoute>
           } />
+          <Route path="/interview" element={<Navigate to="/interview-coach" replace />} />
           <Route path="/calendar" element={
             <ProtectedRoute>
               <CareerlyWorkspace activeTab="calendar" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
