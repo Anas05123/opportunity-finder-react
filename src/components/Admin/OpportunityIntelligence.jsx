@@ -250,6 +250,28 @@ export default function OpportunityIntelligence({ triggerToast }) {
       });
       if (res.ok) {
         const data = await res.json();
+        
+        const isExcluded = (item) => {
+          if (!item) return false;
+          const combined = `${item.title || ''} ${item.company || item.organization || ''} ${item.location_country || ''} ${item.location_city || ''} ${item.location_raw || ''} ${item.description || ''} ${item.official_apply_url || ''} ${item.source_url || ''}`.toLowerCase();
+          return (
+            combined.includes('israel') ||
+            combined.includes('tel aviv') ||
+            combined.includes('jerusalem') ||
+            combined.includes('herzliya') ||
+            combined.includes('haifa') ||
+            (item.source_url && item.source_url.includes('.il')) ||
+            (item.official_apply_url && item.official_apply_url.includes('.il'))
+          );
+        };
+
+        if (Array.isArray(data.opportunities)) {
+          data.opportunities = data.opportunities.filter(op => !isExcluded(op));
+        }
+        if (Array.isArray(data.raw_records)) {
+          data.raw_records = data.raw_records.filter(rec => !isExcluded(rec.payload || rec));
+        }
+
         setSelectedRunFullData(data);
         setRunDetailsTab('opps');
         setRunOppsSearch('');
