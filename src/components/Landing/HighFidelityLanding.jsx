@@ -592,7 +592,7 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
             <button onClick={()=>nav("signin")} className="hidden sm:block text-[14.5px] font-semibold px-3.5 py-2 transition-colors whitespace-nowrap cursor-pointer" style={{ color:C.muted }}
               onMouseEnter={e=>(e.currentTarget.style.color=C.text)}
               onMouseLeave={e=>(e.currentTarget.style.color=C.muted)}>Sign In</button>
-            <motion.button onClick={()=>nav("signin")} whileHover={{ scale:1.03, y:-1 }} whileTap={{ scale:0.96 }}
+            <motion.button onClick={()=>nav("signup")} whileHover={{ scale:1.03, y:-1 }} whileTap={{ scale:0.96 }}
               className="text-[14px] font-bold px-5 py-2.5 rounded-xl text-white whitespace-nowrap shadow-md cursor-pointer"
               style={{ background:C.primary, boxShadow:`0 4px 14px ${C.primary}40` }}
               onMouseEnter={e=>{ e.currentTarget.style.boxShadow=`0 6px 24px ${C.primary}60`; e.currentTarget.style.background=C.bright; }}
@@ -647,7 +647,7 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
               <motion.div initial={{ opacity:0, y:14 }} animate={{ opacity:1, y:0 }}
                 transition={{ duration:0.5, delay:0.27, ease:[0.16,1,0.3,1] }}
                 className="flex flex-wrap items-center gap-3.5 mb-8 sm:mb-14">
-                <motion.button onClick={()=>nav("signin")} whileHover={{ scale:1.04, y:-2 }} whileTap={{ scale:0.96 }}
+                <motion.button onClick={()=>nav("signup")} whileHover={{ scale:1.04, y:-2 }} whileTap={{ scale:0.96 }}
                   className="flex items-center gap-2 px-6 py-3.5 text-white text-[14.5px] font-bold rounded-xl cursor-pointer"
                   style={{ background:C.primary, boxShadow:`0 4px 22px ${C.primary}55` }}
                   onMouseEnter={e=>{ e.currentTarget.style.background=C.bright; e.currentTarget.style.boxShadow=`0 8px 36px ${C.primary}70`; }}
@@ -1320,8 +1320,8 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
               Join 120,000+ professionals who use Careerly to discover and land their next opportunity. Free to start.
             </p>
             <div className="flex flex-col sm:flex-row items-center gap-3 justify-center">
-              <motion.button onClick={()=>nav("signin")} whileHover={{ scale:1.05, y:-2 }} whileTap={{ scale:0.95 }}
-                className="w-full sm:w-auto flex items-center justify-center gap-2 px-7 py-3.5 text-white text-[14px] font-semibold rounded-xl"
+              <motion.button onClick={()=>nav("signup")} whileHover={{ scale:1.05, y:-2 }} whileTap={{ scale:0.95 }}
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-7 py-3.5 text-white text-[14px] font-semibold rounded-xl cursor-pointer"
                 style={{ background:C.primary, boxShadow:`0 4px 24px ${C.primary}55` }}
                 onMouseEnter={e=>{ e.currentTarget.style.background=C.bright; e.currentTarget.style.boxShadow=`0 10px 40px ${C.primary}70`; }}
                 onMouseLeave={e=>{ e.currentTarget.style.background=C.primary; e.currentTarget.style.boxShadow=`0 4px 24px ${C.primary}55`; }}>
@@ -1355,17 +1355,48 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
             </div>
             <div className="grid grid-cols-3 gap-8 sm:gap-12">
               {[
-                { label:"Product", items:["Dashboard","Discovery","CV Studio","Coach","Calendar"] },
-                { label:"Company", items:["About","Blog","Careers","Press","Contact"] },
-                { label:"Legal",   items:["Privacy","Terms","Cookies","Security"] },
+                { 
+                  label: "Product", 
+                  items: [
+                    { name: "Dashboard", target: "dashboard" },
+                    { name: "Discovery", target: "discovery" },
+                    { name: "CV Studio", target: "cv" },
+                    { name: "Interview Coach", target: "coach" },
+                    { name: "Calendar", target: "calendar" }
+                  ] 
+                },
+                { 
+                  label: "Platform", 
+                  items: [
+                    { name: "Profile", target: "profile" },
+                    { name: "Application CRM", target: "crm" },
+                    { name: "Saved Roles", target: "saved" },
+                    { name: "Settings", target: "settings" }
+                  ] 
+                },
+                { 
+                  label: "Access", 
+                  items: [
+                    { name: "Sign In", target: "signin" },
+                    { name: "Create Account", target: "signup" },
+                    { name: "Explore Catalog", target: "discovery" }
+                  ] 
+                },
               ].map(({ label, items }) => (
                 <div key={label}>
                   <p className="text-[9px] font-bold uppercase tracking-widest mb-3.5" style={{ color:"rgba(255,255,255,0.3)" }}>{label}</p>
                   <div className="space-y-2.5">
                     {items.map(item => (
-                      <button key={item} className="block text-[11px] sm:text-[12px] transition-colors" style={{ color:"rgba(255,255,255,0.22)" }}
-                        onMouseEnter={e=>(e.currentTarget.style.color="rgba(255,255,255,0.55)")}
-                        onMouseLeave={e=>(e.currentTarget.style.color="rgba(255,255,255,0.22)")}>{item}</button>
+                      <button 
+                        key={item.name} 
+                        onClick={() => nav(item.target)}
+                        className="block text-[11px] sm:text-[12px] transition-colors cursor-pointer text-left" 
+                        style={{ color:"rgba(255,255,255,0.45)" }}
+                        onMouseEnter={e=>(e.currentTarget.style.color="rgba(255,255,255,0.9)")}
+                        onMouseLeave={e=>(e.currentTarget.style.color="rgba(255,255,255,0.45)")}
+                      >
+                        {item.name}
+                      </button>
                     ))}
                   </div>
                 </div>

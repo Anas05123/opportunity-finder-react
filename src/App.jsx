@@ -924,6 +924,11 @@ function HomeRoute({ theme, toggleTheme, triggerToast }) {
   return <CareerlyWorkspace activeTab="landing" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />;
 }
 
+function OnboardingRoute({ triggerToast }) {
+  const navigate = useNavigate();
+  return <OnboardingWizard triggerToast={triggerToast} onComplete={() => navigate('/dashboard')} />;
+}
+
 export default function App() {
   const [theme, setTheme] = useState(() => localStorage.getItem('opp_theme') || 'dark');
   const [toastMessage, setToastMessage] = useState('');
@@ -983,7 +988,7 @@ export default function App() {
           {/* 4-Step Academic & Career Calibration Onboarding */}
           <Route path="/onboarding" element={
             <ProtectedRoute>
-              <OnboardingWizard triggerToast={triggerToast} onComplete={() => window.location.href = '/dashboard'} />
+              <OnboardingRoute triggerToast={triggerToast} />
             </ProtectedRoute>
           } />
 
