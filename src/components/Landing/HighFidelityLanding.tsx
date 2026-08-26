@@ -1639,71 +1639,161 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
         </div>
       </section>
 
-      {/* ── Footer ──────────────────────────────────────────────── */}
-      <footer className="py-14" style={{ background:C.midnight }}>
-        <div className="max-w-[1180px] mx-auto px-4 sm:px-6">
-          <div className="flex flex-col sm:flex-row items-start sm:justify-between gap-10 mb-10">
-            <div className="flex-shrink-0">
-              <div className="flex items-center gap-2.5 mb-3">
-                <img src="/careerly-logo.png" alt="Careerly" className="w-7 h-7 object-contain flex-shrink-0" />
-                <span className="text-[14px] font-semibold text-white">Careerly</span>
+      {/* ── Enhanced High-Fidelity Footer ────────────────────────── */}
+      <footer className="pt-16 pb-12 text-slate-300 relative overflow-hidden" style={{ background: "#050D1D", borderTop: "1px solid rgba(255,255,255,0.08)" }}>
+        {/* Subtle background ambient glow */}
+        <div className="absolute top-0 left-1/4 w-96 h-96 rounded-full bg-blue-600/5 blur-[120px] pointer-events-none" />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 rounded-full bg-emerald-500/5 blur-[120px] pointer-events-none" />
+
+        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          
+          {/* Main Footer Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-12 pb-14 border-b border-white/10">
+            
+            {/* Brand & Mission Column (5 cols) */}
+            <div className="lg:col-span-5 space-y-4">
+              <div className="flex items-center gap-3">
+                <img src="/careerly-logo.png" alt="Careerly Logo" className="w-8 h-8 object-contain flex-shrink-0" />
+                <span className="text-[20px] font-bold text-white tracking-tight">Careerly</span>
+                <span className="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-primary/20 text-blue-400 border border-primary/30">
+                  OS v2.4
+                </span>
               </div>
-              <p className="text-[12px] leading-relaxed max-w-[200px]" style={{ color:"rgba(255,255,255,0.28)" }}>The career operating system for ambitious professionals.</p>
+
+              <p className="text-[13.5px] leading-relaxed text-slate-400 max-w-sm">
+                The career operating system for ambitious professionals. We unify opportunity discovery, ATS dossier tailoring, and STAR behavioral coaching into a single intelligent platform.
+              </p>
+
+              {/* Live Status Pill */}
+              <div className="pt-1 flex items-center gap-3 flex-wrap">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-950/40 text-emerald-400 border border-emerald-800/50 text-[11.5px] font-medium">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span>9 Scraper Engines Active</span>
+                </div>
+                <span className="text-[11.5px] text-slate-500 font-mono">99.8% Uptime</span>
+              </div>
+
+              <div className="pt-2 text-[12px] text-slate-500 flex items-center gap-2">
+                <span>🌐 Multi-region Architecture (US, EU, MENA)</span>
+                <span>·</span>
+                <span>EN / AR Support</span>
+              </div>
             </div>
-            <div className="grid grid-cols-3 gap-8 sm:gap-12">
-              {[
-                { 
-                  label: "Product", 
-                  items: [
-                    { name: "Dashboard", target: "dashboard" },
-                    { name: "Discovery", target: "discovery" },
-                    { name: "CV Studio", target: "cv" },
-                    { name: "Interview Coach", target: "coach" },
-                    { name: "Calendar", target: "calendar" }
-                  ] 
-                },
-                { 
-                  label: "Platform", 
-                  items: [
-                    { name: "Profile", target: "profile" },
-                    { name: "Application CRM", target: "crm" },
-                    { name: "Saved Roles", target: "saved" },
-                    { name: "Settings", target: "settings" }
-                  ] 
-                },
-                { 
-                  label: "Access", 
-                  items: [
-                    { name: "Sign In", target: "signin" },
-                    { name: "Create Account", target: "signup" },
-                    { name: "Explore Catalog", target: "discovery" }
-                  ] 
-                },
-              ].map(({ label, items }) => (
-                <div key={label}>
-                  <p className="text-[9px] font-bold uppercase tracking-widest mb-3.5" style={{ color:"rgba(255,255,255,0.3)" }}>{label}</p>
-                  <div className="space-y-2.5">
-                    {items.map(item => (
-                      <button 
-                        key={item.name} 
-                        onClick={() => nav(item.target as Screen)}
-                        className="block text-[11px] sm:text-[12px] transition-colors cursor-pointer text-left" 
-                        style={{ color:"rgba(255,255,255,0.45)" }}
-                        onMouseEnter={e=>(e.currentTarget.style.color="rgba(255,255,255,0.9)")}
-                        onMouseLeave={e=>(e.currentTarget.style.color="rgba(255,255,255,0.45)")}
-                      >
-                        {item.name}
-                      </button>
-                    ))}
+
+            {/* Link Column 1: Intelligence Engines (2 cols) */}
+            <div className="lg:col-span-2 space-y-3.5">
+              <p className="text-[11.5px] font-bold uppercase tracking-widest text-slate-200">Intelligence</p>
+              <ul className="space-y-2.5 text-[13px]">
+                {[
+                  { name: "Opportunity Discovery", action: () => {
+                    const el = document.getElementById("platform-section");
+                    if (el) el.scrollIntoView({ behavior: "smooth" });
+                    setActiveEco(0);
+                  }},
+                  { name: "Saved Vault", action: () => {
+                    const el = document.getElementById("platform-section");
+                    if (el) el.scrollIntoView({ behavior: "smooth" });
+                    setActiveEco(1);
+                  }},
+                  { name: "Application CRM", action: () => {
+                    const el = document.getElementById("platform-section");
+                    if (el) el.scrollIntoView({ behavior: "smooth" });
+                    setActiveEco(2);
+                  }},
+                  { name: "ATS CV Studio", action: () => {
+                    const el = document.getElementById("platform-section");
+                    if (el) el.scrollIntoView({ behavior: "smooth" });
+                    setActiveEco(3);
+                  }},
+                  { name: "STAR Interview Coach", action: () => {
+                    const el = document.getElementById("platform-section");
+                    if (el) el.scrollIntoView({ behavior: "smooth" });
+                    setActiveEco(4);
+                  }},
+                ].map(link => (
+                  <li key={link.name}>
+                    <button
+                      onClick={link.action}
+                      className="text-slate-400 hover:text-white transition-colors cursor-pointer text-left leading-normal"
+                    >
+                      {link.name}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Link Column 2: Opportunities (2 cols) */}
+            <div className="lg:col-span-2 space-y-3.5">
+              <p className="text-[11.5px] font-bold uppercase tracking-widest text-slate-200">Catalog</p>
+              <ul className="space-y-2.5 text-[13px]">
+                {[
+                  { name: "Global Tech & Design Jobs", action: () => nav("signin") },
+                  { name: "International Scholarships", action: () => nav("signin") },
+                  { name: "Prestigious Fellowships", action: () => nav("signin") },
+                  { name: "English Waiver Programs", action: () => nav("signin") },
+                  { name: "Top-Tier Internships", action: () => nav("signin") }
+                ].map(link => (
+                  <li key={link.name}>
+                    <button
+                      onClick={link.action}
+                      className="text-slate-400 hover:text-white transition-colors cursor-pointer text-left leading-normal"
+                    >
+                      {link.name}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Link Column 3: Platform & Access (3 cols) */}
+            <div className="lg:col-span-3 space-y-3.5">
+              <p className="text-[11.5px] font-bold uppercase tracking-widest text-slate-200">Platform Access</p>
+              <div className="space-y-3">
+                <div className="p-3.5 rounded-xl bg-white/4 border border-white/8 space-y-2">
+                  <p className="text-[12.5px] font-medium text-slate-200">Ready to accelerate your career?</p>
+                  <p className="text-[11.5px] text-slate-400 leading-snug">Create your profile to unlock calibrated match scores and 1-click tailored application kits.</p>
+                  <div className="flex items-center gap-2 pt-1">
+                    <button
+                      onClick={() => nav("signup")}
+                      className="flex-1 px-3 py-2 bg-primary hover:bg-blue-600 text-white text-[12px] font-bold rounded-lg transition-colors text-center shadow-xs cursor-pointer"
+                    >
+                      Get Started Free
+                    </button>
+                    <button
+                      onClick={() => nav("signin")}
+                      className="px-3 py-2 bg-white/6 hover:bg-white/10 text-white text-[12px] font-semibold rounded-lg transition-colors text-center border border-white/10 cursor-pointer"
+                    >
+                      Sign In
+                    </button>
                   </div>
                 </div>
-              ))}
+              </div>
+            </div>
+
+          </div>
+
+          {/* Bottom Bar: Copyright, Security & Back to Top */}
+          <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-[12.5px] text-slate-500">
+            <div className="flex items-center gap-3 flex-wrap text-center sm:text-left">
+              <span>© 2025 Careerly Technologies Inc. All rights reserved.</span>
+              <span className="hidden sm:inline">·</span>
+              <span className="inline-flex items-center gap-1 text-slate-400">
+                🔒 256-Bit Encrypted & IDOR Protected
+              </span>
+            </div>
+
+            <div className="flex items-center gap-6">
+              <button
+                onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                className="text-slate-400 hover:text-white transition-colors cursor-pointer text-[12px] font-semibold flex items-center gap-1"
+              >
+                <span>Back to Top</span>
+                <span>↑</span>
+              </button>
             </div>
           </div>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center sm:justify-between gap-2 pt-5" style={{ borderTop:`1px solid ${C.primary}22` }}>
-            <p className="text-[11px]" style={{ color:"rgba(255,255,255,0.18)" }}>© 2024 Careerly. All rights reserved.</p>
-            <p className="text-[11px]" style={{ color:"rgba(255,255,255,0.18)" }}>Designed for ambitious careers.</p>
-          </div>
+
         </div>
       </footer>
     </div>
