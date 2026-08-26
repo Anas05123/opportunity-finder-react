@@ -1,0 +1,70 @@
+﻿name: Careerly CI Verification & Security Gate
+
+on:
+  push:
+    branches:
+      - main
+      - 'feature/**'
+      - 'fix/**'
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-and-gate:
+    name: Build, Test & Security Gate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository (Full History for Security Scanner)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Dependencies (Deterministic Lockfile)
+        run: npm ci
+
+      - name: Run Linting & Static Analysis
+        run: npm run lint
+
+      - name: Run Routing & Client Navigation Tests
+        run: npm run test:routing
+
+      - name: Run Opportunity Intelligence Engine Tests
+        run: npm run test:opportunity
+
+      - name: Compile Production Bundle (Vite)
+        run: npm run build
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+
+      - name: Execute CI/CD Security Deployment Gate
+        run: npm run security:gate
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+
+      - name: Upload Sanitized Security Gate Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-ci-gate-artifacts
+          path: |
+            security-ci-gate-results.json
+            security-supply-chain-results.json
+            security-git-history-results.json
+          if-no-files-found: ignore
+          retention-days: 14

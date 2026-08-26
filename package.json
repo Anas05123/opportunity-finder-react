@@ -3,16 +3,23 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
     "dev": "vite --port 5173",
     "dev:experiment": "vite experiment --port 5174 --strictPort",
     "build": "vite build",
     "start": "node server/index.js",
     "render-build": "npm install --include=dev && npm run build",
-    "lint": "oxlint",
+    "lint": "oxlint -D correctness -A all",
     "preview": "vite preview",
-    "security:gate": "node scripts/security-gate.js",
-    "test:security": "node test/security.test.js"
+    "test": "node test/routing.test.js && node test/opportunity_intelligence.test.js && node scripts/security-gate.js",
+    "test:routing": "node test/routing.test.js",
+    "test:opportunity": "node test/opportunity_intelligence.test.js",
+    "test:security": "node test/security.test.js",
+    "test:all": "npm test && node test/final_verification.js",
+    "security:gate": "node scripts/security-gate.js"
   },
   "dependencies": {
     "@sentry/react": "^10.71.0",

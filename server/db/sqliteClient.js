@@ -1,4 +1,4 @@
-import Database from 'better-sqlite3';
+﻿import Database from 'better-sqlite3';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
@@ -644,7 +644,7 @@ export function initSqliteDatabase() {
         'cp-anas',
         anasId,
         'Anas',
-        'Founder & Lead Scholar — Advertising & Brand Strategy',
+        'Founder & Lead Scholar â€” Advertising & Brand Strategy',
         'undergrad',
         'Bachelor of Arts (BA)',
         'Advertising & Brand Strategy',
@@ -862,4 +862,7 @@ export function initSqliteDatabase() {
   console.log('[SQLite DB] Schema initialization complete.');
 }
 
+initSqliteDatabase();
+
 export default db;
+

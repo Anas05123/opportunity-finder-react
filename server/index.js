@@ -1,4 +1,4 @@
-import 'dotenv/config';
+﻿import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -198,7 +198,44 @@ app.get('/api/v1/health', (req, res) => {
     uptime_seconds: Math.floor(process.uptime())
   });
 });
-app.get('/health', (req, res) => res.json({ status: 'healthy' }));
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'healthy',
+    uptime_seconds: Math.floor(process.uptime()),
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Deep readiness check verifying database connectivity and operational availability
+const readyCheckHandler = (req, res) => {
+  try {
+    const dbCheck = sqliteDb.prepare('SELECT 1 as alive').get();
+    if (!dbCheck || dbCheck.alive !== 1) {
+      return res.status(503).json({
+        status: 'unready',
+        database: 'unresponsive',
+        timestamp: new Date().toISOString()
+      });
+    }
+    res.json({
+      status: 'ready',
+      service: 'Careerly Hardened SaaS API',
+      database: 'connected',
+      uptime_seconds: Math.floor(process.uptime()),
+      timestamp: new Date().toISOString()
+    });
+  } catch (err) {
+    res.status(503).json({
+      status: 'unready',
+      error: err.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+};
+
+app.get('/ready', readyCheckHandler);
+app.get('/readyz', readyCheckHandler);
+app.get('/api/v1/ready', readyCheckHandler);
 
 // -------------------------------------------------------------
 // 4. AI CAREER SUITE ENDPOINTS (RATE LIMITED & HARDENED)
@@ -436,7 +473,7 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(PORT, async () => {
-  console.log(`[API SERVER] 🛡️ Hardened Careerly SaaS API running on http://localhost:${PORT}`);
+  console.log(`[API SERVER] ðŸ›¡ï¸ Hardened Careerly SaaS API running on http://localhost:${PORT}`);
   startBackgroundScheduler(120);
 
   // Automatically bootstrap baseline 35-point security audit if none exists
@@ -453,3 +490,4 @@ app.listen(PORT, async () => {
 });
 
 export default app;
+
