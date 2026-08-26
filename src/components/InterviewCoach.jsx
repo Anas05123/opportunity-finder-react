@@ -193,7 +193,7 @@ export default function InterviewCoach({ userProfile, triggerToast }) {
               onClick={handleGradeAnswer}
               disabled={isGrading || !candidateAnswer.trim()}
               className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white text-[13px] font-semibold rounded-lg hover:opacity-95 transition-all disabled:opacity-50 shadow-sm"
-              style={{ background: '#2457FF' }}
+              
             >
               {isGrading ? <RefreshCw size={14} className="animate-spin" /> : <Sparkles size={14} />}
               Grade My Response

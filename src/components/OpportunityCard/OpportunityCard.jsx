@@ -6,10 +6,10 @@ import {
 import { cleanStipendText, cleanHtmlText } from '../../utils/formatUtils.js';
 
 const TYPE_COLORS = {
-  job: "text-blue-700 bg-blue-50 border-blue-200",
-  internship: "text-cyan-700 bg-cyan-50 border-cyan-200",
-  scholarship: "text-emerald-700 bg-emerald-50 border-emerald-200",
-  fellowship: "text-purple-700 bg-purple-50 border-purple-200"
+  job: "text-blue-700 bg-blue-50 border-blue-200 dark:text-blue-300 dark:bg-blue-950/50 dark:border-blue-800",
+  internship: "text-cyan-700 bg-cyan-50 border-cyan-200 dark:text-cyan-300 dark:bg-cyan-950/50 dark:border-cyan-800",
+  scholarship: "text-emerald-700 bg-emerald-50 border-emerald-200 dark:text-emerald-300 dark:bg-emerald-950/50 dark:border-emerald-800",
+  fellowship: "text-purple-700 bg-purple-50 border-purple-200 dark:text-purple-300 dark:bg-purple-950/50 dark:border-purple-800"
 };
 
 const TYPE_ICONS = {
@@ -50,9 +50,9 @@ export default function OpportunityCard({
   const posted = opportunity.posted || opportunity.created_at_relative || `${(index % 5) + 1} days ago`;
 
   const matchBadgeClass = (score) => {
-    if (score >= 85) return 'text-emerald-700 bg-emerald-50 border-emerald-200';
-    if (score >= 70) return 'text-blue-700 bg-blue-50 border-blue-200';
-    return 'text-amber-700 bg-amber-50 border-amber-200';
+    if (score >= 85) return 'text-emerald-700 bg-emerald-50 border-emerald-200 dark:text-emerald-300 dark:bg-emerald-950/50 dark:border-emerald-800';
+    if (score >= 70) return 'text-blue-700 bg-blue-50 border-blue-200 dark:text-blue-300 dark:bg-blue-950/50 dark:border-blue-800';
+    return 'text-amber-700 bg-amber-50 border-amber-200 dark:text-amber-300 dark:bg-amber-950/50 dark:border-amber-800';
   };
 
   return (

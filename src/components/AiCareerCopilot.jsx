@@ -94,7 +94,7 @@ export default function AiCareerCopilot({ userProfile, triggerToast }) {
       {!isOpen && (
         <button 
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-2.5 bg-[#08152F] text-white rounded-full border border-white/12 shadow-[0_10px_30px_rgba(8,21,47,0.35)] hover:bg-[#10213D] hover:scale-105 transition-all duration-200 group cursor-pointer"
+          className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 flex items-center gap-3 px-4 py-2.5 bg-[#08152F] text-white rounded-full border border-white/12 shadow-[0_10px_30px_rgba(8,21,47,0.35)] hover:bg-[#10213D] hover:scale-105 transition-all duration-200 group cursor-pointer"
           style={{ fontFamily: 'var(--font-sans)' }}
           aria-label="Open Careerly AI Copilot"
         >
@@ -117,8 +117,8 @@ export default function AiCareerCopilot({ userProfile, triggerToast }) {
       {/* ── Copilot Chat Modal / Floating Window ─────────────────────── */}
       {isOpen && (
         <div 
-          className={`fixed bottom-6 right-6 z-50 bg-card border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden transition-all duration-300 ${
-            isExpanded ? 'w-[640px] max-w-[94vw] h-[720px] max-h-[90vh]' : 'w-[420px] max-w-[92vw] h-[580px] max-h-[86vh]'
+          className={`fixed bottom-3 right-3 sm:bottom-6 sm:right-6 z-50 bg-card border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden transition-all duration-300 ${
+            isExpanded ? 'w-[640px] max-w-[94vw] h-[720px] max-h-[90vh]' : 'w-[400px] max-w-[calc(100vw-24px)] h-[560px] max-h-[86vh]'
           }`}
           style={{ fontFamily: 'var(--font-sans)' }}
         >

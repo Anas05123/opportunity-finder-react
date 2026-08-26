@@ -304,3 +304,239 @@ html[dir="rtl"] .left-3 {
   right: 0.75rem;
 }
 
+
+/* ==========================================================================
+   MODAL & DIALOG SYSTEM
+   ========================================================================== */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: var(--bg-modal-backdrop, rgba(6, 17, 38, 0.65));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 2050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.modal-card {
+  background: var(--card, #ffffff);
+  border: 1px solid var(--border, rgba(16, 33, 61, 0.12));
+  border-radius: 1rem;
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.25);
+  width: 100%;
+  max-width: 540px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  animation: modalScale 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.modal-medium {
+  max-width: 600px;
+}
+
+.modal-large {
+  max-width: 760px;
+}
+
+.modal-close {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border, rgba(16, 33, 61, 0.1));
+  background: var(--card, #ffffff);
+  color: var(--muted-foreground, #667085);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  z-index: 5;
+}
+
+.modal-close:hover {
+  background: var(--secondary, #EEF4FF);
+  color: var(--foreground, #10213D);
+}
+
+@keyframes modalScale {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ==========================================================================
+   SEARCH PROGRESS OVERLAY & AI QUESTION DIALOG
+   ========================================================================== */
+.search-progress-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: var(--bg-modal-backdrop, rgba(6, 17, 38, 0.7));
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 2100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.search-progress-card {
+  background: var(--card, #ffffff);
+  border: 1px solid var(--border, rgba(16, 33, 61, 0.12));
+  border-radius: 1rem;
+  padding: 2rem 2.25rem;
+  width: 100%;
+  max-width: 520px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3);
+  animation: modalScale 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.search-progress-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.4rem 0;
+  font-size: 0.85rem;
+}
+
+.search-progress-row.done .progress-label-text {
+  color: var(--foreground, #10213D);
+  font-weight: 600;
+}
+
+.search-progress-row.current .progress-label-text {
+  color: var(--primary, #2457FF);
+  font-weight: 700;
+}
+
+.search-progress-row.pending .progress-label-text {
+  color: var(--muted-foreground, #667085);
+  font-weight: 400;
+}
+
+.progress-icon-slot {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.progress-bullet {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--border, rgba(16, 33, 61, 0.2));
+}
+
+.ai-question-option-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.85rem 1.15rem;
+  border-radius: 0.625rem;
+  border: 1px solid var(--border, rgba(16, 33, 61, 0.12));
+  background: var(--card, #ffffff);
+  color: var(--foreground, #10213D);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
+}
+
+.ai-question-option-btn:hover {
+  background: var(--secondary, #EEF4FF);
+  border-color: var(--primary, #2457FF);
+  color: var(--primary, #2457FF);
+  transform: translateX(2px);
+}
+
+.ai-question-option-btn .option-arrow-icon {
+  color: var(--muted-foreground, #667085);
+  transition: transform 0.15s ease;
+}
+
+.ai-question-option-btn:hover .option-arrow-icon {
+  color: var(--primary, #2457FF);
+  transform: translateX(3px);
+}
+
+/* ==========================================================================
+   COMMAND PALETTE & TABLE BENTO
+   ========================================================================== */
+.command-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: var(--bg-modal-backdrop, rgba(6, 17, 38, 0.65));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 2050;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 12vh;
+  padding-inline: 1rem;
+}
+
+.command-modal {
+  background: var(--card, #ffffff);
+  border: 1px solid var(--border, rgba(16, 33, 61, 0.12));
+  border-radius: 1rem;
+  width: 100%;
+  max-width: 580px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  animation: modalScale 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.table-bento-container {
+  background: var(--card, #ffffff);
+  border: 1px solid var(--border, rgba(16, 33, 61, 0.1));
+  border-radius: 0.875rem;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.shadcn-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.82rem;
+}
+
+.shadcn-table th {
+  padding: 0.75rem 1rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted-foreground, #667085);
+  background: var(--secondary, #EEF4FF);
+  border-bottom: 1px solid var(--border, rgba(16, 33, 61, 0.1));
+}
+
+.shadcn-table td {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--border, rgba(16, 33, 61, 0.08));
+  color: var(--foreground, #10213D);
+  vertical-align: middle;
+}
+
+.shadcn-table tbody tr:hover {
+  background: var(--secondary, #EEF4FF);
+}

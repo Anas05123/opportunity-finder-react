@@ -213,7 +213,7 @@ export default function CvStudio({
       <div className="flex-1 flex overflow-hidden">
         
         {/* Left Column: Sections Navigator & ATS Diagnostics (w-56) */}
-        <div className="w-56 flex-shrink-0 border-r border-border bg-card overflow-y-auto custom-scrollbar flex flex-col justify-between p-3.5 space-y-4">
+        <div className="hidden md:flex w-56 flex-shrink-0 border-r border-border bg-card overflow-y-auto custom-scrollbar flex-col justify-between p-3.5 space-y-4">
           <div>
             <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-2 mb-2">Sections</p>
             <div className="space-y-1">
@@ -226,7 +226,7 @@ export default function CvStudio({
                       ? 'bg-primary text-white shadow-sm'
                       : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
                   }`}
-                  style={activeSection === s.id ? { background: '#2457FF' } : {}}
+                  
                 >
                   <span className="flex items-center gap-2">
                     {s.done ? (
@@ -276,7 +276,7 @@ export default function CvStudio({
               <p className="text-[10px] font-bold text-foreground uppercase tracking-widest mb-1.5">Missing Keywords</p>
               <div className="flex flex-wrap gap-1">
                 {["cross-functional", "stakeholder", "data-driven", "design systems"].map(k => (
-                  <span key={k} className="px-2 py-0.5 bg-amber-50 text-amber-800 border border-amber-200 text-[9px] rounded font-medium">
+                  <span key={k} className="px-2 py-0.5 bg-amber-50 text-amber-800 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800 text-[9px] rounded font-medium">
                     {k}
                   </span>
                 ))}
@@ -286,7 +286,24 @@ export default function CvStudio({
         </div>
 
         {/* Middle Column: Active Section Editor (Flex-1) */}
-        <div className="flex-1 overflow-y-auto p-6 sm:p-7 custom-scrollbar space-y-6">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-7 custom-scrollbar space-y-6">
+          
+          {/* Mobile Navigation Rail for Sections */}
+          <div className="flex md:hidden gap-1.5 overflow-x-auto pb-2 -mt-1 no-scrollbar">
+            {SECTIONS.map(s => (
+              <button
+                key={s.id}
+                onClick={() => setActiveSection(s.id)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
+                  activeSection === s.id
+                    ? 'bg-primary text-primary-foreground shadow-xs'
+                    : 'bg-card border border-border text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
           
           {/* SECTION 1: PERSONAL INFO */}
           {activeSection === 'personal' && (
@@ -599,7 +616,7 @@ export default function CvStudio({
         </div>
 
         {/* Right Column: Live International CV Document Preview (w-80) */}
-        <div className="w-80 flex-shrink-0 border-l border-border bg-card p-4 overflow-y-auto custom-scrollbar flex flex-col justify-between space-y-4">
+        <div className="hidden xl:flex w-80 flex-shrink-0 border-l border-border bg-card p-4 overflow-y-auto custom-scrollbar flex-col justify-between space-y-4">
           <div>
             <div className="flex items-center justify-between pb-3 mb-3 border-b border-border">
               <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Document Preview</span>

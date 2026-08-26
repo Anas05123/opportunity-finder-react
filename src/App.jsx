@@ -74,6 +74,10 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
   const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'list'
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
+
   // Auth Modal State
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authModalMode, setAuthModalMode] = useState('login');
@@ -474,7 +478,7 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
     <div className="flex h-screen bg-background overflow-hidden" style={{ fontFamily: 'var(--font-sans)' }}>
       {/* 1. SIDEBAR (AUTHENTICATED) */}
       {isAuthenticated && (
-        <aside className="w-56 flex-shrink-0 h-screen flex flex-col border-r border-border bg-card">
+        <aside className="hidden md:flex w-56 flex-shrink-0 h-screen flex-col border-r border-border bg-card">
           {/* Header / Brand */}
           <div className="h-14 flex items-center px-4 border-b border-border">
             <Link to="/dashboard" className="flex items-center gap-2.5 no-underline">
@@ -590,15 +594,26 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         
         {/* Top Header Bar */}
-        <header className="h-14 flex items-center justify-between px-6 border-b border-border bg-card flex-shrink-0">
-          <div>
-            <h1 className="text-[15px] font-semibold text-foreground leading-none">{tabTitles[activeTab] || 'Workspace'}</h1>
-            <p className="text-[11px] text-muted-foreground mt-1">
-              {language === 'ar' ? 'استكشاف الفرص وتسريع المسار المهني' : 'Calibrated Career Intelligence'}
-            </p>
+        <header className="h-14 flex items-center justify-between px-4 sm:px-6 border-b border-border bg-card flex-shrink-0">
+          <div className="flex items-center gap-2.5">
+            {isAuthenticated && (
+              <button 
+                onClick={() => setMobileMenuOpen(true)}
+                className="md:hidden flex items-center justify-center w-8 h-8 rounded-lg bg-secondary text-foreground border border-border hover:bg-secondary/80 transition-colors cursor-pointer"
+                aria-label="Open mobile navigation menu"
+              >
+                <Menu size={16} />
+              </button>
+            )}
+            <div>
+              <h1 className="text-[15px] font-semibold text-foreground leading-none">{tabTitles[activeTab] || 'Workspace'}</h1>
+              <p className="text-[11px] text-muted-foreground mt-1 hidden sm:block">
+                {language === 'ar' ? 'استكشاف الفرص وتسريع المسار المهني' : 'Calibrated Career Intelligence'}
+              </p>
+            </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             {activeTab === 'explore' && (
               <div className="relative hidden sm:block">
                 <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -620,6 +635,17 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
             >
               <Globe size={14} className="text-primary" />
               <span>{language === 'en' ? 'العربية' : 'English'}</span>
+            </button>
+
+            
+            {/* Theme Switcher Button */}
+            <button 
+              onClick={toggleTheme}
+              className="flex items-center justify-center w-8 h-8 rounded-lg bg-secondary text-foreground hover:bg-secondary/80 border border-border transition-all cursor-pointer"
+              title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+              aria-label="Toggle theme"
+            >
+              {theme === 'dark' ? <Sun size={15} className="text-amber-400" /> : <Moon size={15} className="text-slate-700" />}
             </button>
 
             <Link 
@@ -958,6 +984,140 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
       {!drawerOp && !prepareAppOp && !emailOutreachOp && !inspectingEvidenceOp && !authModalOpen && !activeQuestion && activeTab !== 'landing' && (
         <AiCareerCopilot userProfile={careerProfile || {}} triggerToast={triggerToast} />
       )}
+
+      {/* Mobile Navigation Drawer Sheet */}
+      {mobileMenuOpen && (
+        <div 
+          className="fixed inset-0 z-50 md:hidden flex"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Mobile Navigation"
+        >
+          {/* Backdrop */}
+          <div 
+            className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity" 
+            onClick={() => setMobileMenuOpen(false)} 
+          />
+          
+          {/* Drawer Panel */}
+          <aside className="relative w-64 max-w-[80vw] h-full bg-card border-r border-border flex flex-col z-10 shadow-2xl">
+            <div className="h-14 flex items-center justify-between px-4 border-b border-border">
+              <Link 
+                to="/dashboard" 
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-2.5 no-underline"
+              >
+                <img src="/careerly-logo.png" alt="Careerly Logo" className="w-7 h-7 object-contain flex-shrink-0" />
+                <span className="text-[15px] font-semibold text-foreground tracking-tight">{t('brand.name', 'Careerly')}</span>
+              </Link>
+              <button 
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-7 h-7 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors cursor-pointer"
+                aria-label="Close menu"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Navigation Links */}
+            <nav className="flex-1 p-3 overflow-y-auto space-y-1">
+              <div className="space-y-0.5">
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-2.5 py-1">
+                  {language === 'ar' ? 'مساحة العمل' : 'Workspace'}
+                </p>
+                <Link to="/dashboard" onClick={() => setMobileMenuOpen(false)} className={navCls('dashboard')}>
+                  <LayoutGrid size={15} /> {t('nav.dashboard', 'Dashboard')}
+                </Link>
+                <Link to="/opportunities" onClick={() => setMobileMenuOpen(false)} className={navCls('explore')}>
+                  <Compass size={15} /> {t('nav.discover', 'Discover')}
+                </Link>
+                <Link to="/applications" onClick={() => setMobileMenuOpen(false)} className={navCls('tracker')}>
+                  <CheckSquare size={15} /> {t('nav.applications', 'Applications')}
+                  {applicationsList.length > 0 && (
+                    <span className="ml-auto text-[10px] font-mono font-bold bg-secondary text-foreground px-1.5 py-0.5 rounded">
+                      {applicationsList.length}
+                    </span>
+                  )}
+                </Link>
+              </div>
+
+              <div className="pt-2.5 border-t border-border mt-2 space-y-0.5">
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-2.5 py-1">
+                  {language === 'ar' ? 'الأدوات' : 'Tools'}
+                </p>
+                <Link to="/saved" onClick={() => setMobileMenuOpen(false)} className={navCls('saved')}>
+                  <Bookmark size={15} /> {t('nav.saved', 'Saved')}
+                  {savedOppsList.length > 0 && (
+                    <span className="ml-auto text-[10px] font-mono font-bold bg-secondary text-foreground px-1.5 py-0.5 rounded">
+                      {savedOppsList.length}
+                    </span>
+                  )}
+                </Link>
+                <Link to="/cv-studio" onClick={() => setMobileMenuOpen(false)} className={navCls('cv_studio')}>
+                  <FileText size={15} /> {t('nav.cv_studio', 'CV Studio')}
+                </Link>
+                <Link to="/interview-coach" onClick={() => setMobileMenuOpen(false)} className={navCls('interview')}>
+                  <Mic size={15} /> {t('nav.interview_coach', 'Interview Coach')}
+                </Link>
+                <Link to="/calendar" onClick={() => setMobileMenuOpen(false)} className={navCls('calendar')}>
+                  <Calendar size={15} /> {t('nav.calendar', 'Calendar')}
+                </Link>
+              </div>
+
+              <div className="pt-2.5 border-t border-border mt-2 space-y-0.5">
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-2.5 py-1">
+                  {language === 'ar' ? 'الحساب' : 'Account'}
+                </p>
+                <Link to="/profile" onClick={() => setMobileMenuOpen(false)} className={navCls('profile')}>
+                  <User size={15} /> {t('nav.profile', 'Profile')}
+                </Link>
+                <Link to="/settings" onClick={() => setMobileMenuOpen(false)} className={navCls('settings')}>
+                  <Settings size={15} /> {t('nav.settings', 'Settings')}
+                </Link>
+                {isAdmin && (
+                  <>
+                    <Link to="/admin/opportunity-intelligence" onClick={() => setMobileMenuOpen(false)} className={navCls('admin')}>
+                      <Brain size={15} /> {t('nav.admin', 'Opp Intelligence')}
+                    </Link>
+                    <Link to="/admin/security" onClick={() => setMobileMenuOpen(false)} className={navCls('admin')}>
+                      <ShieldCheck size={15} /> Security Ops
+                    </Link>
+                  </>
+                )}
+              </div>
+            </nav>
+
+            {/* User Profile Footer */}
+            <div className="p-2.5 border-t border-border space-y-2">
+              <Link 
+                to="/profile"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-2.5 p-2 rounded-lg bg-secondary/50 hover:bg-secondary transition-colors cursor-pointer no-underline text-foreground"
+              >
+                <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-[11px] font-bold flex-shrink-0" style={{ background: '#2457FF' }}>
+                  {userInitial}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[12px] font-semibold text-foreground truncate">{displayName}</p>
+                  <p className="text-[10px] text-muted-foreground truncate">{displayEmail}</p>
+                </div>
+              </Link>
+              <button 
+                onClick={async () => { 
+                  await logout(); 
+                  window.location.href = '/'; 
+                }} 
+                className="w-full flex items-center justify-center gap-2 py-2 px-3 bg-red-50 text-red-600 border border-red-200 hover:bg-red-600 hover:text-white rounded-lg text-[12px] font-bold transition-all shadow-xs cursor-pointer"
+                title="Sign Out of Account"
+              >
+                <LogOut size={13} />
+                <span>{t('nav.logout', 'Sign Out')}</span>
+              </button>
+            </div>
+          </aside>
+        </div>
+      )}
+
     </div>
   );
 }
@@ -989,6 +1149,7 @@ export default function App() {
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
+    document.documentElement.classList.toggle('dark', theme === 'dark');
     localStorage.setItem('opp_theme', theme);
   }, [theme]);
 

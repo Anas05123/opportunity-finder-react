@@ -87,7 +87,7 @@ const translations = {
   ar: {
     // Brand & Navigation
     'brand.name': 'كاريرلي',
-    'brand.tagline': 'منظومة استكشاف الفرص الذكية وتسريع المسار المهني',
+    'brand.tagline': 'منظومة استكشاف الفرص العالمية وتسريع المسار المهني',
     'nav.dashboard': 'لوحة التحكم',
     'nav.opportunities': 'الفرص المتاحة',
     'nav.discover': 'استكشاف',
@@ -141,7 +141,7 @@ const translations = {
     'drawer.cover_letter_tab': 'خطاب التقديم المخصص',
     'drawer.cv_bullets_tab': 'نقاط السيرة الذاتية المقترحة',
     'drawer.checklist_tab': 'قائمة التحقق قبل الإرسال',
-    'drawer.launch_portal': 'فتح البوابة الرسمية ولصق البيانات',
+    'drawer.launch_portal': 'فتح البوابة الرسمية ونقل البيانات',
     'drawer.email_directly': 'مراسلة مسؤول التوظيف مباشرة',
     'drawer.copy_letter': 'نسخ الخطاب',
     'drawer.copied': 'تم النسخ بنجاح!',
@@ -154,12 +154,12 @@ const translations = {
     'btn.next': 'التالي',
     'btn.search': 'بحث',
     'btn.filter': 'تصفية',
-    'btn.loading': 'جارِ التحميل...',
+    'btn.loading': 'جاري التحميل...',
     'btn.verified_active': 'موثق ونشط',
 
     // Landing Page
     'landing.hero_title': 'انطلق في مسارك المهني العالمي بالذكاء الاصطناعي',
-    'landing.hero_sub': 'اكتشف فرص التدريب والوظائف والمنح الدراسية الموثقة مع موائمة السيرة الذاتية والتدريب على المقابلات.',
+    'landing.hero_sub': 'اكتشف فرص التدريب والوظائف والمنح الدراسية الموثقة مع مواءمة السيرة الذاتية والتدريب على المقابلات.',
     'landing.cta_primary': 'استكشف الفرص الآن',
     'landing.cta_secondary': 'تعرف على المميزات',
 

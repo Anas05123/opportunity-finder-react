@@ -144,7 +144,7 @@ export default function DiscoverScreen({
                 ? 'bg-primary text-white' 
                 : 'border border-border text-foreground hover:bg-secondary'
             }`}
-            style={showFiltersPanel ? { background: '#2457FF' } : {}}
+            
           >
             <Filter size={13} />
             <span>Filters</span>
@@ -218,7 +218,7 @@ export default function DiscoverScreen({
       </div>
 
       {/* ── 2. Main 2-Column Discovery Body ──────────────────────────── */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
         
         {/* Left Filter Sidebar */}
         {showFiltersPanel && (
@@ -293,7 +293,7 @@ export default function DiscoverScreen({
                           ? 'bg-primary text-white border-primary shadow-xs' 
                           : 'bg-card border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground'
                       }`}
-                      style={isSel ? { background: '#2457FF' } : {}}
+                      
                     >
                       {skill}
                     </button>

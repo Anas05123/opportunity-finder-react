@@ -121,17 +121,17 @@ export default function PersonalizedDashboard({
 
   const typePillClass = (type) => {
     switch (type?.toLowerCase()) {
-      case 'internship': return 'text-cyan-700 bg-cyan-50 border-cyan-200';
-      case 'scholarship': return 'text-emerald-700 bg-emerald-50 border-emerald-200';
-      case 'fellowship': return 'text-purple-700 bg-purple-50 border-purple-200';
-      default: return 'text-blue-700 bg-blue-50 border-blue-200';
+      case 'internship': return 'text-cyan-700 bg-cyan-50 border-cyan-200 dark:text-cyan-300 dark:bg-cyan-950/50 dark:border-cyan-800';
+      case 'scholarship': return 'text-emerald-700 bg-emerald-50 border-emerald-200 dark:text-emerald-300 dark:bg-emerald-950/50 dark:border-emerald-800';
+      case 'fellowship': return 'text-purple-700 bg-purple-50 border-purple-200 dark:text-purple-300 dark:bg-purple-950/50 dark:border-purple-800';
+      default: return 'text-blue-700 bg-blue-50 border-blue-200 dark:text-blue-300 dark:bg-blue-950/50 dark:border-blue-800';
     }
   };
 
   const matchBadgeClass = (score) => {
-    if (score >= 85) return 'text-emerald-700 bg-emerald-50 border-emerald-200';
-    if (score >= 70) return 'text-blue-700 bg-blue-50 border-blue-200';
-    return 'text-amber-700 bg-amber-50 border-amber-200';
+    if (score >= 85) return 'text-emerald-700 bg-emerald-50 border-emerald-200 dark:text-emerald-300 dark:bg-emerald-950/50 dark:border-emerald-800';
+    if (score >= 70) return 'text-blue-700 bg-blue-50 border-blue-200 dark:text-blue-300 dark:bg-blue-950/50 dark:border-blue-800';
+    return 'text-amber-700 bg-amber-50 border-amber-200 dark:text-amber-300 dark:bg-amber-950/50 dark:border-amber-800';
   };
 
   return (
@@ -157,7 +157,7 @@ export default function PersonalizedDashboard({
           <button 
             onClick={() => navigate('/opportunities')}
             className="flex items-center gap-1.5 px-4 py-2 bg-primary text-white text-[13px] font-semibold rounded-lg hover:opacity-95 transition-all shadow-sm"
-            style={{ background: '#2457FF' }}
+            
           >
             <Search size={14} /> Discover Roles
           </button>
@@ -173,10 +173,10 @@ export default function PersonalizedDashboard({
       {/* ── 2. Top 4 KPI Metrics ────────────────────────────────────── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
         {[
-          { label: "Active Applications", value: String(activeAppsCount), delta: "+3 this week", icon: FolderKanban, accent: "text-blue-600", bg: "bg-blue-50/60" },
-          { label: "Saved Opportunities", value: String(savedCount), delta: "+5 this week", icon: Bookmark, accent: "text-amber-600", bg: "bg-amber-50/60" },
-          { label: "Profile Strength", value: "72%", delta: "28% to complete", icon: TrendingUp, accent: "text-emerald-600", bg: "bg-emerald-50/60" },
-          { label: "Avg Match Score", value: "84%", delta: "Top 15% of users", icon: Target, accent: "text-purple-600", bg: "bg-purple-50/60" },
+          { label: "Active Applications", value: String(activeAppsCount), delta: "+3 this week", icon: FolderKanban, accent: "text-blue-600 dark:text-blue-400", bg: "bg-blue-50/60 dark:bg-blue-950/40" },
+          { label: "Saved Opportunities", value: String(savedCount), delta: "+5 this week", icon: Bookmark, accent: "text-amber-600 dark:text-amber-400", bg: "bg-amber-50/60 dark:bg-amber-950/40" },
+          { label: "Profile Strength", value: "72%", delta: "28% to complete", icon: TrendingUp, accent: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-50/60 dark:bg-emerald-950/40" },
+          { label: "Avg Match Score", value: "84%", delta: "Top 15% of users", icon: Target, accent: "text-purple-600 dark:text-purple-400", bg: "bg-purple-50/60 dark:bg-purple-950/40" },
         ].map(({ label, value, delta, icon: Icon, accent, bg }) => (
           <div key={label} className="bg-card border border-border rounded-xl p-4.5 shadow-sm hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between mb-3">
@@ -485,7 +485,7 @@ export default function PersonalizedDashboard({
           </div>
 
           {/* AI Career Strategist Insight Card */}
-          <div className="bg-primary rounded-xl p-5 text-white shadow-md relative overflow-hidden" style={{ background: '#2457FF' }}>
+          <div className="bg-primary rounded-xl p-5 text-white shadow-md relative overflow-hidden" >
             <div className="relative z-10">
               <div className="flex items-center gap-1.5 mb-2.5">
                 <Lightbulb size={15} className="text-blue-200" />
