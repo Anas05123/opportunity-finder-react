@@ -1776,7 +1776,7 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
           {/* Bottom Bar: Copyright, Security & Back to Top */}
           <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-[12.5px] text-slate-500">
             <div className="flex items-center gap-3 flex-wrap text-center sm:text-left">
-              <span>© 2025 Careerly Technologies Inc. All rights reserved.</span>
+              <span>© 2026 Careerly Technologies Inc. All rights reserved.</span>
               <span className="hidden sm:inline">·</span>
               <span className="inline-flex items-center gap-1 text-slate-400">
                 🔒 256-Bit Encrypted & IDOR Protected

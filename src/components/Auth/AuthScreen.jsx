@@ -610,7 +610,7 @@ export default function AuthScreen({ triggerToast }) {
         </div>
 
         <div className="text-center text-[11.5px] text-muted-foreground py-1">
-          © 2024 Careerly Intelligence. All rights reserved.
+          © 2026 Careerly Intelligence. All rights reserved.
         </div>
       </div>
 
