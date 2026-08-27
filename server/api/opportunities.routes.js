@@ -39,9 +39,8 @@ router.get('/', optionalAuth, (req, res) => {
     const { search, type, field } = req.query;
     const userProfile = req.careerProfile || { major: 'Computer Science', gpa: 3.5, degree_level: 'undergrad' };
 
-    let query = `
-      SELECT * FROM opportunities 
-      WHERE status = 'active'
+    let baseFilter = `
+      status = 'active'
         AND LOWER(COALESCE(location_country, '')) NOT LIKE '%israel%'
         AND LOWER(COALESCE(location_city, '')) NOT LIKE '%tel aviv%'
         AND LOWER(COALESCE(location_city, '')) NOT LIKE '%jerusalem%'
@@ -55,28 +54,40 @@ router.get('/', optionalAuth, (req, res) => {
     const params = [];
 
     if (type && type !== 'all') {
-      query += ' AND opportunity_type = ?';
+      baseFilter += ' AND opportunity_type = ?';
       params.push(type);
     }
 
     if (field && field !== 'all') {
-      query += ' AND field_of_study = ?';
+      baseFilter += ' AND field_of_study = ?';
       params.push(field);
     }
 
     if (search && search.trim()) {
       const term = `%${search.trim()}%`;
-      query += ' AND (title LIKE ? OR company LIKE ? OR description LIKE ? OR location_country LIKE ? OR field_of_study LIKE ?)';
+      baseFilter += ' AND (title LIKE ? OR company LIKE ? OR description LIKE ? OR location_country LIKE ? OR field_of_study LIKE ?)';
       params.push(term, term, term, term, term);
     }
 
-    const limit = Math.min(parseInt(req.query.limit, 10) || 200, 500);
-    const offset = Math.max((parseInt(req.query.page, 10) || 1) - 1, 0) * limit;
+    // Accurate total count in database matching the filters
+    const totalRow = db.prepare(`SELECT COUNT(*) as total FROM opportunities WHERE ${baseFilter}`).get(...params);
+    const totalCount = totalRow ? totalRow.total : 0;
 
-    query += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
-    params.push(limit, offset);
+    let query = `SELECT * FROM opportunities WHERE ${baseFilter} ORDER BY created_at DESC`;
+    const queryParams = [...params];
 
-    const rows = db.prepare(query).all(...params);
+    // If explicit pagination limit is requested
+    if (req.query.limit && req.query.limit !== 'all') {
+      const limit = Math.min(parseInt(req.query.limit, 10) || 5000, 10000);
+      const offset = Math.max((parseInt(req.query.page, 10) || 1) - 1, 0) * limit;
+      query += ' LIMIT ? OFFSET ?';
+      queryParams.push(limit, offset);
+    } else {
+      // Default high ceiling (5000) so all active catalog opportunities are available
+      query += ' LIMIT 5000';
+    }
+
+    const rows = db.prepare(query).all(...queryParams);
     const enriched = rows.map(r => enrichOpportunity(r, userProfile));
 
     // Sort by deterministic match score descending
@@ -84,7 +95,8 @@ router.get('/', optionalAuth, (req, res) => {
 
     res.json({
       status: 'success',
-      total_count: enriched.length,
+      total_count: totalCount,
+      count: enriched.length,
       opportunities: enriched
     });
   } catch (err) {
