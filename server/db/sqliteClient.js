@@ -875,6 +875,12 @@ export function initSqliteDatabase() {
     }
   }
 
+  try {
+    db.prepare("ALTER TABLE interview_sessions ADD COLUMN status TEXT DEFAULT 'completed'").run();
+  } catch(e) {}
+  try {
+    db.prepare("ALTER TABLE interview_sessions ADD COLUMN session_config_json TEXT").run();
+  } catch(e) {}
   console.log('[SQLite DB] Schema initialization complete.');
 }
 

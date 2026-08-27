@@ -400,6 +400,71 @@ app.post('/api/v1/ai/match-jobs-to-cv', aiLimiter, async (req, res) => {
     }
   });
 
+    // 1. Create a New Live Private Interview Session & Generate Secure Session URL
+  app.post('/api/v1/ai/interview/create-live-session', aiLimiter, optionalAuth, async (req, res) => {
+    try {
+      const { company, role, track, seniority, persona, questionCount, userProfile } = req.body;
+      
+      const generated = await generateInterviewSession({
+        company,
+        role,
+        track,
+        seniority,
+        questionCount: questionCount || 3,
+        userProfile: userProfile || req.user || {}
+      });
+
+      const sessionId = 'iv_sess_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
+      const defaultUser = sqliteDb.prepare("SELECT id FROM users LIMIT 1").get();
+      const userId = req.user?.id || req.user?.userId || defaultUser?.id || 'usr_admin_anas_001';
+      const privateUrl = `/interview/session/${sessionId}`;
+
+      const sessionConfig = {
+        sessionId,
+        company: company || 'Global Enterprise',
+        role: role || 'Specialist',
+        track: track || 'Behavioral (STAR)',
+        seniority: seniority || 'Senior',
+        persona: persona || { id: 'bella', name: 'Elena / Bella' },
+        questions: generated.questions || []
+      };
+
+      try {
+        sqliteDb.prepare(`
+          INSERT INTO interview_sessions (
+            id, user_id, company_name, role_title, track,
+            overall_score, verdict, verdict_color, answers_json, scorecard_json, status, session_config_json
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `).run(
+          sessionId,
+          userId,
+          sessionConfig.company,
+          sessionConfig.role,
+          sessionConfig.track,
+          0,
+          'In Progress',
+          '#3B82F6',
+          JSON.stringify([]),
+          JSON.stringify({}),
+          'in_progress',
+          JSON.stringify(sessionConfig)
+        );
+      } catch (dbErr) {
+        console.warn('[Interview Session Create Warning]:', dbErr.message);
+      }
+
+      res.json({
+        status: 'success',
+        sessionId,
+        privateUrl,
+        sessionConfig
+      });
+    } catch (err) {
+      console.error('[Create Live Session Error]:', err);
+      res.status(500).json({ error: 'Failed to create interview session: ' + err.message });
+    }
+  });
+
   app.post('/api/v1/ai/interview/generate-session', aiLimiter, async (req, res) => {
     try {
       const { company, role, track, seniority, questionCount, userProfile } = req.body;
@@ -436,9 +501,10 @@ app.post('/api/v1/ai/match-jobs-to-cv', aiLimiter, async (req, res) => {
     }
   });
 
+    // 2. Finalize Session, Update DB Record to Completed & Generate Holistic Scorecard
   app.post('/api/v1/ai/interview/finalize-session', aiLimiter, optionalAuth, async (req, res) => {
     try {
-      const { company, role, track, answers, userProfile } = req.body;
+      const { sessionId: providedSessionId, company, role, track, answers, userProfile } = req.body;
       const scorecard = await finalizeInterviewSession({
         company,
         role,
@@ -447,38 +513,62 @@ app.post('/api/v1/ai/match-jobs-to-cv', aiLimiter, async (req, res) => {
         userProfile: userProfile || req.user || {}
       });
 
+      const sessionId = providedSessionId || scorecard.sessionId || ('iv_sess_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8));
       const defaultUser = sqliteDb.prepare("SELECT id FROM users LIMIT 1").get();
       const userId = req.user?.id || req.user?.userId || defaultUser?.id || 'usr_admin_anas_001';
+      const privateUrl = `/interview/session/${sessionId}`;
+
       try {
-        sqliteDb.prepare(`
-          INSERT INTO interview_sessions (
-            id, user_id, company_name, role_title, track,
-            overall_score, verdict, verdict_color, answers_json, scorecard_json
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `).run(
-          scorecard.sessionId,
-          userId,
-          company || 'Global Enterprise',
-          role || 'Specialist',
-          track || 'Behavioral (STAR)',
-          scorecard.overallScore,
-          scorecard.verdict,
-          scorecard.verdictColor,
-          JSON.stringify(answers || []),
-          JSON.stringify(scorecard)
-        );
+        const existing = sqliteDb.prepare('SELECT id FROM interview_sessions WHERE id = ?').get(sessionId);
+        if (existing) {
+          sqliteDb.prepare(`
+            UPDATE interview_sessions SET
+              overall_score = ?,
+              verdict = ?,
+              verdict_color = ?,
+              answers_json = ?,
+              scorecard_json = ?,
+              status = 'completed'
+            WHERE id = ?
+          `).run(
+            scorecard.overallScore,
+            scorecard.verdict,
+            scorecard.verdictColor,
+            JSON.stringify(scorecard.evaluatedAnswers || answers || []),
+            JSON.stringify({ ...scorecard, sessionId, privateUrl }),
+            sessionId
+          );
+        } else {
+          sqliteDb.prepare(`
+            INSERT INTO interview_sessions (
+              id, user_id, company_name, role_title, track,
+              overall_score, verdict, verdict_color, answers_json, scorecard_json, status
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'completed')
+          `).run(
+            sessionId,
+            userId,
+            company || 'Global Enterprise',
+            role || 'Specialist',
+            track || 'Behavioral (STAR)',
+            scorecard.overallScore,
+            scorecard.verdict,
+            scorecard.verdictColor,
+            JSON.stringify(scorecard.evaluatedAnswers || answers || []),
+            JSON.stringify({ ...scorecard, sessionId, privateUrl })
+          );
+        }
       } catch (dbErr) {
         console.warn('[Interview DB Save Warning]:', dbErr.message);
       }
 
-      res.json(scorecard);
+      res.json({ status: 'success', sessionId, privateUrl, ...scorecard });
     } catch (err) {
       console.error('[Interview Finalize Error]:', err);
       res.status(500).json({ error: 'Failed to finalize interview session: ' + err.message });
     }
   });
 
-    // Get Private Persistent Interview Session by ID (Accessible via private URL)
+  // 3. Get Private Persistent Interview Session by ID (Accessible via private URL)
   app.get('/api/v1/ai/interview/session/:sessionId', async (req, res) => {
     try {
       const { sessionId } = req.params;
@@ -489,6 +579,7 @@ app.post('/api/v1/ai/match-jobs-to-cv', aiLimiter, async (req, res) => {
 
       const answers = JSON.parse(row.answers_json || '[]');
       const scorecard = JSON.parse(row.scorecard_json || '{}');
+      const sessionConfig = JSON.parse(row.session_config_json || '{}');
 
       res.json({
         status: 'success',
@@ -497,11 +588,13 @@ app.post('/api/v1/ai/match-jobs-to-cv', aiLimiter, async (req, res) => {
           company: row.company_name,
           role: row.role_title,
           track: row.track,
+          status: row.status || (row.overall_score > 0 ? 'completed' : 'in_progress'),
           overallScore: row.overall_score,
           verdict: row.verdict,
           verdictColor: row.verdict_color,
           answers,
           scorecard,
+          sessionConfig,
           privateUrl: `/interview/session/${row.id}`,
           createdAt: row.created_at
         }

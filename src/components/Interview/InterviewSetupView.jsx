@@ -1,4 +1,5 @@
 ﻿import React, { useState, useEffect, useRef } from 'react';
+import { API_BASE_URL } from '../../config/api.js';
 import { 
   Building2, Sparkles, Video, Mic, ShieldCheck, ChevronRight, 
   Award, Play, ArrowRight, UserCheck, Flame, Compass, Target,
@@ -38,6 +39,33 @@ export default function InterviewSetupView({ userProfile, onStartSession, isLoad
   const [selectedPersona, setSelectedPersona] = useState(PERSONAS[0]);
   const [seniority, setSeniority] = useState('Senior');
   const [questionCount, setQuestionCount] = useState(3);
+
+  // Past Saved Sessions State
+  const [pastSessions, setPastSessions] = useState([]);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+
+  useEffect(() => {
+    async function loadHistory() {
+      setIsLoadingHistory(true);
+      try {
+        const token = localStorage.getItem('careerly_token');
+        const res = await fetch(`${API_BASE_URL}/ai/interview/history`, {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.status === 'success' && data.sessions) {
+            setPastSessions(data.sessions);
+          }
+        }
+      } catch (err) {
+        console.warn('[History fetch notice]:', err.message);
+      } finally {
+        setIsLoadingHistory(false);
+      }
+    }
+    loadHistory();
+  }, []);
 
   // Camera & Mic Hardware Self-Test
   const [mediaStream, setMediaStream] = useState(null);
@@ -342,6 +370,62 @@ export default function InterviewSetupView({ userProfile, onStartSession, isLoad
 
       </div>
 
+    
+        {/* Your Saved Private Interview Sessions */}
+        {pastSessions.length > 0 && (
+          <div className="bg-card border border-border rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                <h3 className="text-base font-bold text-foreground font-display">
+                  Your Saved Private Interview Sessions
+                </h3>
+              </div>
+              <span className="text-xs font-bold text-muted-foreground">{pastSessions.length} Sessions Saved</span>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Every interview has a permanent, end-to-end encrypted private URL. Access your past responses, transcripts, and scores at any time.
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+              {pastSessions.map((sess) => (
+                <a
+                  key={sess.id}
+                  href={`/interview/session/${sess.id}`}
+                  className="p-4 rounded-2xl border border-border bg-secondary/30 hover:bg-secondary/70 hover:border-primary/40 transition-all flex flex-col justify-between gap-3 group"
+                >
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-bold text-primary uppercase tracking-wider truncate">
+                        {sess.company_name}
+                      </span>
+                      <span 
+                        className="text-[10px] font-bold px-2 py-0.5 rounded text-white shadow-sm"
+                        style={{ backgroundColor: sess.verdict_color || '#10B981' }}
+                      >
+                        {sess.verdict}
+                      </span>
+                    </div>
+                    <h4 className="text-sm font-bold text-foreground group-hover:text-primary transition-colors line-clamp-1">
+                      {sess.role_title}
+                    </h4>
+                    <p className="text-[11px] text-muted-foreground">
+                      {new Date(sess.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2 border-t border-border/50 text-xs">
+                    <span className="font-mono font-bold text-foreground">Score: {sess.overall_score}/100</span>
+                    <span className="font-bold text-primary flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+                      <span>Open Private Session</span>
+                      <span>→</span>
+                    </span>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
     </div>
   );
 }

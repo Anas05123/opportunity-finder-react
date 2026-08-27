@@ -7,6 +7,7 @@ import {
   Lock, Share2, ArrowLeft, Volume2, Mic, ExternalLink, RefreshCw
 } from 'lucide-react';
 import { playAiVoice, stopSpeaking } from '../../services/speechService.js';
+import InterviewLiveRoom from './InterviewLiveRoom.jsx';
 import { API_BASE_URL } from '../../config/api.js';
 
 export default function InterviewSessionReviewPage({ triggerToast, theme }) {
@@ -22,30 +23,65 @@ export default function InterviewSessionReviewPage({ triggerToast, theme }) {
   const [playingAudioIndex, setPlayingAudioIndex] = useState(null);
 
   // Fetch Private Session from Backend
-  useEffect(() => {
-    async function fetchSession() {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const res = await fetch(`${API_BASE_URL}/ai/interview/session/${sessionId}`);
-        if (!res.ok) {
-          throw new Error('Interview session not found or link has expired.');
-        }
-        const data = await res.json();
-        if (data.status === 'success' && data.session) {
-          setSessionData(data.session);
-        } else {
-          throw new Error(data.error || 'Failed to load session');
-        }
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setIsLoading(false);
+  const fetchSession = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`${API_BASE_URL}/ai/interview/session/${sessionId}`);
+      if (!res.ok) {
+        throw new Error('Interview session not found or link has expired.');
       }
+      const data = await res.json();
+      if (data.status === 'success' && data.session) {
+        setSessionData(data.session);
+      } else {
+        throw new Error(data.error || 'Failed to load session');
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
     }
+  };
 
+  useEffect(() => {
     if (sessionId) fetchSession();
   }, [sessionId]);
+
+  const handleLiveSessionComplete = async ({ company, role, track, answers, durationSeconds }) => {
+    setIsLoading(true);
+    try {
+      const token = localStorage.getItem('careerly_token');
+      const res = await fetch(`${API_BASE_URL}/ai/interview/finalize-session`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({
+          sessionId,
+          company,
+          role,
+          track,
+          answers,
+          userProfile: {}
+        })
+      });
+
+      const data = await res.json();
+      if (data.status === 'success') {
+        if (triggerToast) triggerToast(`🎉 Session Completed! Overall Score: ${data.overallScore}/100`);
+        // Refresh session state to show completed scorecard
+        await fetchSession();
+      }
+    } catch (err) {
+      console.error('[Session Complete Error]:', err);
+      if (triggerToast) triggerToast('⚠️ Error saving final evaluation.');
+      await fetchSession();
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleCopyPrivateUrl = () => {
     const fullUrl = window.location.origin + `/interview/session/${sessionId}`;
@@ -81,8 +117,8 @@ export default function InterviewSessionReviewPage({ triggerToast, theme }) {
       <div className="min-h-screen flex flex-col items-center justify-center bg-background p-6 space-y-4 text-foreground">
         <RefreshCw size={36} className="animate-spin text-primary" />
         <div className="text-center space-y-1">
-          <h2 className="text-lg font-bold">Decrypting Private Interview Session...</h2>
-          <p className="text-sm text-muted-foreground">Retrieving audio transcripts, STAR metrics, and debrief scorecard</p>
+          <h2 className="text-lg font-bold">Connecting to Private Interview Session...</h2>
+          <p className="text-sm text-muted-foreground">Session ID: <code className="font-mono text-primary">{sessionId}</code></p>
         </div>
       </div>
     );
@@ -108,6 +144,54 @@ export default function InterviewSessionReviewPage({ triggerToast, theme }) {
     );
   }
 
+  // If session is still IN PROGRESS, render the interactive Live Room on this private URL!
+  if (sessionData.status === 'in_progress') {
+    const config = sessionData.sessionConfig || {
+      company: sessionData.company || 'Global Enterprise',
+      role: sessionData.role || 'Specialist',
+      track: sessionData.track || 'Behavioral',
+      persona: { id: 'bella', name: 'Elena / Bella' },
+      questions: [
+        'Could you walk me through a complex project you led and what technical trade-offs you made?',
+        'Tell me about a time you diagnosed a severe production latency bottleneck.',
+        'How do you navigate technical disagreements with senior engineers or stakeholders?'
+      ]
+    };
+
+    return (
+      <div className="min-h-screen bg-background text-foreground py-4 px-3 sm:px-6">
+        <div className="max-w-6xl mx-auto space-y-4">
+          
+          {/* Top Permanent Private Link Indicator */}
+          <div className="flex flex-wrap items-center justify-between gap-3 bg-secondary/50 border border-primary/20 rounded-2xl px-4 py-2.5 text-xs">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="font-bold text-foreground">🔒 Private Session in Progress:</span>
+              <span className="font-mono text-primary font-bold">{sessionId}</span>
+            </div>
+
+            <button
+              onClick={handleCopyPrivateUrl}
+              className="flex items-center gap-1.5 px-3 py-1 bg-primary/10 hover:bg-primary/20 text-primary font-bold rounded-lg transition-all"
+            >
+              {copiedLink ? <Check size={13} /> : <Share2 size={13} />}
+              <span>{copiedLink ? 'Link Copied!' : 'Copy Private URL'}</span>
+            </button>
+          </div>
+
+          {/* Interactive Live Video Room */}
+          <InterviewLiveRoom
+            sessionConfig={config}
+            onCompleteSession={handleLiveSessionComplete}
+            onCancel={() => navigate('/interview-coach')}
+            triggerToast={triggerToast}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // Otherwise, render the completed Executive Scorecard
   const {
     company = 'Global Enterprise',
     role = 'Specialist',
@@ -184,7 +268,7 @@ export default function InterviewSessionReviewPage({ triggerToast, theme }) {
               </span>
               <h3 className="text-sm font-bold text-foreground">Private Persistent Session Link</h3>
               <span className="text-[10px] font-mono bg-primary/20 text-primary px-2 py-0.5 rounded-full font-bold">
-                E2E Saved
+                Saved to Account
               </span>
             </div>
             <p className="text-xs text-muted-foreground leading-relaxed">
