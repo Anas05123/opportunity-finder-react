@@ -42,10 +42,12 @@
     "tailwindcss": "^4.3.3"
   },
   "devDependencies": {
+    "@figma/rest-api-spec": "^0.42.0",
     "@playwright/test": "^1.62.1",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^4.3.4",
+    "figma-api": "^2.2.1-beta",
     "oxlint": "^1.75.0",
     "sharp": "^0.35.3",
     "vite": "^6.4.3"
