@@ -1,3 +1,4 @@
+import { synthesizeElevenLabsVoice, ELEVENLABS_VOICES } from './services/elevenlabsTts.js';
 import { generateInterviewSession, evaluateTurnResponse, finalizeInterviewSession } from './services/interviewCoachEngine.js';
 import 'dotenv/config';
 import express from 'express';
@@ -353,6 +354,23 @@ app.post('/api/v1/ai/match-jobs-to-cv', aiLimiter, async (req, res) => {
 });
 
   // AI Mock Interview Simulation Routes
+  
+  // ElevenLabs Voice & Neural TTS Endpoint
+  app.post('/api/v1/ai/tts', aiLimiter, async (req, res) => {
+    try {
+      const { text, voiceKey, apiKey } = req.body;
+      if (!text) return res.status(400).json({ error: 'text is required' });
+      const result = await synthesizeElevenLabsVoice({ text, voiceKey, customApiKey: apiKey });
+      res.json(result);
+    } catch (err) {
+      res.status(500).json({ error: 'TTS synthesis error: ' + err.message });
+    }
+  });
+
+  app.get('/api/v1/ai/voices', (req, res) => {
+    res.json({ status: 'success', voices: ELEVENLABS_VOICES });
+  });
+
   app.post('/api/v1/ai/interview/generate-session', aiLimiter, async (req, res) => {
     try {
       const { company, role, track, seniority, questionCount, userProfile } = req.body;

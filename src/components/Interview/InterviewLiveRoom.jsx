@@ -3,11 +3,11 @@ import {
   Video, VideoOff, Mic, MicOff, Volume2, VolumeX, Sparkles, 
   Send, RefreshCw, HelpCircle, ChevronRight, CheckCircle2, 
   Clock, Award, ArrowRight, X, Play, RotateCcw, AlertTriangle,
-  Flame, Target, ShieldCheck, MessageSquare, Maximize2
+  Flame, Target, ShieldCheck, MessageSquare, Maximize2, Settings, Key
 } from 'lucide-react';
 import { 
   createSpeechRecognizer, 
-  speakText, 
+  playAiVoice, 
   stopSpeaking, 
   attachAudioVisualizer, 
   detectFillerWords,
@@ -22,7 +22,7 @@ export default function InterviewLiveRoom({
   onCompleteSession,
   onExitSession 
 }) {
-  const { company, role, track, interviewer, questions = [] } = sessionConfig;
+  const { company, role, track, interviewer, questions = [], persona } = sessionConfig;
   
   const [currentQIndex, setCurrentQIndex] = useState(0);
   const [candidateAnswer, setCandidateAnswer] = useState('');
@@ -30,6 +30,7 @@ export default function InterviewLiveRoom({
   const [isRecording, setIsRecording] = useState(false);
   const [isAiSpeaking, setIsAiSpeaking] = useState(false);
   const [isEvaluating, setIsEvaluating] = useState(false);
+  const [silenceCountDown, setSilenceCountDown] = useState(null);
   
   // Media Devices
   const [cameraActive, setCameraActive] = useState(true);
@@ -37,8 +38,10 @@ export default function InterviewLiveRoom({
   const [audioVolume, setAudioVolume] = useState(0);
   const [aiWaveLevel, setAiWaveLevel] = useState(0);
   const [showHint, setShowHint] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [elevenLabsKey, setElevenLabsKey] = useState(() => localStorage.getItem('careerly_elevenlabs_key') || '');
 
-  // Turn Evaluation Modal
+  // Turn Evaluation State
   const [turnFeedback, setTurnFeedback] = useState(null);
   const [completedAnswers, setCompletedAnswers] = useState([]);
 
@@ -46,13 +49,18 @@ export default function InterviewLiveRoom({
   const [timerSeconds, setTimerSeconds] = useState(0);
   const candidateVideoRef = useRef(null);
   const mediaStreamRef = useRef(null);
-  const recognizerRef = useRef(null);
+  const recognizerObjRef = useRef(null);
+  const answerRef = useRef('');
+
+  answerRef.current = candidateAnswer;
 
   const currentQuestionObj = questions[currentQIndex] || {
     question: "Walk me through a complex architectural project you led.",
     guidance: "Evaluate STAR methodology, system trade-offs, and metrics.",
     hints: ["Highlight the business context", "Explain the technical trade-offs", "Quantify the outcome"]
   };
+
+  const voiceKey = (persona?.id || 'elena').toLowerCase();
 
   // 1. Initialize Camera & Mic MediaStream
   useEffect(() => {
@@ -96,76 +104,89 @@ export default function InterviewLiveRoom({
     return () => clearInterval(interval);
   }, []);
 
-  // 3. Question Auto-Speech on Index Change
+  // 3. Question Auto-Speech on Index Change + Auto-Listen afterwards
   useEffect(() => {
     setCandidateAnswer('');
     setInterimTranscript('');
     setTurnFeedback(null);
     setShowHint(false);
+    setSilenceCountDown(null);
 
-    // Speak question aloud using natural TTS
+    // Speak question aloud using ElevenLabs / Natural Neural Voice
     setIsAiSpeaking(true);
-    let waveInterval = setInterval(() => {
-      setAiWaveLevel(Math.floor(Math.random() * 70) + 30);
-    }, 150);
 
-    speakText(currentQuestionObj.question, {
+    playAiVoice({
+      text: currentQuestionObj.question,
+      voiceKey,
+      elevenLabsApiKey: elevenLabsKey,
       onStart: () => setIsAiSpeaking(true),
       onEnd: () => {
         setIsAiSpeaking(false);
         setAiWaveLevel(0);
-        clearInterval(waveInterval);
-      }
+        // Automatically start listening to the candidate
+        startContinuousListening();
+      },
+      onWaveUpdate: (lvl) => setAiWaveLevel(lvl)
     });
 
     return () => {
       stopSpeaking();
-      clearInterval(waveInterval);
+      if (recognizerObjRef.current) {
+        try { recognizerObjRef.current.stop(); } catch(e){}
+      }
     };
   }, [currentQIndex]);
 
-  // 4. Toggle Voice Speech Recognition
-  const toggleRecording = () => {
-    if (isRecording) {
-      if (recognizerRef.current) {
-        try { recognizerRef.current.stop(); } catch(e){}
-      }
+  // 4. Start Continuous Listening with Auto-Silence Trigger
+  const startContinuousListening = () => {
+    if (!isSpeechRecognitionSupported()) {
       setIsRecording(false);
-    } else {
-      if (!isSpeechRecognitionSupported()) {
-        if (triggerToast) triggerToast("Web Speech is not supported in this browser. You can type your answer in the pad.");
-        return;
-      }
+      return;
+    }
 
-      const recognizer = createSpeechRecognizer({
-        onResult: ({ final, interim, full }) => {
-          setInterimTranscript(interim);
-          if (final) {
-            setCandidateAnswer(prev => (prev ? prev + ' ' + final : final).trim());
-            setInterimTranscript('');
-          }
-        },
-        onError: (err) => console.warn('[Speech Recognition Error]:', err),
-        onEnd: () => {
-          if (isRecording) {
-            try { recognizer.start(); } catch(e){}
-          }
-        }
-      });
+    if (recognizerObjRef.current) {
+      try { recognizerObjRef.current.stop(); } catch(e){}
+    }
 
-      if (recognizer) {
-        try {
-          recognizer.start();
-          recognizerRef.current = recognizer;
-          setIsRecording(true);
-        } catch (e) {
-          console.warn('[Recognizer start err]:', e);
+    const recognizer = createSpeechRecognizer({
+      onResult: ({ final, interim, full }) => {
+        setInterimTranscript(interim);
+        if (final) {
+          setCandidateAnswer(prev => (prev ? prev + ' ' + final : final).trim());
+          setInterimTranscript('');
         }
-      }
+      },
+      onSpeechStart: () => {
+        setIsRecording(true);
+        setSilenceCountDown(null);
+      },
+      onSilenceTimeout: () => {
+        // Candidate finished speaking (detected 2.8s pause)
+        console.log('[Conversational Engine]: Silence detected after speech. Auto-submitting turn response...');
+        handleSubmitTurn();
+      },
+      onError: (err) => console.warn('[Speech Recognition Warning]:', err)
+    });
+
+    if (recognizer) {
+      recognizerObjRef.current = recognizer;
+      recognizer.start();
+      setIsRecording(true);
     }
   };
 
-  // 5. Submit & Grade Turn Answer
+  const toggleRecording = () => {
+    if (isRecording) {
+      if (recognizerObjRef.current) {
+        try { recognizerObjRef.current.stop(); } catch(e){}
+      }
+      setIsRecording(false);
+    } else {
+      startContinuousListening();
+    }
+  };
+
+  // 5. Submit & Grade Turn Answer (Voice Response Loop)
   const handleSubmitTurn = async () => {
     const finalAnswer = (candidateAnswer + ' ' + interimTranscript).trim();
     if (!finalAnswer) {
@@ -173,7 +194,10 @@ export default function InterviewLiveRoom({
       return;
     }
 
-    if (isRecording) toggleRecording();
+    if (recognizerObjRef.current) {
+      try { recognizerObjRef.current.stop(); } catch(e){}
+    }
+    setIsRecording(false);
     stopSpeaking();
     setIsEvaluating(true);
 
@@ -208,10 +232,19 @@ export default function InterviewLiveRoom({
         setCompletedAnswers(updatedAnswers);
         setTurnFeedback(data);
 
-        // Speak interviewer feedback intro
-        speakText(`Thank you. Score: ${data.score} out of 100. ${data.strengths[0] || 'Good response.'}`, {
+        // Speak AI Feedback & Follow-up Aloud immediately
+        const spokenReply = `Thank you. I scored this response ${data.score} out of 100. ${data.strengths?.[0] || 'Good structure.'} ${data.followUpQuestion || ''}`;
+        
+        playAiVoice({
+          text: spokenReply,
+          voiceKey,
+          elevenLabsApiKey: elevenLabsKey,
           onStart: () => setIsAiSpeaking(true),
-          onEnd: () => setIsAiSpeaking(false)
+          onEnd: () => {
+            setIsAiSpeaking(false);
+            setAiWaveLevel(0);
+          },
+          onWaveUpdate: (lvl) => setAiWaveLevel(lvl)
         });
       }
     } catch (err) {
@@ -224,10 +257,10 @@ export default function InterviewLiveRoom({
 
   // 6. Advance to Next Question or Finalize
   const handleProceedNext = () => {
+    stopSpeaking();
     if (currentQIndex + 1 < questions.length) {
       setCurrentQIndex(prev => prev + 1);
     } else {
-      // Finalize entire interview session
       onCompleteSession({
         company,
         role,
@@ -236,6 +269,13 @@ export default function InterviewLiveRoom({
         durationSeconds: timerSeconds
       });
     }
+  };
+
+  const handleSaveElevenLabsKey = (key) => {
+    setElevenLabsKey(key);
+    localStorage.setItem('careerly_elevenlabs_key', key);
+    if (triggerToast) triggerToast('✓ ElevenLabs Voice Key saved!');
+    setShowSettings(false);
   };
 
   const detectedFillers = detectFillerWords(candidateAnswer + ' ' + interimTranscript);
@@ -260,7 +300,18 @@ export default function InterviewLiveRoom({
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
+          {/* ElevenLabs Voice Badge & Settings */}
+          <button
+            onClick={() => setShowSettings(!showSettings)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border text-[11px] font-semibold text-muted-foreground hover:text-foreground bg-secondary/60 hover:bg-secondary transition-all"
+            title="ElevenLabs Voice Settings"
+          >
+            <Sparkles size={13} className="text-amber-500" />
+            <span>ElevenLabs Voice</span>
+            <Settings size={12} className="text-slate-400" />
+          </button>
+
           {/* Question Progress Tracker */}
           <div className="flex items-center gap-1.5 text-[12px] font-bold text-foreground bg-secondary/80 px-3 py-1.5 rounded-xl">
             <span className="text-primary font-mono">Q{currentQIndex + 1}</span>
@@ -284,6 +335,39 @@ export default function InterviewLiveRoom({
         </div>
       </div>
 
+      {/* ElevenLabs API Key Modal Settings */}
+      {showSettings && (
+        <div className="bg-card border border-primary/30 rounded-2xl p-4 shadow-lg space-y-3 animate-slideUp">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Key size={16} className="text-primary" />
+              <h4 className="text-[13px] font-bold text-foreground">ElevenLabs Studio Voice API Key</h4>
+            </div>
+            <button onClick={() => setShowSettings(false)} className="text-muted-foreground hover:text-foreground">
+              <X size={15} />
+            </button>
+          </div>
+          <p className="text-[11px] text-muted-foreground">
+            Enter your ElevenLabs API Key for ultra-realistic studio voices (e.g. Rachel, Bella, Adam). If empty, Careerly uses high-fidelity neural browser speech.
+          </p>
+          <div className="flex gap-2">
+            <input 
+              type="password"
+              placeholder="xi-api-key (optional)..."
+              value={elevenLabsKey}
+              onChange={(e) => setElevenLabsKey(e.target.value)}
+              className="flex-1 bg-secondary/60 border border-border rounded-xl px-3.5 py-1.5 text-[12px] text-foreground outline-none focus:border-primary"
+            />
+            <button
+              onClick={() => handleSaveElevenLabsKey(elevenLabsKey)}
+              className="px-4 py-1.5 bg-primary text-white text-[12px] font-bold rounded-xl hover:opacity-95"
+            >
+              Save Key
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Main Dual Video Grid (Google Meet / Zoom Split Simulation) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         
@@ -295,12 +379,12 @@ export default function InterviewLiveRoom({
             <div className="flex items-center gap-2 bg-black/50 backdrop-blur-md px-3 py-1 rounded-full text-[11px]">
               <span className={`w-2 h-2 rounded-full ${isAiSpeaking ? 'bg-emerald-400 animate-ping' : 'bg-blue-400'}`} />
               <span className="font-semibold">{interviewer?.name || 'Elena Rostova'}</span>
-              <span className="text-[10px] text-slate-400">· {interviewer?.title || 'Principal Interviewer'}</span>
+              <span className="text-[10px] text-slate-400">· {interviewer?.title || 'Principal Bar Raiser'}</span>
             </div>
 
             <div className="flex items-center gap-1.5 bg-black/50 backdrop-blur-md px-2.5 py-1 rounded-lg text-[10px] font-semibold text-slate-300">
               <Sparkles size={11} className="text-amber-400" />
-              <span>AI Bar Raiser</span>
+              <span>ElevenLabs Voice Engine</span>
             </div>
           </div>
 
@@ -309,20 +393,20 @@ export default function InterviewLiveRoom({
             <div className="relative">
               <div className={`w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center text-4xl sm:text-5xl shadow-2xl transition-all duration-300 ${
                 isAiSpeaking 
-                  ? 'ring-4 ring-blue-500/80 scale-105 shadow-blue-500/30' 
+                  ? 'ring-4 ring-blue-500/80 scale-105 shadow-blue-500/40 bg-blue-900/40' 
                   : 'ring-2 ring-slate-700 bg-slate-800'
               }`}>
-                👩‍💼
+                {persona?.avatar || '👩‍💼'}
               </div>
 
               {/* Dynamic Audio Waves */}
               {isAiSpeaking && (
                 <div className="absolute -bottom-2 inset-x-0 flex justify-center gap-1">
-                  {[40, 70, 90, 60, 30].map((h, i) => (
+                  {[40, 75, 95, 65, 35].map((h, i) => (
                     <span 
                       key={i} 
                       className="w-1 bg-blue-400 rounded-full animate-bounce" 
-                      style={{ height: `${(h * aiWaveLevel) / 100 + 6}px`, animationDelay: `${i * 80}ms` }} 
+                      style={{ height: `${(h * aiWaveLevel) / 100 + 6}px`, animationDelay: `${i * 70}ms` }} 
                     />
                   ))}
                 </div>
@@ -330,7 +414,11 @@ export default function InterviewLiveRoom({
             </div>
 
             <div className="bg-black/60 backdrop-blur-md px-3.5 py-1 rounded-full text-[11px] font-medium text-slate-200">
-              {isAiSpeaking ? '🎙️ Speaking question...' : isEvaluating ? '🧠 Analyzing STAR framework...' : '👂 Listening to candidate...'}
+              {isAiSpeaking 
+                ? '🎙️ Speaking question...' 
+                : isEvaluating 
+                ? '🧠 Evaluating answer & preparing response...' 
+                : '👂 Listening to you (Speak your answer)...'}
             </div>
           </div>
 
@@ -368,10 +456,11 @@ export default function InterviewLiveRoom({
               <span className="font-semibold">{userProfile?.name || 'You (Candidate)'}</span>
             </div>
 
-            {/* Filler Words Live Counter (Inspired by Yoodli) */}
-            {detectedFillers.total > 0 && (
-              <div className="flex items-center gap-1.5 bg-amber-500/80 backdrop-blur-md px-2.5 py-1 rounded-lg text-[10px] font-bold text-black animate-fadeIn">
-                <span>⚠️ {detectedFillers.total} Fillers Detected</span>
+            {/* Speaking Status Pill */}
+            {isRecording && (
+              <div className="flex items-center gap-1.5 bg-emerald-600/90 backdrop-blur-md px-2.5 py-1 rounded-lg text-[10px] font-bold text-white animate-pulse">
+                <Mic size={11} />
+                <span>Microphone Active</span>
               </div>
             )}
           </div>
@@ -421,18 +510,17 @@ export default function InterviewLiveRoom({
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-              Candidate Response Transcript (STAR Method)
+              Candidate Response Transcript (Hands-Free Voice Mode Active)
             </span>
             {isRecording && (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-red-500/10 text-red-500 text-[10px] font-bold animate-pulse">
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-red-500/10 text-red-500 text-[10px] font-bold animate-pulse border border-red-500/20">
                 <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
-                Live Transcribing Speech...
+                Listening & Transcribing your voice...
               </span>
             )}
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Hint Button */}
             <button
               onClick={() => setShowHint(!showHint)}
               className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold text-muted-foreground hover:text-foreground bg-secondary rounded-lg transition-all"
@@ -441,9 +529,8 @@ export default function InterviewLiveRoom({
               <span>{showHint ? 'Hide Strategic Hints' : 'Strategic Hints'}</span>
             </button>
 
-            {/* Repeat Question Audio */}
             <button
-              onClick={() => speakText(currentQuestionObj.question)}
+              onClick={() => playAiVoice({ text: currentQuestionObj.question, voiceKey, elevenLabsApiKey: elevenLabsKey })}
               className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold text-muted-foreground hover:text-foreground bg-secondary rounded-lg transition-all"
             >
               <Volume2 size={12} />
@@ -465,11 +552,12 @@ export default function InterviewLiveRoom({
         )}
 
         {/* Live Answer Textarea */}
-        <textarea id="interview-answer-pad"
+        <textarea
+          id="interview-answer-pad"
           rows={4}
           value={candidateAnswer + (interimTranscript ? ` [${interimTranscript}]` : '')}
           onChange={(e) => setCandidateAnswer(e.target.value)}
-          placeholder="Speak into your microphone or type your response here... (Structure: Situation, Task, Action, Result)"
+          placeholder="Speak naturally into your microphone... (The AI interviewer will automatically transcribe and grade your answer when you pause)."
           className="w-full bg-secondary/50 border border-border rounded-xl p-3.5 text-[13px] text-foreground placeholder-muted-foreground outline-none focus:border-primary transition-all resize-none leading-relaxed font-sans"
         />
 
@@ -485,7 +573,7 @@ export default function InterviewLiveRoom({
             }`}
           >
             <Mic size={14} />
-            <span>{isRecording ? 'Stop Recording' : '🎙️ Start Voice Answering'}</span>
+            <span>{isRecording ? '🎙️ Mic Active (Listening...)' : '🎙️ Start Voice Answering'}</span>
           </button>
 
           {/* Submit & Next Button */}
@@ -498,11 +586,11 @@ export default function InterviewLiveRoom({
             {isEvaluating ? (
               <>
                 <RefreshCw size={14} className="animate-spin" />
-                <span>Evaluating STAR Metrics...</span>
+                <span>Evaluating STAR Metrics & Speaking...</span>
               </>
             ) : (
               <>
-                <span>Grade & Submit Response</span>
+                <span>Finish Answer & Get Feedback</span>
                 <ArrowRight size={14} />
               </>
             )}
@@ -510,7 +598,7 @@ export default function InterviewLiveRoom({
         </div>
       </div>
 
-      {/* Turn Evaluation Modal / Drawer (Displays immediately after response submission) */}
+      {/* Turn Evaluation Modal / Drawer */}
       {turnFeedback && (
         <div className="bg-card border-2 border-primary/40 rounded-2xl p-6 shadow-xl space-y-4 animate-slideUp">
           <div className="flex items-center justify-between pb-3 border-b border-border">

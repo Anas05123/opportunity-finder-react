@@ -1,6 +1,8 @@
-﻿/**
+﻿import { API_BASE_URL } from '../config/api.js';
+
+/**
  * Speech Recognition & Audio Synthesis Service
- * Provides hands-free voice interaction and audio frequency analysis.
+ * Provides hands-free conversational voice interaction and ElevenLabs audio streaming.
  */
 
 export const isSpeechRecognitionSupported = () => {
@@ -14,9 +16,17 @@ export const isSpeechSynthesisSupported = () => {
 };
 
 /**
- * Initialize Web Speech Recognition
+ * Continuous Web Speech Recognition with Automatic Silence Pause Detection
  */
-export function createSpeechRecognizer({ onResult, onEnd, onError, continuous = true }) {
+export function createSpeechRecognizer({ 
+  onResult, 
+  onSpeechStart,
+  onSpeechEnd,
+  onSilenceTimeout,
+  onError, 
+  continuous = true,
+  silenceThresholdMs = 2800 
+}) {
   if (!isSpeechRecognitionSupported()) return null;
 
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -25,6 +35,22 @@ export function createSpeechRecognizer({ onResult, onEnd, onError, continuous = 
   recognition.continuous = continuous;
   recognition.interimResults = true;
   recognition.lang = 'en-US';
+
+  let silenceTimer = null;
+  let hasSpokenWords = false;
+
+  const resetSilenceTimer = () => {
+    if (silenceTimer) clearTimeout(silenceTimer);
+    if (hasSpokenWords && onSilenceTimeout) {
+      silenceTimer = setTimeout(() => {
+        onSilenceTimeout();
+      }, silenceThresholdMs);
+    }
+  };
+
+  recognition.onstart = () => {
+    if (onSpeechStart) onSpeechStart();
+  };
 
   recognition.onresult = (event) => {
     let interimTranscript = '';
@@ -38,11 +64,17 @@ export function createSpeechRecognizer({ onResult, onEnd, onError, continuous = 
       }
     }
 
+    const currentText = (finalTranscript + ' ' + interimTranscript).trim();
+    if (currentText.length > 5) {
+      hasSpokenWords = true;
+      resetSilenceTimer();
+    }
+
     if (onResult) {
       onResult({
         final: finalTranscript.trim(),
         interim: interimTranscript.trim(),
-        full: (finalTranscript + ' ' + interimTranscript).trim()
+        full: currentText
       });
     }
   };
@@ -54,55 +86,151 @@ export function createSpeechRecognizer({ onResult, onEnd, onError, continuous = 
   };
 
   recognition.onend = () => {
-    if (onEnd) onEnd();
+    if (silenceTimer) clearTimeout(silenceTimer);
+    if (onSpeechEnd) onSpeechEnd();
   };
 
-  return recognition;
+  return {
+    instance: recognition,
+    start: () => {
+      hasSpokenWords = false;
+      try { recognition.start(); } catch(e){}
+    },
+    stop: () => {
+      if (silenceTimer) clearTimeout(silenceTimer);
+      try { recognition.stop(); } catch(e){}
+    }
+  };
 }
 
+let activeAudioElement = null;
+
 /**
- * Synthesize Natural Voice Output via Web SpeechSynthesis
+ * Play AI Voice using ElevenLabs Studio Voice API or Natural SpeechSynthesis
  */
-export function speakText(text, { onStart, onEnd, onBoundary, rate = 1.0, pitch = 1.0 } = {}) {
-  if (!isSpeechSynthesisSupported()) {
-    if (onStart) onStart();
-    setTimeout(() => { if (onEnd) onEnd(); }, 3000);
-    return null;
+export async function playAiVoice({ 
+  text, 
+  voiceKey = 'elena', 
+  elevenLabsApiKey = null,
+  onStart, 
+  onEnd, 
+  onWaveUpdate 
+}) {
+  stopSpeaking();
+
+  // Try ElevenLabs backend TTS
+  try {
+    const res = await fetch(`${API_BASE_URL}/ai/tts`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        text,
+        voiceKey,
+        apiKey: elevenLabsApiKey || localStorage.getItem('careerly_elevenlabs_key') || null
+      })
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      if (data.status === 'success' && data.audioDataUrl) {
+        const audio = new Audio(data.audioDataUrl);
+        activeAudioElement = audio;
+
+        let waveInterval = null;
+        if (onWaveUpdate) {
+          waveInterval = setInterval(() => {
+            onWaveUpdate(Math.floor(Math.random() * 65) + 35);
+          }, 120);
+        }
+
+        audio.onplay = () => {
+          if (onStart) onStart();
+        };
+
+        audio.onended = () => {
+          if (waveInterval) clearInterval(waveInterval);
+          if (onWaveUpdate) onWaveUpdate(0);
+          if (onEnd) onEnd();
+        };
+
+        audio.onerror = () => {
+          if (waveInterval) clearInterval(waveInterval);
+          if (onWaveUpdate) onWaveUpdate(0);
+          speakBrowserFallback(text, { onStart, onEnd, onWaveUpdate, voiceKey });
+        };
+
+        await audio.play();
+        return;
+      }
+    }
+  } catch (err) {
+    console.warn('[ElevenLabs Play Notice]: Using natural neural browser voice fallback:', err.message);
   }
 
-  // Cancel any ongoing speech
-  window.speechSynthesis.cancel();
+  // Browser SpeechSynthesis Fallback
+  speakBrowserFallback(text, { onStart, onEnd, onWaveUpdate, voiceKey });
+}
 
+function speakBrowserFallback(text, { onStart, onEnd, onWaveUpdate, voiceKey }) {
+  if (!isSpeechSynthesisSupported()) {
+    if (onStart) onStart();
+    setTimeout(() => { if (onEnd) onEnd(); }, 3500);
+    return;
+  }
+
+  window.speechSynthesis.cancel();
   const cleanText = text.replace(/[*_#`]/g, '').trim();
   const utterance = new SpeechSynthesisUtterance(cleanText);
 
-  utterance.rate = rate;
-  utterance.pitch = pitch;
+  utterance.rate = 1.0;
+  utterance.pitch = 1.02;
 
-  // Pick natural English voice if available
   const voices = window.speechSynthesis.getVoices();
+  const isMale = voiceKey === 'marcus' || voiceKey === 'david';
+  
   const preferredVoice = voices.find(v => 
-    v.lang.startsWith('en') && (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Samantha') || v.name.includes('Premium'))
+    v.lang.startsWith('en') && (
+      (isMale && (v.name.includes('Male') || v.name.includes('David') || v.name.includes('George') || v.name.includes('Guy'))) ||
+      (!isMale && (v.name.includes('Female') || v.name.includes('Samantha') || v.name.includes('Zira') || v.name.includes('Victoria') || v.name.includes('Google US English')))
+    )
   ) || voices.find(v => v.lang.startsWith('en'));
 
   if (preferredVoice) {
     utterance.voice = preferredVoice;
   }
 
-  if (onStart) utterance.onstart = onStart;
-  if (onEnd) utterance.onend = onEnd;
-  if (onBoundary) utterance.onboundary = onBoundary;
+  let waveInterval = null;
+  utterance.onstart = () => {
+    if (onWaveUpdate) {
+      waveInterval = setInterval(() => onWaveUpdate(Math.floor(Math.random() * 60) + 40), 120);
+    }
+    if (onStart) onStart();
+  };
 
-  utterance.onerror = (err) => {
-    console.warn('[SpeechSynthesis Notice]:', err);
+  utterance.onend = () => {
+    if (waveInterval) clearInterval(waveInterval);
+    if (onWaveUpdate) onWaveUpdate(0);
+    if (onEnd) onEnd();
+  };
+
+  utterance.onerror = () => {
+    if (waveInterval) clearInterval(waveInterval);
+    if (onWaveUpdate) onWaveUpdate(0);
     if (onEnd) onEnd();
   };
 
   window.speechSynthesis.speak(utterance);
-  return utterance;
 }
 
 export function stopSpeaking() {
+  if (activeAudioElement) {
+    try {
+      activeAudioElement.pause();
+      activeAudioElement.currentTime = 0;
+    } catch(e){}
+    activeAudioElement = null;
+  }
+
   if (isSpeechSynthesisSupported()) {
     window.speechSynthesis.cancel();
   }
@@ -182,7 +310,7 @@ export default {
   isSpeechRecognitionSupported,
   isSpeechSynthesisSupported,
   createSpeechRecognizer,
-  speakText,
+  playAiVoice,
   stopSpeaking,
   attachAudioVisualizer,
   detectFillerWords
