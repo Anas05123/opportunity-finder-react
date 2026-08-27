@@ -22,9 +22,11 @@ const TRACKS = [
 ];
 
 const PERSONAS = [
-  { id: 'elena', name: 'Elena Rostova', title: 'Principal Bar Raiser', tone: 'Analytical, encouraging, deep probe', avatar: '👩‍💼', color: '#6366F1' },
-  { id: 'marcus', name: 'Marcus Vance', title: 'Director of Engineering', tone: 'Direct, systems-focused, executive metrics', avatar: '👨‍💼', color: '#0EA5E9' },
-  { id: 'sophia', name: 'Sophia Chen', title: 'Staff Talent Partner', tone: 'Warm, behavioral STAR specialist', avatar: '👩‍💻', color: '#EC4899' }
+  { id: 'bella', name: 'Elena / Bella', title: 'Principal Bar Raiser', tone: 'Articulate, confident executive female', avatar: '👩‍💼', color: '#6366F1', voiceTag: 'Bella (Ultra-Realistic Female)' },
+  { id: 'adam', name: 'Marcus / Adam', title: 'Director of Engineering', tone: 'Resonant, confident technical leader male', avatar: '👨‍💼', color: '#0EA5E9', voiceTag: 'Adam (Ultra-Realistic Male)' },
+  { id: 'antoni', name: 'David / Antoni', title: 'Lead Architect', tone: 'Calm, analytical systems specialist', avatar: '🧑‍💼', color: '#10B981', voiceTag: 'Antoni (Analytical Male)' },
+  { id: 'roger', name: 'Roger Vance', title: 'Senior Engineering Manager', tone: 'Laid-back, conversational American male', avatar: '👨‍💻', color: '#EC4899', voiceTag: 'Roger (Conversational Male)' },
+  { id: 'george', name: 'George Hamilton', title: 'Managing Director', tone: 'Warm, captivating British male', avatar: '👨‍🏫', color: '#8B5CF6', voiceTag: 'George (British Male)' }
 ];
 
 export default function InterviewSetupView({ userProfile, onStartSession, isLoading }) {

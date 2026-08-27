@@ -59,7 +59,8 @@ export default function InterviewLiveRoom({
   isAiSpeakingRef.current = isAiSpeaking;
   liveTextRef.current = candidateLiveText;
 
-  const voiceKey = (persona?.id || 'elena').toLowerCase();
+  const [activeVoice, setActiveVoice] = useState(() => (persona?.id || 'roger').toLowerCase());
+  const voiceKey = activeVoice;
 
   // 1. Initialize WebRTC Camera & Mic Stream
   useEffect(() => {
@@ -341,39 +342,84 @@ export default function InterviewLiveRoom({
         </div>
       </div>
 
-      {/* ElevenLabs API Key Modal Settings */}
+      {/* ElevenLabs Studio Voice & Humanization Controls */}
       {showSettings && (
-        <div className="bg-card border border-primary/30 rounded-2xl p-4 shadow-lg space-y-3 animate-slideUp">
-          <div className="flex items-center justify-between">
+        <div className="bg-card border border-primary/30 rounded-2xl p-5 shadow-xl space-y-4 animate-slideUp">
+          <div className="flex items-center justify-between pb-2 border-b border-border">
             <div className="flex items-center gap-2">
-              <Key size={16} className="text-primary" />
-              <h4 className="text-[13px] font-bold text-foreground">ElevenLabs Studio Voice Key</h4>
+              <Sparkles size={16} className="text-amber-500" />
+              <h4 className="text-[14px] font-bold text-foreground">ElevenLabs Turbo v2.5 Voice Engine</h4>
             </div>
             <button onClick={() => setShowSettings(false)} className="text-muted-foreground hover:text-foreground">
               <X size={15} />
             </button>
           </div>
-          <p className="text-[11px] text-muted-foreground">
-            Enter your ElevenLabs API Key for ultra-realistic studio voices (e.g. Rachel, Bella, Adam). If empty, Careerly uses high-fidelity neural browser speech.
-          </p>
-          <div className="flex gap-2">
-            <input 
-              type="password"
-              placeholder="xi-api-key..."
-              value={elevenLabsKey}
-              onChange={(e) => setElevenLabsKey(e.target.value)}
-              className="flex-1 bg-secondary/60 border border-border rounded-xl px-3.5 py-1.5 text-[12px] text-foreground outline-none focus:border-primary"
-            />
-            <button
-              onClick={() => {
-                localStorage.setItem('careerly_elevenlabs_key', elevenLabsKey);
-                if (triggerToast) triggerToast('✓ ElevenLabs Voice Key saved!');
-                setShowSettings(false);
-              }}
-              className="px-4 py-1.5 bg-primary text-white text-[12px] font-bold rounded-xl hover:opacity-95"
-            >
-              Save Key
-            </button>
+
+          {/* Active Voice Roster */}
+          <div className="space-y-2">
+            <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block">
+              Select Ultra-Realistic Voice Identity:
+            </label>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+              {[
+                { id: 'bella', name: 'Bella / Elena', desc: 'US Female · Articulate, Confident Executive', avatar: '👩‍💼' },
+                { id: 'adam', name: 'Adam / Marcus', desc: 'US Male · Resonant, Confident Tech Director', avatar: '👨‍💼' },
+                { id: 'antoni', name: 'Antoni / David', desc: 'US Male · Calm, Analytical System Architect', avatar: '🧑‍💼' },
+                { id: 'roger', name: 'Roger Vance', desc: 'US Male · Laid-Back Conversational Manager', avatar: '👨‍💻' },
+                { id: 'george', name: 'George Hamilton', desc: 'UK Male · Warm Resonant British Storyteller', avatar: '👨‍🏫' }
+              ].map(v => (
+                <button
+                  key={v.id}
+                  onClick={() => {
+                    setActiveVoice(v.id);
+                    if (triggerToast) triggerToast(`✓ Switched to ${v.name}`);
+                    playAiVoice({
+                      text: `Hello, I am ${v.name}. Let us continue your interview.`,
+                      voiceKey: v.id,
+                      elevenLabsApiKey: elevenLabsKey
+                    });
+                  }}
+                  className={`p-2.5 rounded-xl border text-left transition-all flex items-start gap-2 ${
+                    activeVoice === v.id
+                      ? 'border-primary bg-primary/10 ring-2 ring-primary/30'
+                      : 'border-border bg-secondary/40 hover:bg-secondary'
+                  }`}
+                >
+                  <span className="text-xl">{v.avatar}</span>
+                  <div className="min-w-0">
+                    <p className="text-[12px] font-bold text-foreground truncate">{v.name}</p>
+                    <p className="text-[10px] text-muted-foreground line-clamp-1">{v.desc}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* ElevenLabs API Key Custom Input */}
+          <div className="pt-2 border-t border-border space-y-1.5">
+            <div className="flex items-center justify-between text-[11px]">
+              <span className="font-bold text-muted-foreground">Custom ElevenLabs API Key (Active):</span>
+              <span className="text-emerald-500 font-bold">✓ Connected</span>
+            </div>
+            <div className="flex gap-2">
+              <input 
+                type="password"
+                placeholder="xi-api-key..."
+                value={elevenLabsKey}
+                onChange={(e) => setElevenLabsKey(e.target.value)}
+                className="flex-1 bg-secondary/60 border border-border rounded-xl px-3.5 py-1.5 text-[12px] text-foreground outline-none focus:border-primary font-mono"
+              />
+              <button
+                onClick={() => {
+                  localStorage.setItem('careerly_elevenlabs_key', elevenLabsKey);
+                  if (triggerToast) triggerToast('✓ ElevenLabs Key saved!');
+                  setShowSettings(false);
+                }}
+                className="px-4 py-1.5 bg-primary text-white text-[12px] font-bold rounded-xl hover:opacity-95"
+              >
+                Save
+              </button>
+            </div>
           </div>
         </div>
       )}
