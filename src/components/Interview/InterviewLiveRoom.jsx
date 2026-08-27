@@ -82,13 +82,6 @@ export default function InterviewLiveRoom({
         cleanupAudio = attachAudioVisualizer(stream, (vol) => {
           if (micActive) {
             setAudioVolume(vol);
-            // Interruption handling: If candidate speaks loudly while AI is speaking, pause AI
-            if (vol > 35 && isAiSpeakingRef.current) {
-              console.log('[Barge-In]: Candidate spoke, yielding AI audio...');
-              stopSpeaking();
-              setIsAiSpeaking(false);
-              setAiWaveLevel(0);
-            }
           }
         });
       } catch (err) {

@@ -87,6 +87,8 @@ app.use(helmet({
         "https://accounts.google.com",
         "https://apis.google.com",
         "https://identitytoolkit.googleapis.com",
+        "https://api.elevenlabs.io",
+        "https://*.elevenlabs.io",
         "https://opportunity-finder-gsxr.onrender.com",
         "http://localhost:5000",
         "http://127.0.0.1:5000",
@@ -98,6 +100,13 @@ app.use(helmet({
         "ws://127.0.0.1:5173",
         "ws://localhost:3100",
         "ws://127.0.0.1:3100"
+      ],
+      mediaSrc: [
+        "'self'",
+        "data:",
+        "blob:",
+        "https://api.elevenlabs.io",
+        "https://*.elevenlabs.io"
       ],
       frameSrc: [
         "'self'",

@@ -16,6 +16,33 @@ export const isSpeechSynthesisSupported = () => {
 };
 
 /**
+ * Helper to convert Base64 data URL to Blob Object URL for fast, CSP-safe audio playback
+ */
+function base64ToBlobUrl(dataUrl) {
+  try {
+    const parts = dataUrl.split(',');
+    const mime = parts[0].match(/:(.*?);/)[1] || 'audio/mpeg';
+    const b64 = parts[1] || parts[0];
+    const byteCharacters = atob(b64);
+    const byteArrays = [];
+
+    for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+      const slice = byteCharacters.slice(offset, offset + 512);
+      const byteNumbers = new Array(slice.length);
+      for (let i = 0; i < slice.length; i++) {
+        byteNumbers[i] = slice.charCodeAt(i);
+      }
+      byteArrays.push(new Uint8Array(byteNumbers));
+    }
+
+    const blob = new Blob(byteArrays, { type: mime });
+    return URL.createObjectURL(blob);
+  } catch (e) {
+    return dataUrl;
+  }
+}
+
+/**
  * Continuous Web Speech Recognition with Automatic Silence Pause Detection
  */
 export function createSpeechRecognizer({ 
@@ -25,7 +52,7 @@ export function createSpeechRecognizer({
   onSilenceTimeout,
   onError, 
   continuous = true,
-  silenceThresholdMs = 2800 
+  silenceThresholdMs = 2000 
 }) {
   if (!isSpeechRecognitionSupported()) return null;
 
@@ -65,7 +92,7 @@ export function createSpeechRecognizer({
     }
 
     const currentText = (finalTranscript + ' ' + interimTranscript).trim();
-    if (currentText.length > 5) {
+    if (currentText.length > 3) {
       hasSpokenWords = true;
       resetSilenceTimer();
     }
@@ -104,13 +131,14 @@ export function createSpeechRecognizer({
 }
 
 let activeAudioElement = null;
+let activeBlobUrl = null;
 
 /**
- * Play AI Voice using ElevenLabs Studio Voice API or Natural SpeechSynthesis
+ * Play AI Voice using ElevenLabs Studio Voice API
  */
 export async function playAiVoice({ 
   text, 
-  voiceKey = 'elena', 
+  voiceKey = 'bella', 
   elevenLabsApiKey = null,
   onStart, 
   onEnd, 
@@ -118,7 +146,6 @@ export async function playAiVoice({
 }) {
   stopSpeaking();
 
-  // Try ElevenLabs backend TTS
   try {
     const res = await fetch(`${API_BASE_URL}/ai/tts`, {
       method: 'POST',
@@ -133,14 +160,19 @@ export async function playAiVoice({
     if (res.ok) {
       const data = await res.json();
       if (data.status === 'success' && data.audioDataUrl) {
-        const audio = new Audio(data.audioDataUrl);
+        console.log(`[ElevenLabs Audio Engine]: Playing authentic voice (${data.voiceName}) via ElevenLabs...`);
+        
+        // Convert to Blob Object URL
+        const blobUrl = base64ToBlobUrl(data.audioDataUrl);
+        activeBlobUrl = blobUrl;
+        const audio = new Audio(blobUrl);
         activeAudioElement = audio;
 
         let waveInterval = null;
         if (onWaveUpdate) {
           waveInterval = setInterval(() => {
             onWaveUpdate(Math.floor(Math.random() * 65) + 35);
-          }, 120);
+          }, 100);
         }
 
         audio.onplay = () => {
@@ -151,23 +183,36 @@ export async function playAiVoice({
           if (waveInterval) clearInterval(waveInterval);
           if (onWaveUpdate) onWaveUpdate(0);
           if (onEnd) onEnd();
+          if (activeBlobUrl) {
+            URL.revokeObjectURL(activeBlobUrl);
+            activeBlobUrl = null;
+          }
         };
 
-        audio.onerror = () => {
+        audio.onerror = (e) => {
+          console.error('[ElevenLabs Audio Play Error]:', e);
           if (waveInterval) clearInterval(waveInterval);
           if (onWaveUpdate) onWaveUpdate(0);
-          speakBrowserFallback(text, { onStart, onEnd, onWaveUpdate, voiceKey });
+          if (onEnd) onEnd();
         };
 
-        await audio.play();
+        try {
+          await audio.play();
+        } catch (playErr) {
+          if (playErr.name === 'AbortError') {
+            // Audio was paused or interrupted normally
+            return;
+          }
+          console.warn('[Audio Play Warning]:', playErr.message);
+        }
         return;
       }
     }
   } catch (err) {
-    console.warn('[ElevenLabs Play Notice]: Using natural neural browser voice fallback:', err.message);
+    console.error('[ElevenLabs Fetch Error]:', err.message);
   }
 
-  // Browser SpeechSynthesis Fallback
+  // Fallback only if server completely unreachable
   speakBrowserFallback(text, { onStart, onEnd, onWaveUpdate, voiceKey });
 }
 
@@ -183,15 +228,15 @@ function speakBrowserFallback(text, { onStart, onEnd, onWaveUpdate, voiceKey }) 
   const utterance = new SpeechSynthesisUtterance(cleanText);
 
   utterance.rate = 1.0;
-  utterance.pitch = 1.02;
+  utterance.pitch = 1.0;
 
   const voices = window.speechSynthesis.getVoices();
-  const isMale = voiceKey === 'marcus' || voiceKey === 'david';
+  const isMale = voiceKey === 'adam' || voiceKey === 'roger' || voiceKey === 'antoni';
   
   const preferredVoice = voices.find(v => 
     v.lang.startsWith('en') && (
-      (isMale && (v.name.includes('Male') || v.name.includes('David') || v.name.includes('George') || v.name.includes('Guy'))) ||
-      (!isMale && (v.name.includes('Female') || v.name.includes('Samantha') || v.name.includes('Zira') || v.name.includes('Victoria') || v.name.includes('Google US English')))
+      (isMale && (v.name.includes('David') || v.name.includes('George') || v.name.includes('Guy') || v.name.includes('Mark'))) ||
+      (!isMale && (v.name.includes('Zira') || v.name.includes('Samantha') || v.name.includes('Victoria')))
     )
   ) || voices.find(v => v.lang.startsWith('en'));
 
@@ -202,7 +247,7 @@ function speakBrowserFallback(text, { onStart, onEnd, onWaveUpdate, voiceKey }) 
   let waveInterval = null;
   utterance.onstart = () => {
     if (onWaveUpdate) {
-      waveInterval = setInterval(() => onWaveUpdate(Math.floor(Math.random() * 60) + 40), 120);
+      waveInterval = setInterval(() => onWaveUpdate(Math.floor(Math.random() * 60) + 40), 100);
     }
     if (onStart) onStart();
   };
@@ -229,6 +274,11 @@ export function stopSpeaking() {
       activeAudioElement.currentTime = 0;
     } catch(e){}
     activeAudioElement = null;
+  }
+
+  if (activeBlobUrl) {
+    try { URL.revokeObjectURL(activeBlobUrl); } catch(e){}
+    activeBlobUrl = null;
   }
 
   if (isSpeechSynthesisSupported()) {
