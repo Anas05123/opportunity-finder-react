@@ -1,3 +1,4 @@
+import { handleConversationalTurn } from './services/conversationalEngine.js';
 import { synthesizeElevenLabsVoice, ELEVENLABS_VOICES } from './services/elevenlabsTts.js';
 import { generateInterviewSession, evaluateTurnResponse, finalizeInterviewSession } from './services/interviewCoachEngine.js';
 import 'dotenv/config';
@@ -369,6 +370,25 @@ app.post('/api/v1/ai/match-jobs-to-cv', aiLimiter, async (req, res) => {
 
   app.get('/api/v1/ai/voices', (req, res) => {
     res.json({ status: 'success', voices: ELEVENLABS_VOICES });
+  });
+
+  
+  // Live Real-Time Conversational Dialogue Turn
+  app.post('/api/v1/ai/interview/conversational-turn', aiLimiter, async (req, res) => {
+    try {
+      const { company, role, persona, conversationHistory, candidateMessage, track } = req.body;
+      const turnResult = await handleConversationalTurn({
+        company,
+        role,
+        persona,
+        conversationHistory,
+        candidateMessage,
+        track
+      });
+      res.json({ status: 'success', ...turnResult });
+    } catch (err) {
+      res.status(500).json({ error: 'Conversational turn failed: ' + err.message });
+    }
   });
 
   app.post('/api/v1/ai/interview/generate-session', aiLimiter, async (req, res) => {
