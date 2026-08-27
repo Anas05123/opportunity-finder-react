@@ -154,8 +154,10 @@ export async function finalizeInterviewSession({
     };
   });
 
-  const scores = evaluatedTurns.map(t => t.score);
+  const evaluatedAnswers = evaluatedTurns;
+  const scores = evaluatedAnswers.map(t => t.score);
   const avgScore = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+  const overallScore = avgScore;
 
   // Determine realistic hiring verdict
   let verdict = 'Needs Development';
@@ -182,37 +184,40 @@ export async function finalizeInterviewSession({
   const starAvg = Math.min(100, Math.round(avgScore));
   const techAvg = Math.min(100, Math.max(15, avgScore + (avgScore > 70 ? 2 : -5)));
   const metricAvg = Math.min(100, Math.max(10, avgScore + (avgScore > 70 ? -3 : -8)));
-  const presenceAvg = Math.min(100, Math.max(30, avgScore >= 60 ? 88 : 45));
-  const cultureAvg = Math.min(100, Math.max(20, avgScore));
+  const presenceAvg = Math.round(evaluatedAnswers.reduce((sum, a) => sum + (a.deliveryMetrics?.clarityScore || 85), 0) / evaluatedAnswers.length);
+  const cultureAvg = Math.round(overallScore * 0.95);
 
-  const keyTakeaways = [];
-  if (avgScore < 50) {
+    const keyTakeaways = [];
+  if (overallScore < 50) {
     keyTakeaways.push('Responses were too brief or non-substantive (e.g. single-word greetings) to satisfy the hiring bar.');
     keyTakeaways.push('Every interview answer should follow STAR: Situation (context), Task (your goal), Action (technical decisions), Result (metrics).');
     keyTakeaways.push(`Review the Golden Model Answers below to understand the expected depth for a ${role} role at ${company}.`);
-  } else if (avgScore < 75) {
-    keyTakeaways.push('Demonstrated foundational understanding of the problem space, but lacked quantified business ROI data.');
-    keyTakeaways.push('State hard percentages and numbers in your results (e.g., "reduced latency by 45%", "saved $80k").');
-    keyTakeaways.push('Explicitly articulate your personal technical contributions using active verbs ("I architected", "I refactored").');
+  } else if (overallScore < 75) {
+    keyTakeaways.push('Good foundational problem solving; sharpen your action verbs to highlight what YOU personally built vs the team.');
+    keyTakeaways.push('In the Result stage, quantify business impact with concrete numbers (percentages, latencies, savings).');
   } else {
-    keyTakeaways.push(`Outstanding structured communication aligned with ${company} hiring standards.`);
-    keyTakeaways.push('Clearly articulated technical execution trade-offs, architecture decisions, and cross-functional leadership.');
-    keyTakeaways.push('Continue maintaining this strong executive presence and quantitative focus in final interview rounds.');
+    keyTakeaways.push(`Outstanding demonstration of ${company} competencies, systems architecture depth, and quantifiable outcomes.`);
+    keyTakeaways.push('Strong executive presence and disciplined STAR structure across all responses.');
   }
+
+  const sessionId = 'iv_sess_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
+  const privateUrl = `/interview/session/${sessionId}`;
 
   return {
     status: 'success',
+    sessionId,
+    privateUrl,
     company,
     role,
     track,
-    overallScore: avgScore,
+    overallScore,
     verdict,
     verdictColor,
-    evaluatedAnswers: evaluatedTurns,
+    evaluatedAnswers,
     competencies: [
-      { name: 'STAR Methodology', score: starAvg },
-      { name: 'Technical Depth & Architecture', score: techAvg },
-      { name: 'Business Impact & Metrics', score: metricAvg },
+      { name: 'STAR Methodology', score: Math.round(overallScore * 0.98) },
+      { name: 'Technical Depth & Architecture', score: Math.round(overallScore * 0.92) },
+      { name: 'Business Impact & Metrics', score: Math.round(overallScore * 0.88) },
       { name: 'Executive Presence & Delivery', score: presenceAvg },
       { name: `${company} Principles & Culture Fit`, score: cultureAvg }
     ],

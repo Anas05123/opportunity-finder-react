@@ -447,7 +447,8 @@ app.post('/api/v1/ai/match-jobs-to-cv', aiLimiter, async (req, res) => {
         userProfile: userProfile || req.user || {}
       });
 
-      const userId = req.user?.id || req.user?.userId || 'guest_user';
+      const defaultUser = sqliteDb.prepare("SELECT id FROM users LIMIT 1").get();
+      const userId = req.user?.id || req.user?.userId || defaultUser?.id || 'usr_admin_anas_001';
       try {
         sqliteDb.prepare(`
           INSERT INTO interview_sessions (
@@ -474,6 +475,39 @@ app.post('/api/v1/ai/match-jobs-to-cv', aiLimiter, async (req, res) => {
     } catch (err) {
       console.error('[Interview Finalize Error]:', err);
       res.status(500).json({ error: 'Failed to finalize interview session: ' + err.message });
+    }
+  });
+
+    // Get Private Persistent Interview Session by ID (Accessible via private URL)
+  app.get('/api/v1/ai/interview/session/:sessionId', async (req, res) => {
+    try {
+      const { sessionId } = req.params;
+      const row = sqliteDb.prepare('SELECT * FROM interview_sessions WHERE id = ?').get(sessionId);
+      if (!row) {
+        return res.status(404).json({ error: 'Interview session not found or private link expired' });
+      }
+
+      const answers = JSON.parse(row.answers_json || '[]');
+      const scorecard = JSON.parse(row.scorecard_json || '{}');
+
+      res.json({
+        status: 'success',
+        session: {
+          id: row.id,
+          company: row.company_name,
+          role: row.role_title,
+          track: row.track,
+          overallScore: row.overall_score,
+          verdict: row.verdict,
+          verdictColor: row.verdict_color,
+          answers,
+          scorecard,
+          privateUrl: `/interview/session/${row.id}`,
+          createdAt: row.created_at
+        }
+      });
+    } catch (err) {
+      res.status(500).json({ error: 'Failed to retrieve session: ' + err.message });
     }
   });
 

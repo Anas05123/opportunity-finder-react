@@ -31,6 +31,7 @@ const NotFoundPage = lazy(() => import('./components/NotFoundPage.jsx'));
 const AdminDashboard = lazy(() => import('./components/AdminDashboard.jsx'));
 const CvStudio = lazy(() => import('./components/CvStudio.jsx'));
 const InterviewCoach = lazy(() => import('./components/InterviewCoach.jsx'));
+const InterviewSessionReviewPage = lazy(() => import('./components/Interview/InterviewSessionReviewPage.jsx'));
 const AiCareerCopilot = lazy(() => import('./components/AiCareerCopilot.jsx'));
 
 // Modal & Overlay Components
@@ -1082,6 +1083,13 @@ export default function App() {
                 <ProtectedRoute>
                   <CareerlyWorkspace activeTab="cv_studio" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
                 </ProtectedRoute>
+              } />
+                            {/* Private Persistent Interview Session Review Pages */}
+              <Route path="/interview/session/:sessionId" element={
+                <InterviewSessionReviewPage triggerToast={triggerToast} theme={theme} />
+              } />
+              <Route path="/interview-review/:sessionId" element={
+                <InterviewSessionReviewPage triggerToast={triggerToast} theme={theme} />
               } />
               <Route path="/interview-coach" element={
                 <ProtectedRoute>

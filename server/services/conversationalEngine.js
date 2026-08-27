@@ -3,8 +3,7 @@ import { classifyCandidateInput, analyzeAnswerDeterministically, ANSWER_TYPES } 
 
 /**
  * Handle a real-time conversational interview turn.
- * Accurately analyzes candidate text, distinguishes greetings from substantive answers,
- * and generates realistic, context-aware spoken responses.
+ * Dynamically handles hints, uncertainty ("I don't know"), clarifying questions, greetings, and technical STAR answers.
  */
 export async function handleConversationalTurn({
   company = 'Stripe Worldwide',
@@ -17,7 +16,40 @@ export async function handleConversationalTurn({
   const cleanInput = (candidateMessage || '').trim();
   const { type, wordCount } = classifyCandidateInput(cleanInput);
 
-  // 1. Precise Greeting Handling
+  // 1. Precise Hint Request Handling
+  if (type === ANSWER_TYPES.HINT_REQUEST) {
+    return {
+      status: 'success',
+      spokenReply: `Sure, absolutely! Think about a time your system had high traffic or latency. Focus on the specific architectural decision YOU made, what tools you used, and what numbers changed. Take your time!`,
+      quickFeedback: 'Candidate requested a strategic hint.',
+      starScore: 40,
+      classification: 'hint_request'
+    };
+  }
+
+  // 2. Precise "I Don't Know" / Uncertainty Handling
+  if (type === ANSWER_TYPES.UNCERTAIN_ADMISSION) {
+    return {
+      status: 'success',
+      spokenReply: `No problem at all, that is completely fine! If you haven't faced that exact scenario, tell me about any complex technical challenge you had to debug from scratch?`,
+      quickFeedback: 'Candidate indicated unfamiliarity; interviewer provided supportive bridge question.',
+      starScore: 35,
+      classification: 'uncertainty_bridge'
+    };
+  }
+
+  // 3. Clarifying Question Handling
+  if (type === ANSWER_TYPES.CLARIFYING_QUESTION) {
+    return {
+      status: 'success',
+      spokenReply: `Great question to scope the requirements. Let's assume a distributed microservices setup handling 10,000 requests per second. How would you structure the solution?`,
+      quickFeedback: 'Candidate clarified system constraints.',
+      starScore: 55,
+      classification: 'clarifying_question'
+    };
+  }
+
+  // 4. Precise Greeting Handling
   if (type === ANSWER_TYPES.GREETING) {
     return {
       status: 'success',
@@ -28,18 +60,18 @@ export async function handleConversationalTurn({
     };
   }
 
-  // 2. Incomplete / Short Input Handling
+  // 5. Incomplete / Very Brief Handling
   if (type === ANSWER_TYPES.INCOMPLETE) {
     return {
       status: 'success',
-      spokenReply: `Thanks. To give you a fair evaluation for ${role}, I'd like you to go deeper. What was the specific challenge, what technical decisions did YOU personally make, and what were the measurable results?`,
+      spokenReply: `Thanks. To give you a thorough evaluation for ${role}, I'd love you to go deeper. What was the specific technical problem, what steps did you personally take, and what was the outcome?`,
       quickFeedback: 'Response was too brief (< 18 words) to evaluate STAR pillars.',
       starScore: 28,
       classification: 'incomplete'
     };
   }
 
-  // 3. Gemini LLM Dynamic Conversational Roleplay with Context
+  // 6. Gemini LLM Dynamic Conversational Roleplay with Context
   const geminiKey = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY;
   if (geminiKey && geminiKey !== 'your_gemini_api_key_here') {
     try {
@@ -49,7 +81,7 @@ export async function handleConversationalTurn({
 
       const prompt = `
 You are ${persona.name}, ${persona.title} at ${company}.
-Your style: ${persona.tone}.
+Style: ${persona.tone}.
 You are conducting a spoken video interview for ${role} on the ${track} track.
 
 Conversation transcript so far:
@@ -60,16 +92,16 @@ Candidate just said:
 
 CRITICAL INSTRUCTIONS:
 1. Analyze what the candidate actually said in their answer.
-2. If they mentioned specific technical systems, tools, or metrics, explicitly refer to them in your spoken response.
-3. If they missed the Result or Action phase of the STAR method, probe them directly for the missing detail.
+2. If they asked a question or asked for a hint, answer it constructively and naturally.
+3. If they mentioned specific technical systems, tools, or metrics, explicitly refer to them in your spoken response.
 4. Keep the spoken response between 25 and 45 words (2-3 spoken sentences). Professional, sharp, and natural.
-5. Grade their answer objectively on a scale of 0 to 100 based strictly on STAR methodology and technical depth.
+5. Grade their answer objectively on a scale of 0 to 100 based strictly on STAR methodology.
 
 Return JSON:
 {
   "spokenReply": "Spoken sentence 1 acknowledging their points. Spoken sentence 2 with sharp follow-up probing question.",
   "quickFeedback": "Brief note on answer strengths and missing elements",
-  "starScore": 82
+  "starScore": 85
 }
 `;
 
@@ -104,7 +136,7 @@ Return JSON:
     }
   }
 
-  // 4. Deterministic Semantic NLP Engine (Evaluates exact text rigorously)
+  // 7. Deterministic Semantic NLP Engine
   const analysis = analyzeAnswerDeterministically({
     question: conversationHistory[conversationHistory.length - 2]?.content || 'Describe a project you led.',
     answer: cleanInput,
