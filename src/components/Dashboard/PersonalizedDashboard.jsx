@@ -156,14 +156,14 @@ export default function PersonalizedDashboard({
         <div className="flex items-center gap-2.5">
           <button 
             onClick={() => navigate('/opportunities')}
-            className="flex items-center gap-1.5 px-4 py-2 bg-primary text-white text-[13px] font-semibold rounded-lg hover:opacity-95 transition-all shadow-sm"
+            className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white text-[14px] font-semibold rounded-xl hover:opacity-95 transition-all shadow-sm"
             
           >
             <Search size={14} /> Discover Roles
           </button>
           <button 
             onClick={() => navigate('/cv-studio')}
-            className="flex items-center gap-1.5 px-4 py-2 border border-border text-foreground text-[13px] font-medium rounded-lg hover:bg-secondary transition-all"
+            className="flex items-center gap-2 px-5 py-2.5 border border-border text-foreground text-[14px] font-semibold rounded-xl hover:bg-secondary transition-all"
           >
             <FileText size={14} /> Tailor CV
           </button>
@@ -301,7 +301,7 @@ export default function PersonalizedDashboard({
                           if (onPrepareKit) onPrepareKit(opp);
                           else navigate('/cv-studio');
                         }}
-                        className="px-3 py-1.5 bg-primary/10 text-primary text-[11px] font-semibold rounded-lg hover:bg-primary hover:text-white transition-all"
+                        className="px-3.5 py-2 bg-primary/10 text-primary text-[12.5px] font-bold rounded-xl hover:bg-primary hover:text-white transition-all shadow-xs"
                       >
                         Prepare Kit
                       </button>

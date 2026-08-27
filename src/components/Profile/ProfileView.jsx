@@ -210,7 +210,7 @@ export default function ProfileView({ triggerToast }) {
               {/* Edit / Save Button */}
               <button 
                 onClick={() => editing ? handleSaveProfile() : setEditing(true)}
-                className="flex items-center gap-1.5 px-4 py-2 bg-primary text-white text-[13px] font-semibold rounded-lg hover:opacity-95 transition-all shadow-sm flex-shrink-0"
+                className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white text-[14px] font-bold rounded-xl hover:opacity-95 transition-all shadow-md flex-shrink-0"
                 style={{ background: '#2457FF' }}
               >
                 {editing ? <Save size={13} /> : <Pencil size={13} />}

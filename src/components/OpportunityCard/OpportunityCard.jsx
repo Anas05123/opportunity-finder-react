@@ -136,10 +136,10 @@ export default function OpportunityCard({
             e.stopPropagation();
             if (onSelectOp) onSelectOp(opportunity);
           }}
-          className="font-semibold text-primary group-hover:translate-x-0.5 transition-transform flex items-center gap-1"
+          className="px-3 py-1.5 rounded-lg text-[12.5px] font-bold bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all flex items-center gap-1.5"
         >
           <span>View Details</span>
-          <ArrowRight size={12} />
+          <ArrowRight size={13} />
         </button>
       </div>
     </div>

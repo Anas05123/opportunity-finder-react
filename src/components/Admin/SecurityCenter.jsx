@@ -414,7 +414,7 @@ export default function SecurityCenter({ triggerToast }) {
               onClick={loadAllSecurityData}
               disabled={isLoading || isActionRunning}
               title="Refresh security metrics"
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold bg-secondary/80 hover:bg-secondary border border-border text-foreground transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+              className="flex items-center gap-2 px-4.5 py-2.5 rounded-xl text-[13.5px] font-semibold bg-secondary/80 hover:bg-secondary border border-border text-foreground transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
             >
               <RefreshCw size={14} className={isLoading ? 'spin-animation' : ''} />
               <span>Refresh</span>
@@ -423,7 +423,7 @@ export default function SecurityCenter({ triggerToast }) {
             <button
               onClick={() => runSecurityAction('35-Point Security Audit', '/admin/security/audit/run', 'Full Security Audit Completed!')}
               disabled={isActionRunning}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm shadow-emerald-600/20 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+              className="flex items-center gap-2 px-5.5 py-2.5 rounded-xl text-[13.5px] font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm shadow-emerald-600/20 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
             >
               <Play size={14} />
               <span>Run Full Audit</span>
@@ -515,7 +515,7 @@ export default function SecurityCenter({ triggerToast }) {
             <button
               key={tab.id}
               onClick={() => setActiveSecTab(tab.id)}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all whitespace-nowrap cursor-pointer flex-shrink-0 ${
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-semibold transition-all whitespace-nowrap cursor-pointer flex-shrink-0 ${
                 isActive
                   ? 'bg-[#2457FF] text-white shadow-xs'
                   : 'text-muted-foreground hover:text-foreground hover:bg-white/60 dark:hover:bg-slate-800/60'

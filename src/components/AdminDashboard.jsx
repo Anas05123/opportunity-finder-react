@@ -192,7 +192,7 @@ export default function AdminDashboard({ triggerToast }) {
       <div className="flex items-center gap-1.5 p-1.5 bg-slate-100/80 dark:bg-slate-900/80 border border-border rounded-xl w-fit shadow-xs flex-wrap">
         <button
           onClick={() => setAdminSection('intelligence')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-[13.5px] font-bold transition-all cursor-pointer ${
             adminSection === 'intelligence'
               ? 'bg-[#2457FF] text-white shadow-xs'
               : 'text-muted-foreground hover:text-foreground hover:bg-white/60 dark:hover:bg-slate-800/60'
@@ -204,7 +204,7 @@ export default function AdminDashboard({ triggerToast }) {
         </button>
         <button
           onClick={() => setAdminSection('security')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-[13.5px] font-bold transition-all cursor-pointer ${
             adminSection === 'security'
               ? 'bg-[#2457FF] text-white shadow-xs'
               : 'text-muted-foreground hover:text-foreground hover:bg-white/60 dark:hover:bg-slate-800/60'
@@ -216,7 +216,7 @@ export default function AdminDashboard({ triggerToast }) {
         </button>
         <button
           onClick={() => setAdminSection('sources')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-[13.5px] font-bold transition-all cursor-pointer ${
             adminSection === 'sources'
               ? 'bg-[#2457FF] text-white shadow-xs'
               : 'text-muted-foreground hover:text-foreground hover:bg-white/60 dark:hover:bg-slate-800/60'

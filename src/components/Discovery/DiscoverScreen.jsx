@@ -121,7 +121,7 @@ export default function DiscoverScreen({
         
         {/* Search Input Row */}
         <div className="flex items-center gap-3">
-          <div className="flex-1 flex items-center gap-2.5 bg-secondary/50 border border-border rounded-lg px-3.5 py-2 focus-within:border-primary focus-within:bg-card transition-all">
+          <div className="flex-1 flex items-center gap-2.5 bg-secondary/50 border border-border rounded-xl px-4 py-2.5 focus-within:border-primary focus-within:bg-card transition-all">
             <Search size={14} className="text-muted-foreground flex-shrink-0" />
             <input 
               type="text"
@@ -139,7 +139,7 @@ export default function DiscoverScreen({
 
           <button 
             onClick={() => setShowFiltersPanel(!showFiltersPanel)}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-[13px] font-semibold transition-all flex-shrink-0 shadow-sm ${
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-[13.5px] font-semibold transition-all flex-shrink-0 shadow-sm ${
               showFiltersPanel 
                 ? 'bg-primary text-white' 
                 : 'border border-border text-foreground hover:bg-secondary'
@@ -166,7 +166,7 @@ export default function DiscoverScreen({
               <button
                 key={t.id}
                 onClick={() => { setSelectedType(t.id); setCurrentPage(1); }}
-                className={`px-2.5 py-1 rounded-md font-semibold border transition-all ${
+                className={`px-3.5 py-1.5 rounded-xl text-[12.5px] font-semibold border transition-all ${
                   selectedType === t.id
                     ? 'bg-primary text-white border-primary shadow-xs'
                     : 'bg-card border-border text-muted-foreground hover:text-foreground hover:border-foreground/30'
@@ -192,7 +192,7 @@ export default function DiscoverScreen({
               <button
                 key={m.id}
                 onClick={() => { setSelectedMode(m.id); setCurrentPage(1); }}
-                className={`px-2.5 py-1 rounded-md font-semibold border transition-all ${
+                className={`px-3.5 py-1.5 rounded-xl text-[12.5px] font-semibold border transition-all ${
                   selectedMode === m.id
                     ? 'bg-primary text-white border-primary shadow-xs'
                     : 'bg-card border-border text-muted-foreground hover:text-foreground hover:border-foreground/30'
@@ -288,7 +288,7 @@ export default function DiscoverScreen({
                     <button
                       key={skill}
                       onClick={() => toggleSkill(skill)}
-                      className={`px-2.5 py-1 text-[11px] rounded-lg border font-medium transition-all ${
+                      className={`px-3 py-1.5 text-[12px] rounded-xl border font-medium transition-all ${
                         isSel 
                           ? 'bg-primary text-white border-primary shadow-xs' 
                           : 'bg-card border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground'

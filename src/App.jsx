@@ -438,12 +438,12 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
 
   const navCls = (tabKey) => {
     const isActive = activeTab === tabKey;
-    return `w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-medium transition-all text-left ${
+    return `w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-[13.5px] font-medium transition-all text-left ${
       isActive 
-        ? 'bg-primary text-primary-foreground font-semibold shadow-sm' 
+        ? 'bg-primary text-primary-foreground font-semibold shadow-xs' 
         : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
     }`;
-  };
+  }
 
   if (activeTab === 'landing') {
     return (
@@ -478,16 +478,16 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
     <div className="flex h-screen bg-background overflow-hidden" style={{ fontFamily: 'var(--font-sans)' }}>
       {/* 1. SIDEBAR (AUTHENTICATED) */}
       {isAuthenticated && (
-        <aside className="hidden md:flex w-56 flex-shrink-0 h-screen flex-col border-r border-border bg-card">
+        <aside className="hidden md:flex w-60 flex-shrink-0 h-screen flex-col border-r border-border bg-card">
           {/* Header / Brand */}
           <div className="h-14 flex items-center px-4 border-b border-border">
             <Link to="/dashboard" className="flex items-center gap-2.5 no-underline">
               <img 
                 src="/careerly-logo.png" 
                 alt="Careerly Logo" 
-                className="w-7 h-7 object-contain flex-shrink-0" 
+                className="w-8 h-8 object-contain flex-shrink-0" 
               />
-              <span className="text-[15px] font-semibold text-foreground tracking-tight">{t('brand.name', 'Careerly')}</span>
+              <span className="text-[16px] font-bold text-foreground tracking-tight">{t('brand.name', 'Careerly')}</span>
             </Link>
           </div>
 
@@ -580,7 +580,7 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
                 await logout(); 
                 window.location.href = '/'; 
               }} 
-              className="w-full flex items-center justify-center gap-2 py-2 px-3 bg-red-50 text-red-600 border border-red-200 hover:bg-red-600 hover:text-white rounded-lg text-[12px] font-bold transition-all shadow-xs cursor-pointer"
+              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20 hover:bg-red-600 hover:text-white rounded-xl text-[13px] font-bold transition-all shadow-xs cursor-pointer"
               title="Sign Out of Account"
             >
               <LogOut size={13} />
@@ -594,7 +594,7 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         
         {/* Top Header Bar */}
-        <header className="h-14 flex items-center justify-between px-4 sm:px-6 border-b border-border bg-card flex-shrink-0">
+        <header className="h-16 flex items-center justify-between px-4 sm:px-6 border-b border-border bg-card flex-shrink-0">
           <div className="flex items-center gap-2.5">
             {isAuthenticated && (
               <button 
@@ -630,7 +630,7 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
             {/* Language Switcher */}
             <button 
               onClick={toggleLanguage}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary text-foreground hover:bg-secondary/80 border border-border text-xs font-bold transition-all cursor-pointer"
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-secondary text-foreground hover:bg-secondary/80 border border-border text-[13px] font-bold transition-all cursor-pointer"
               title={language === 'en' ? 'التحويل إلى العربية' : 'Switch to English'}
             >
               <Globe size={14} className="text-primary" />
@@ -641,7 +641,7 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
             {/* Theme Switcher Button */}
             <button 
               onClick={toggleTheme}
-              className="flex items-center justify-center w-8 h-8 rounded-lg bg-secondary text-foreground hover:bg-secondary/80 border border-border transition-all cursor-pointer"
+              className="flex items-center justify-center w-9 h-9 rounded-xl bg-secondary text-foreground hover:bg-secondary/80 border border-border transition-all cursor-pointer"
               title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
               aria-label="Toggle theme"
             >
@@ -650,7 +650,7 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
 
             <Link 
               to="/settings"
-              className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-[11px] font-bold cursor-pointer shadow-sm no-underline"
+              className="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-white text-[12px] font-bold cursor-pointer shadow-sm no-underline"
               style={{ background: '#2457FF' }}
               title="Account Settings"
             >
@@ -1007,8 +1007,8 @@ function CareerlyWorkspace({ activeTab, theme, toggleTheme, triggerToast }) {
                 onClick={() => setMobileMenuOpen(false)}
                 className="flex items-center gap-2.5 no-underline"
               >
-                <img src="/careerly-logo.png" alt="Careerly Logo" className="w-7 h-7 object-contain flex-shrink-0" />
-                <span className="text-[15px] font-semibold text-foreground tracking-tight">{t('brand.name', 'Careerly')}</span>
+                <img src="/careerly-logo.png" alt="Careerly Logo" className="w-8 h-8 object-contain flex-shrink-0" />
+                <span className="text-[16px] font-bold text-foreground tracking-tight">{t('brand.name', 'Careerly')}</span>
               </Link>
               <button 
                 onClick={() => setMobileMenuOpen(false)}

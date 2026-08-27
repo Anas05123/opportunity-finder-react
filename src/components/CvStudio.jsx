@@ -192,7 +192,7 @@ export default function CvStudio({
           <button 
             onClick={() => fileInputRef.current?.click()}
             disabled={isUploading}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 text-[12px] font-semibold border border-border rounded-lg text-foreground hover:bg-secondary transition-all disabled:opacity-50"
+            className="flex items-center gap-2 px-4.5 py-2.5 text-[13.5px] font-semibold border border-border rounded-xl text-foreground hover:bg-secondary transition-all disabled:opacity-50"
           >
             {isUploading ? <RefreshCw size={12} className="animate-spin" /> : <Upload size={12} />}
             <span>Import PDF</span>
@@ -201,7 +201,7 @@ export default function CvStudio({
           <button 
             onClick={handleExportPdf}
             disabled={isExporting}
-            className="flex items-center gap-1.5 px-4 py-1.5 text-[12px] font-semibold bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-all shadow-sm"
+            className="flex items-center gap-2 px-5 py-2.5 text-[13.5px] font-bold bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-all shadow-sm"
           >
             <Download size={12} />
             <span>Export PDF</span>
@@ -221,7 +221,7 @@ export default function CvStudio({
                 <button
                   key={s.id}
                   onClick={() => setActiveSection(s.id)}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-[12px] font-semibold text-left transition-all ${
+                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-[13.5px] font-semibold text-left transition-all ${
                     activeSection === s.id
                       ? 'bg-primary text-white shadow-sm'
                       : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
