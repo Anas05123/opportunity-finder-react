@@ -105,6 +105,7 @@ export default function InterviewCoach({ userProfile, triggerToast }) {
 
       const data = await res.json();
       setFinalScorecard(data);
+      if (data.evaluatedAnswers) setCompletedAnswers(data.evaluatedAnswers);
       setCurrentView('scorecard');
       if (triggerToast) triggerToast(`🎉 Interview Completed! Overall Score: ${data.overallScore}/100`);
     } catch (err) {

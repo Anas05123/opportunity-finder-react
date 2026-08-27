@@ -1,8 +1,10 @@
 ﻿import axios from 'axios';
+import { classifyCandidateInput, analyzeAnswerDeterministically, ANSWER_TYPES } from './semanticAnswerAnalyzer.js';
 
 /**
  * Handle a real-time conversational interview turn.
- * Responds naturally like an executive human interviewer with industry-specific probing.
+ * Accurately analyzes candidate text, distinguishes greetings from substantive answers,
+ * and generates realistic, context-aware spoken responses.
  */
 export async function handleConversationalTurn({
   company = 'Stripe Worldwide',
@@ -12,8 +14,33 @@ export async function handleConversationalTurn({
   candidateMessage = '',
   track = 'behavioral'
 }) {
-  const geminiKey = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY;
+  const cleanInput = (candidateMessage || '').trim();
+  const { type, wordCount } = classifyCandidateInput(cleanInput);
 
+  // 1. Precise Greeting Handling
+  if (type === ANSWER_TYPES.GREETING) {
+    return {
+      status: 'success',
+      spokenReply: `Hello! Great to connect with you today. Whenever you're ready, let's get into the details—could you walk me through a complex project you architected and what technical trade-offs you made?`,
+      quickFeedback: 'Candidate greeted interviewer.',
+      starScore: 15,
+      classification: 'greeting'
+    };
+  }
+
+  // 2. Incomplete / Short Input Handling
+  if (type === ANSWER_TYPES.INCOMPLETE) {
+    return {
+      status: 'success',
+      spokenReply: `Thanks. To give you a fair evaluation for ${role}, I'd like you to go deeper. What was the specific challenge, what technical decisions did YOU personally make, and what were the measurable results?`,
+      quickFeedback: 'Response was too brief (< 18 words) to evaluate STAR pillars.',
+      starScore: 28,
+      classification: 'incomplete'
+    };
+  }
+
+  // 3. Gemini LLM Dynamic Conversational Roleplay with Context
+  const geminiKey = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY;
   if (geminiKey && geminiKey !== 'your_gemini_api_key_here') {
     try {
       const historyFormatted = conversationHistory
@@ -22,26 +49,27 @@ export async function handleConversationalTurn({
 
       const prompt = `
 You are ${persona.name}, ${persona.title} at ${company}.
-Your interviewing style is ${persona.tone}.
-You are conducting a live, spoken video interview for the position of ${role} on the ${track} track.
+Your style: ${persona.tone}.
+You are conducting a spoken video interview for ${role} on the ${track} track.
 
-Recent conversation transcript:
+Conversation transcript so far:
 ${historyFormatted}
 
 Candidate just said:
-"${candidateMessage}"
+"${cleanInput}"
 
-CRITICAL INSTRUCTIONS FOR SPOKEN REAL-TIME CONVERSATION:
-1. Respond directly and conversationally as ${persona.name} in 2 to 3 natural spoken sentences (maximum 50 words).
-2. React authentically to what the candidate specifically stated (e.g. acknowledge their technical decision, metric, or trade-off).
-3. Ask ONE sharp, insightful follow-up question or probe deeper into the STAR Result/Action, OR naturally transition if they answered thoroughly.
-4. Keep the tone professional, realistic, and conversational—exactly like a real senior interviewer on a video call. Do NOT output markdown, bullet points, or robotic score headers. Just the spoken words.
+CRITICAL INSTRUCTIONS:
+1. Analyze what the candidate actually said in their answer.
+2. If they mentioned specific technical systems, tools, or metrics, explicitly refer to them in your spoken response.
+3. If they missed the Result or Action phase of the STAR method, probe them directly for the missing detail.
+4. Keep the spoken response between 25 and 45 words (2-3 spoken sentences). Professional, sharp, and natural.
+5. Grade their answer objectively on a scale of 0 to 100 based strictly on STAR methodology and technical depth.
 
-Return JSON in this format:
+Return JSON:
 {
-  "spokenReply": "Conversational reply spoken aloud by the interviewer...",
-  "quickFeedback": "Brief internal note on candidate's answer strength",
-  "starScore": 88
+  "spokenReply": "Spoken sentence 1 acknowledging their points. Spoken sentence 2 with sharp follow-up probing question.",
+  "quickFeedback": "Brief note on answer strengths and missing elements",
+  "starScore": 82
 }
 `;
 
@@ -50,7 +78,7 @@ Return JSON in this format:
         {
           contents: [{ parts: [{ text: prompt }] }],
           generationConfig: {
-            temperature: 0.7,
+            temperature: 0.6,
             maxOutputTokens: 200,
             responseMimeType: 'application/json'
           }
@@ -61,40 +89,50 @@ Return JSON in this format:
       const rawText = response.data?.candidates?.[0]?.content?.parts?.[0]?.text;
       if (rawText) {
         const parsed = JSON.parse(rawText);
-        if (parsed.spokenReply) return parsed;
+        if (parsed.spokenReply) {
+          return {
+            status: 'success',
+            spokenReply: parsed.spokenReply,
+            quickFeedback: parsed.quickFeedback || 'Evaluated answer.',
+            starScore: parsed.starScore || 80,
+            classification: 'substantive'
+          };
+        }
       }
     } catch (err) {
-      console.warn('[Gemini Conversational Turn Notice]:', err.message);
+      console.warn('[Gemini Conversational Notice]:', err.message);
     }
   }
 
-  // High-fidelity fallback conversational engine
-  return generateConversationalFallback({ company, role, persona, candidateMessage, conversationHistory });
-}
+  // 4. Deterministic Semantic NLP Engine (Evaluates exact text rigorously)
+  const analysis = analyzeAnswerDeterministically({
+    question: conversationHistory[conversationHistory.length - 2]?.content || 'Describe a project you led.',
+    answer: cleanInput,
+    company,
+    role
+  });
 
-function generateConversationalFallback({ company, role, persona, candidateMessage = '', conversationHistory = [] }) {
-  const lower = candidateMessage.toLowerCase();
+  const lower = cleanInput.toLowerCase();
   let spokenReply = '';
-  let starScore = 85;
 
-  if (lower.includes('metric') || lower.includes('%') || lower.includes('latency') || lower.includes('throughput') || lower.includes('scale')) {
-    spokenReply = `That's a very solid breakdown of the technical metrics. I'm curious though—when you pushed that change to production, how did you handle rollbacks or canary verification to protect customer traffic at ${company}?`;
-    starScore = 92;
-  } else if (lower.includes('disagree') || lower.includes('team') || lower.includes('conflict') || lower.includes('product manager')) {
-    spokenReply = `Navigating team alignment under pressure is critical here. Looking back at that disagreement, what is one thing you would do differently to build consensus even faster?`;
-    starScore = 88;
-  } else if (lower.includes('outage') || lower.includes('risk') || lower.includes('failure') || lower.includes('incident')) {
-    spokenReply = `Great composure during the incident. How did you structure the post-mortem to ensure that class of failure could never happen again?`;
-    starScore = 90;
+  if (lower.includes('redis') || lower.includes('cache') || lower.includes('database') || lower.includes('sql') || lower.includes('postgres')) {
+    spokenReply = `That's a very clear breakdown of your data architecture choices. When you introduced that caching layer, how did you handle cache invalidation and database replication lag at ${company}?`;
+  } else if (lower.includes('kafka') || lower.includes('event') || lower.includes('queue') || lower.includes('stream')) {
+    spokenReply = `Good detail on the asynchronous message flow. How did you ensure idempotency and prevent message duplication during network partitions?`;
+  } else if (lower.includes('latency') || lower.includes('throughput') || lower.includes('%') || lower.includes('ms')) {
+    spokenReply = `Strong emphasis on quantitative metrics. Looking back, what was the biggest operational bottleneck you uncovered while achieving those numbers?`;
+  } else if (lower.includes('team') || lower.includes('disagree') || lower.includes('conflict') || lower.includes('stakeholder')) {
+    spokenReply = `Navigating team alignment under pressure is essential. How did you balance rapid delivery against long-term architectural debt when reaching that consensus?`;
   } else {
-    spokenReply = `Thanks for explaining that context. Can you walk me deeper into your specific individual contribution and the key technical trade-off you had to make?`;
-    starScore = 84;
+    spokenReply = `Thank you for explaining that context. Can you dive deeper into the specific technical trade-offs you personally made and the final business outcome?`;
   }
 
   return {
+    status: 'success',
     spokenReply,
-    quickFeedback: 'Structured response with clear context.',
-    starScore
+    quickFeedback: analysis.improvements[0] || 'Structured answer.',
+    starScore: analysis.score,
+    classification: analysis.classification
   };
 }
 

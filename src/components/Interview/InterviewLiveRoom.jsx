@@ -265,30 +265,26 @@ export default function InterviewLiveRoom({
       try { recognizerObjRef.current.stop(); } catch(e){}
     }
 
-    // Convert dialogue history to structured answers
-    const candidateAnswers = messages
+    // Extract all candidate dialogue turns
+    const candidateTurns = messages
       .filter(m => m.role === 'candidate')
-      .map((m, idx) => ({
-        questionIndex: idx,
-        question: messages[messages.indexOf(m) - 1]?.content || 'Interview Question',
-        candidateAnswer: m.content,
-        score: 88,
-        deliveryMetrics: {
-          wpm: 135,
-          totalFillers: detectFillerWords(m.content).total,
-          pacing: 'Optimal conversational cadence'
-        }
-      }));
+      .map((m, idx) => {
+        const prevAiMsg = messages[messages.indexOf(m) - 1];
+        return {
+          questionIndex: idx,
+          question: prevAiMsg?.content || 'Interview Question Prompt',
+          candidateAnswer: m.content
+        };
+      });
 
     onCompleteSession({
       company,
       role,
       track,
-      answers: candidateAnswers.length > 0 ? candidateAnswers : [
+      answers: candidateTurns.length > 0 ? candidateTurns : [
         {
-          question: messages[0].content,
-          candidateAnswer: 'Completed spoken interview session.',
-          score: 90
+          question: messages[0]?.content || 'Interview Question',
+          candidateAnswer: candidateLiveText.trim() || ''
         }
       ],
       durationSeconds: timerSeconds
