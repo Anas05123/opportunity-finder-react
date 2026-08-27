@@ -154,15 +154,15 @@ function EcoDiscovery({ nav }: { coachIdx?: number; nav?: (s: Screen) => void })
   ];
 
   return (
-    <div className="h-full flex flex-col p-3.5 sm:p-5 bg-card/50 overflow-y-auto custom-scrollbar">
+    <div className="h-full flex flex-col p-4 sm:p-5 text-white overflow-y-auto custom-scrollbar" style={{ background: "#0B1328" }}>
       {/* Top Search & Filter Bar */}
-      <div className="flex flex-col sm:flex-row gap-2.5 mb-3">
-        <div className="flex-1 flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-secondary/80 border border-border">
-          <Search size={13} className="text-primary flex-shrink-0" />
-          <span className="text-[12px] font-medium text-foreground flex-1 truncate">
+      <div className="flex flex-col sm:flex-row gap-2.5 mb-3.5">
+        <div className="flex-1 flex items-center gap-2.5 px-3 py-2 rounded-xl bg-[#111C38] border border-white/10 shadow-xs">
+          <Search size={13} className="text-[#38BDF8] flex-shrink-0" />
+          <span className="text-[12px] font-medium text-slate-200 flex-1 truncate">
             role: "Product Designer" location: "Remote / Hybrid" min: $140K
           </span>
-          <span className="text-[9.5px] font-bold font-mono px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">
+          <span className="text-[9.5px] font-bold font-mono px-2 py-0.5 rounded bg-blue-500/20 text-[#38BDF8] border border-blue-400/30">
             3 Matches
           </span>
         </div>
@@ -171,10 +171,10 @@ function EcoDiscovery({ nav }: { coachIdx?: number; nav?: (s: Screen) => void })
             <button
               key={t}
               onClick={() => setSelectedTag(t)}
-              className={`px-2 py-1 rounded-lg text-[10.5px] font-semibold whitespace-nowrap transition-all ${
+              className={`px-2.5 py-1.5 rounded-lg text-[10.5px] font-semibold whitespace-nowrap transition-all cursor-pointer ${
                 selectedTag === t
-                  ? "bg-primary text-white shadow-xs"
-                  : "bg-secondary/60 text-muted-foreground hover:text-foreground border border-border"
+                  ? "bg-[#2457FF] text-white shadow-xs"
+                  : "bg-[#111C38] text-slate-400 hover:text-white border border-white/8"
               }`}
             >
               {t}
@@ -193,35 +193,39 @@ function EcoDiscovery({ nav }: { coachIdx?: number; nav?: (s: Screen) => void })
               onMouseEnter={() => setHoveredCard(item.id)}
               onMouseLeave={() => setHoveredCard(null)}
               onClick={() => nav && nav("signin")}
-              className="p-3 rounded-xl border bg-card hover:border-primary/50 hover:shadow-xs transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 cursor-pointer group"
-              style={{ borderColor: isHovered ? C.primary : C.border }}
+              className="p-3.5 rounded-xl border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 cursor-pointer group"
+              style={{
+                background: "#101B35",
+                borderColor: isHovered ? "rgba(56,189,248,0.6)" : "rgba(255,255,255,0.08)",
+                boxShadow: isHovered ? "0 8px 24px rgba(36,87,255,0.2)" : "none"
+              }}
             >
               <div className="flex items-start gap-3 min-w-0">
                 <div
-                  className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-[12px] font-bold flex-shrink-0 shadow-xs"
+                  className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-[13px] font-bold flex-shrink-0 shadow-xs"
                   style={{ backgroundColor: item.color }}
                 >
                   {item.initial}
                 </div>
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h4 className="text-[12.5px] font-semibold text-foreground group-hover:text-primary transition-colors truncate">
+                    <h4 className="text-[13px] font-semibold text-white group-hover:text-[#38BDF8] transition-colors truncate">
                       {item.title}
                     </h4>
-                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[8.5px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-950/60 text-emerald-300 border border-emerald-700/50">
                       ✓ {item.tier}
                     </span>
                   </div>
-                  <div className="flex items-center gap-2 text-[10.5px] text-muted-foreground mt-0.5 flex-wrap">
-                    <span className="font-medium text-foreground">{item.company}</span>
+                  <div className="flex items-center gap-2 text-[11px] text-slate-400 mt-0.5 flex-wrap">
+                    <span className="font-medium text-slate-200">{item.company}</span>
                     <span>·</span>
                     <span>{item.location}</span>
                     <span>·</span>
-                    <span className="font-mono font-bold text-foreground">{item.salary}</span>
+                    <span className="font-mono font-bold text-white">{item.salary}</span>
                   </div>
-                  <div className="flex gap-1 mt-1.5 flex-wrap">
+                  <div className="flex gap-1 mt-2 flex-wrap">
                     {item.skills.map(s => (
-                      <span key={s} className="px-1.5 py-0.2 rounded text-[9px] bg-secondary text-muted-foreground font-medium border border-border/60">
+                      <span key={s} className="px-2 py-0.5 rounded text-[9.5px] bg-white/5 text-slate-300 font-medium border border-white/8">
                         {s}
                       </span>
                     ))}
@@ -229,11 +233,11 @@ function EcoDiscovery({ nav }: { coachIdx?: number; nav?: (s: Screen) => void })
                 </div>
               </div>
 
-              <div className="flex items-center sm:flex-col sm:items-end justify-between sm:justify-center gap-1.5 flex-shrink-0 border-t sm:border-t-0 pt-1.5 sm:pt-0 border-border/50">
-                <span className="text-[10px] font-bold font-mono text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800">
+              <div className="flex items-center sm:flex-col sm:items-end justify-between sm:justify-center gap-2 flex-shrink-0 border-t sm:border-t-0 pt-2 sm:pt-0 border-white/8">
+                <span className="text-[10.5px] font-bold font-mono text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded-md border border-emerald-700/50">
                   {item.match}% Match
                 </span>
-                <span className="flex items-center gap-1 text-[10.5px] font-semibold text-primary group-hover:translate-x-0.5 transition-transform">
+                <span className="flex items-center gap-1 text-[11px] font-semibold text-[#60A5FA] group-hover:translate-x-0.5 transition-transform">
                   <span>1-Click Kit</span>
                   <ArrowRight size={11} />
                 </span>
@@ -250,51 +254,51 @@ function EcoSaved() {
   const savedItems = [
     { id: 1, title: "Staff Product Designer", company: "Stripe", salary: "$140K–$180K", deadline: "Dec 15 (3 days left)", initial: "S", color: "#635BFF", match: 94, priority: "High Target", status: "Dossier Ready" },
     { id: 2, title: "Senior Frontend Engineer", company: "Linear", salary: "$160K–$220K", deadline: "Dec 20 (8 days left)", initial: "L", color: "#5E6AD2", match: 87, priority: "Tier 1", status: "Cover Letter Tailored" },
-    { id: 3, title: "Chevening Scholarship", company: "UK Government", salary: "Fully Funded (£38K)", deadline: "Nov 5, 2025", initial: "C", color: "#0D5C3E", match: 78, priority: "Scholarship", status: "English Waiver Verified" },
-    { id: 4, title: "Staff Product Manager", company: "Figma", salary: "$200K–$260K", deadline: "Jan 25, 2025", initial: "F", color: "#F24E1E", match: 89, priority: "Design Tools", status: "Ready to Dispatch" },
+    { id: 3, title: "Chevening Scholarship", company: "UK Government", salary: "Fully Funded (£38K)", deadline: "Nov 5, 2026", initial: "C", color: "#0D5C3E", match: 78, priority: "Scholarship", status: "English Waiver Verified" },
+    { id: 4, title: "Staff Product Manager", company: "Figma", salary: "$200K–$260K", deadline: "Jan 25, 2026", initial: "F", color: "#F24E1E", match: 89, priority: "Design Tools", status: "Ready to Dispatch" },
   ];
 
   return (
-    <div className="h-full flex flex-col p-3.5 sm:p-5 bg-card/50 overflow-y-auto custom-scrollbar">
-      <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-border">
+    <div className="h-full flex flex-col p-4 sm:p-5 text-white overflow-y-auto custom-scrollbar" style={{ background: "#0B1328" }}>
+      <div className="flex items-center justify-between pb-2.5 mb-3 border-b border-white/10">
         <div>
-          <h3 className="text-[13px] font-bold text-foreground">Saved Opportunities Vault (4)</h3>
-          <p className="text-[10.5px] text-muted-foreground">Private bookmarks calibrated with automated ATS kits</p>
+          <h3 className="text-[13px] font-bold text-white">Saved Opportunities Vault (4)</h3>
+          <p className="text-[10.5px] text-slate-400">Private bookmarks calibrated with automated ATS kits</p>
         </div>
-        <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 bg-primary/10 text-primary rounded-md border border-primary/20">
+        <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 bg-blue-500/20 text-[#38BDF8] rounded-md border border-blue-400/30">
           Batch Dispatch Active
         </span>
       </div>
 
-      <div className="space-y-2 flex-1">
+      <div className="space-y-2.5 flex-1">
         {savedItems.map((o) => (
-          <div key={o.id} className="p-3 rounded-xl border border-border bg-card hover:border-primary/40 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 shadow-2xs">
+          <div key={o.id} className="p-3 rounded-xl border border-white/10 bg-[#101B35] hover:border-blue-400/40 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 shadow-2xs">
             <div className="flex items-center gap-3 min-w-0">
-              <div className="w-8 h-8 rounded-xl flex-shrink-0 flex items-center justify-center text-white text-[11px] font-bold shadow-xs" style={{ background: o.color }}>
+              <div className="w-9 h-9 rounded-xl flex-shrink-0 flex items-center justify-center text-white text-[12px] font-bold shadow-xs" style={{ background: o.color }}>
                 {o.initial}
               </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <p className="text-[12px] font-semibold text-foreground truncate">{o.title}</p>
-                  <span className="text-[8.5px] font-bold px-1.5 py-0.2 rounded bg-secondary text-muted-foreground border border-border uppercase">
+                  <p className="text-[12.5px] font-semibold text-white truncate">{o.title}</p>
+                  <span className="text-[8.5px] font-bold px-1.5 py-0.2 rounded bg-white/10 text-slate-300 border border-white/10 uppercase">
                     {o.priority}
                   </span>
                 </div>
-                <p className="text-[10.5px] text-muted-foreground mt-0.5 flex items-center gap-2">
-                  <span className="font-medium text-foreground">{o.company}</span>
+                <p className="text-[11px] text-slate-400 mt-0.5 flex items-center gap-2">
+                  <span className="font-medium text-slate-200">{o.company}</span>
                   <span>·</span>
                   <span>{o.salary}</span>
                   <span>·</span>
-                  <span className="text-amber-600 dark:text-amber-400 font-semibold">{o.deadline}</span>
+                  <span className="text-amber-400 font-semibold">{o.deadline}</span>
                 </p>
               </div>
             </div>
 
             <div className="flex items-center justify-between sm:justify-end gap-2.5 flex-shrink-0">
-              <span className="text-[9.5px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 px-2 py-0.5 rounded">
+              <span className="text-[9.5px] font-bold text-emerald-300 bg-emerald-950/60 border border-emerald-700/50 px-2 py-0.5 rounded">
                 {o.status}
               </span>
-              <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">
+              <span className="text-[10.5px] font-mono font-bold px-2 py-0.5 rounded bg-blue-500/20 text-[#38BDF8] border border-blue-400/30">
                 {o.match}%
               </span>
             </div>
@@ -479,17 +483,17 @@ function EcoCoach({ coachIdx, isTyping, hideInnerHeader = false }: { coachIdx:nu
   }, [coachIdx, isTyping]);
 
   return (
-    <div className="h-full flex flex-col p-4" style={{ background:C.bg }}>
+    <div className="h-full flex flex-col p-4 overflow-hidden text-white" style={{ background:"#0B1328" }}>
       {!hideInnerHeader && (
-        <div className="flex items-center gap-2 mb-3 pb-2 border-b flex-shrink-0" style={{ borderColor:C.border }}>
-          <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background:"#7C3AED18" }}>
-            <MessageSquare size={12} style={{ color:"#7C3AED" }}/>
+        <div className="flex items-center gap-2 pb-2.5 mb-2.5 border-b border-white/10 flex-shrink-0">
+          <div className="w-6 h-6 rounded-lg flex items-center justify-center bg-purple-500/20 text-[#A855F7]">
+            <MessageSquare size={12} />
           </div>
-          <span className="text-[11.5px] font-semibold truncate" style={{ color:C.text }}>Mock STAR Interview · Stripe</span>
+          <span className="text-[11.5px] font-semibold truncate text-white">Mock STAR Interview · Stripe</span>
           <div className="ml-auto flex items-center gap-1.5 flex-shrink-0">
             <motion.div animate={{ scale:[1,1.3,1] }} transition={{ duration:1.5, repeat:Infinity }}
-              className="w-2 h-2 rounded-full" style={{ background:C.success }}/>
-            <span className="text-[10px] font-medium" style={{ color:C.muted }}>Live</span>
+              className="w-2 h-2 rounded-full bg-emerald-400" />
+            <span className="text-[10px] font-medium text-emerald-300">Live</span>
           </div>
         </div>
       )}
@@ -500,8 +504,12 @@ function EcoCoach({ coachIdx, isTyping, hideInnerHeader = false }: { coachIdx:nu
               transition={{ duration:0.25, ease:[0.16,1,0.3,1] }}
               className={cn("flex", msg.from==="user" ? "justify-end" : "justify-start")}>
               <div className="max-w-[88%] rounded-2xl px-3.5 py-2.5 text-[11.5px] leading-relaxed shadow-sm"
-                style={{ background:msg.from==="ai"?"#fff":C.text, color:msg.from==="ai"?C.text:"#fff", border:msg.from==="ai"?`1px solid ${C.border}`:"none" }}>
-                {msg.from==="ai" && <p className="text-[9.5px] font-bold mb-1" style={{ color:"#7C3AED" }}>Career Coach</p>}
+                style={{
+                  background: msg.from === "ai" ? "#101B35" : "#2457FF",
+                  color: "#FFFFFF",
+                  border: msg.from === "ai" ? "1px solid rgba(255,255,255,0.1)" : "none"
+                }}>
+                {msg.from==="ai" && <p className="text-[9.5px] font-bold mb-1 text-[#A855F7]">Career Coach (Gemini Pro)</p>}
                 {msg.text}
               </div>
             </motion.div>
@@ -510,21 +518,21 @@ function EcoCoach({ coachIdx, isTyping, hideInnerHeader = false }: { coachIdx:nu
         <AnimatePresence>
           {isTyping && (
             <motion.div initial={{ opacity:0, y:6 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0 }} className="flex">
-              <div className="rounded-2xl px-3.5 py-2.5 flex gap-1 bg-white border shadow-sm" style={{ borderColor:C.border }}>
+              <div className="rounded-2xl px-3.5 py-2.5 flex gap-1 bg-[#101B35] border border-white/10 shadow-sm">
                 {[0,0.2,0.4].map((d,i) => (
                   <motion.div key={i} animate={{ y:[0,-4,0] }} transition={{ duration:0.6, delay:d, repeat:Infinity }}
-                    className="w-1.5 h-1.5 rounded-full" style={{ background:C.muted }}/>
+                    className="w-1.5 h-1.5 rounded-full bg-slate-400" />
                 ))}
               </div>
             </motion.div>
           )}
         </AnimatePresence>
       </div>
-      <div className="flex items-center gap-2 mt-3 pt-3 border-t flex-shrink-0" style={{ borderColor:C.border }}>
-        <div className="flex-1 rounded-xl px-3 py-2 text-[11px]" style={{ background:"#fff", border:`1px solid ${C.border}`, color:C.muted }}>
-          Type your answer...
+      <div className="flex items-center gap-2 mt-3 pt-3 border-t border-white/10 flex-shrink-0">
+        <div className="flex-1 rounded-xl px-3 py-2 text-[11px] bg-[#101B35] border border-white/10 text-slate-400">
+          Type your STAR response or press record...
         </div>
-        <div className="w-8 h-8 rounded-xl flex items-center justify-center text-white flex-shrink-0 shadow-sm" style={{ background:"#7C3AED" }}>
+        <div className="w-8 h-8 rounded-xl flex items-center justify-center text-white flex-shrink-0 shadow-sm bg-[#7C3AED] hover:opacity-90 transition-opacity cursor-pointer">
           <Mic size={13}/>
         </div>
       </div>
@@ -534,41 +542,45 @@ function EcoCoach({ coachIdx, isTyping, hideInnerHeader = false }: { coachIdx:nu
 
 function EcoCalendar() {
   const days = Array.from({ length: 31 }, (_, i) => i+1);
-  const highlights: Record<number,string> = { 15:"#EF4444", 18:C.primary, 20:"#F59E0B", 23:C.success };
+  const highlights: Record<number,string> = { 15:"#EF4444", 18:"#2457FF", 20:"#F59E0B", 23:"#10B981" };
   return (
-    <div className="h-full overflow-hidden p-4" style={{ background:"#fff" }}>
-      <div className="flex items-center justify-between mb-3">
-        <span className="text-[12px] font-bold" style={{ color:C.text }}>December 2024</span>
+    <div className="h-full overflow-hidden p-4 text-white" style={{ background:"#0B1328" }}>
+      <div className="flex items-center justify-between mb-3 pb-2 border-b border-white/10">
+        <span className="text-[12px] font-bold text-white">December 2026</span>
         <div className="flex gap-1">
-          <div className="w-5 h-5 rounded flex items-center justify-center cursor-pointer" style={{ color:C.muted }}><ChevronLeft size={11}/></div>
-          <div className="w-5 h-5 rounded flex items-center justify-center cursor-pointer" style={{ color:C.muted }}><ChevronRight size={11}/></div>
+          <div className="w-5 h-5 rounded flex items-center justify-center cursor-pointer text-slate-400 hover:text-white"><ChevronLeft size={11}/></div>
+          <div className="w-5 h-5 rounded flex items-center justify-center cursor-pointer text-slate-400 hover:text-white"><ChevronRight size={11}/></div>
         </div>
       </div>
       <div className="grid grid-cols-7 gap-0.5 mb-1">
         {["Mo","Tu","We","Th","Fr","Sa","Su"].map(d => (
-          <div key={d} className="text-center text-[8px] font-bold py-1" style={{ color:C.muted }}>{d}</div>
+          <div key={d} className="text-center text-[8px] font-bold py-1 text-slate-400">{d}</div>
         ))}
       </div>
       <div className="grid grid-cols-7 gap-0.5 mb-4">
         {[0,1,2,3,4,5].map(i => <div key={`e${i}`}/>)}
         {days.map(d => (
           <div key={d} className="text-center text-[9px] py-1.5 rounded-md cursor-pointer font-medium transition-all"
-            style={{ color:highlights[d]?"#fff":d===9?C.primary:C.text, background:highlights[d]??( d===9?C.xlight:"transparent" ), fontWeight:d===9||highlights[d]?700:400 }}>
+            style={{
+              color: highlights[d] ? "#fff" : d === 9 ? "#38BDF8" : "#CBD5E1",
+              background: highlights[d] ?? (d === 9 ? "rgba(36,87,255,0.25)" : "transparent"),
+              fontWeight: d === 9 || highlights[d] ? 700 : 400
+            }}>
             {d}
           </div>
         ))}
       </div>
-      <p className="text-[9px] font-bold uppercase tracking-wider mb-2" style={{ color:C.muted }}>Upcoming</p>
+      <p className="text-[9px] font-bold uppercase tracking-wider mb-2 text-slate-400">Upcoming Calibrated Milestones</p>
       <div className="space-y-1.5">
         {[
           { date:"Dec 15", label:"Stripe Application Deadline", dot:"#EF4444" },
-          { date:"Dec 18", label:"Google Interview · 2pm GMT", dot:C.primary },
+          { date:"Dec 18", label:"Google Interview · 2pm GMT", dot:"#2457FF" },
           { date:"Dec 20", label:"Linear Application Due", dot:"#F59E0B" },
         ].map(e => (
-          <div key={e.date} className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg" style={{ background:C.bg }}>
+          <div key={e.date} className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-[#101B35] border border-white/8">
             <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background:e.dot }}/>
-            <span className="text-[9px] font-semibold" style={{ color:C.text }}>{e.label}</span>
-            <span className="text-[8px] font-mono ml-auto" style={{ color:C.muted }}>{e.date}</span>
+            <span className="text-[9.5px] font-semibold text-white">{e.label}</span>
+            <span className="text-[8.5px] font-mono ml-auto text-slate-400">{e.date}</span>
           </div>
         ))}
       </div>
@@ -578,36 +590,36 @@ function EcoCalendar() {
 
 function EcoProfile() {
   return (
-    <div className="h-full overflow-hidden p-5" style={{ background:"#fff" }}>
-      <div className="flex items-center gap-3 mb-5 pb-4 border-b" style={{ borderColor:C.border }}>
-        <div className="w-12 h-12 rounded-full flex-shrink-0 flex items-center justify-center text-white font-bold text-[14px]" style={{ background:C.primary }}>AK</div>
-        <div className="flex-1">
-          <p className="text-[13px] font-bold" style={{ color:C.text }}>Alex Kim</p>
-          <p className="text-[11px]" style={{ color:C.muted }}>Product Designer · 5 years exp.</p>
+    <div className="h-full overflow-hidden p-5 text-white" style={{ background:"#0B1328" }}>
+      <div className="flex items-center gap-3 mb-4 pb-3 border-b border-white/10">
+        <div className="w-11 h-11 rounded-full flex-shrink-0 flex items-center justify-center text-white font-bold text-[14px] bg-[#2457FF] shadow-xs">AK</div>
+        <div className="flex-1 min-w-0">
+          <p className="text-[13px] font-bold text-white">Alex Kim</p>
+          <p className="text-[11px] text-slate-400">Product Designer · 5 years exp.</p>
         </div>
-        <div className="text-right">
-          <p className="text-[18px] font-bold font-mono" style={{ color:C.primary }}>94%</p>
-          <p className="text-[9px]" style={{ color:C.muted }}>avg match</p>
+        <div className="text-right flex-shrink-0">
+          <p className="text-[17px] font-bold font-mono text-emerald-400">94%</p>
+          <p className="text-[9px] text-slate-400">avg match</p>
         </div>
       </div>
-      <p className="text-[9px] font-bold uppercase tracking-wider mb-2" style={{ color:C.muted }}>Core Skills</p>
+      <p className="text-[9px] font-bold uppercase tracking-wider mb-2 text-slate-400">Core Verified Skills</p>
       <div className="flex flex-wrap gap-1.5 mb-4">
-        {["Figma","Design Systems","React","User Research","Motion Design"].map(s => (
-          <span key={s} className="text-[10px] font-semibold px-2 py-1 rounded-lg" style={{ background:C.xlight, color:C.primary }}>{s}</span>
+        {["Figma","Design Systems","React 19","User Research","Motion Design"].map(s => (
+          <span key={s} className="text-[9.5px] font-semibold px-2.5 py-1 rounded-lg bg-blue-500/15 text-[#38BDF8] border border-blue-400/20">{s}</span>
         ))}
       </div>
-      <p className="text-[9px] font-bold uppercase tracking-wider mb-2" style={{ color:C.muted }}>Target Roles</p>
+      <p className="text-[9px] font-bold uppercase tracking-wider mb-2 text-slate-400">Target Roles Calibrated</p>
       <div className="space-y-2">
         {[
           { role:"Senior Product Designer", companies:"Stripe, Figma, Linear", match:94 },
           { role:"Head of Design", companies:"Series B–C startups", match:80 },
         ].map(r => (
-          <div key={r.role} className="flex items-center justify-between p-2.5 rounded-xl" style={{ background:C.bg }}>
+          <div key={r.role} className="flex items-center justify-between p-2.5 rounded-xl bg-[#101B35] border border-white/8">
             <div>
-              <p className="text-[10px] font-semibold" style={{ color:C.text }}>{r.role}</p>
-              <p className="text-[9px]" style={{ color:C.muted }}>{r.companies}</p>
+              <p className="text-[11px] font-semibold text-white">{r.role}</p>
+              <p className="text-[9.5px] text-slate-400">{r.companies}</p>
             </div>
-            <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded" style={{ background:C.xlight, color:C.primary }}>{r.match}%</span>
+            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-blue-500/20 text-[#38BDF8] border border-blue-400/30">{r.match}%</span>
           </div>
         ))}
       </div>
@@ -1057,12 +1069,12 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
           </motion.div>
 
           {/* Desktop OS Window Frame */}
-          <div className="rounded-2xl sm:rounded-3xl border overflow-hidden flex flex-col shadow-[0_20px_50px_-15px_rgba(8,21,47,0.14)]"
-            style={{ background:"#fff", borderColor:C.border }}>
+          <div className="rounded-2xl sm:rounded-3xl border overflow-hidden flex flex-col shadow-[0_25px_60px_-15px_rgba(8,21,47,0.25)]"
+            style={{ background:"#0B1328", borderColor:"rgba(255,255,255,0.12)" }}>
             
             {/* OS Window Chrome Titlebar */}
             <div className="h-11 px-4 flex items-center justify-between gap-3 select-none flex-shrink-0"
-              style={{ background:"#F1EFEA", borderBottom:`1px solid ${C.border}` }}>
+              style={{ background:"#070D1C", borderBottom:"1px solid rgba(255,255,255,0.1)" }}>
               <div className="flex items-center gap-3">
                 {/* Traffic lights */}
                 <div className="flex items-center gap-1.5">
@@ -1071,29 +1083,29 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
                   <span className="w-3 h-3 rounded-full bg-[#27C93F] border border-[#1AAB29] shadow-2xs" />
                 </div>
                 <div className="hidden sm:flex items-center gap-2 text-[11px] font-semibold border-l pl-3"
-                  style={{ color:C.muted, borderColor:C.border }}>
-                  <span className="w-1.5 h-1.5 rounded-full" style={{ background:C.success }}/>
-                  <span style={{ color:C.text }}>CareerlyOS</span>
-                  <span className="text-[9px] px-1.5 py-0.2 rounded font-mono font-bold" style={{ background:"#fff", border:`1px solid ${C.border}`, color:C.primary }}>v2.4 PRO</span>
+                  style={{ color:"#94A3B8", borderColor:"rgba(255,255,255,0.1)" }}>
+                  <span className="w-1.5 h-1.5 rounded-full" style={{ background:"#10B981" }}/>
+                  <span className="text-white">CareerlyOS</span>
+                  <span className="text-[9px] px-1.5 py-0.2 rounded font-mono font-bold bg-blue-950/80 text-[#38BDF8] border border-blue-800/60">v2.4 PRO</span>
                 </div>
               </div>
 
               {/* Dynamic OS Address / Search Pill */}
               <div className="flex-1 max-w-md mx-2 h-7 rounded-lg flex items-center justify-between px-3 text-[11px] font-mono shadow-2xs"
-                style={{ background:"#fff", border:`1px solid ${C.border}`, color:C.muted }}>
+                style={{ background:"#111C38", border:"1px solid rgba(255,255,255,0.08)", color:"#94A3B8" }}>
                 <div className="flex items-center gap-2 truncate">
                   <span className="w-2 h-2 rounded-full" style={{ backgroundColor: ECO_ITEMS[activeEco].color }} />
-                  <span className="font-medium truncate" style={{ color:C.text }}>app.careerly.io/{ECO_ITEMS[activeEco].label.toLowerCase().replace(" ", "-")}</span>
+                  <span className="font-medium truncate text-slate-200">app.careerly.io/{ECO_ITEMS[activeEco].label.toLowerCase().replace(" ", "-")}</span>
                 </div>
-                <span className="hidden md:inline text-[9px] px-1.5 py-0.2 rounded" style={{ background:C.bg, border:`1px solid ${C.border}`, color:C.muted }}>⌘K Quick Switch</span>
+                <span className="hidden md:inline text-[9px] px-1.5 py-0.2 rounded bg-white/5 border border-white/10 text-slate-400">⌘K Quick Switch</span>
               </div>
 
               {/* Right Status Badges */}
               <div className="flex items-center gap-2">
-                <span className="hidden lg:inline text-[10px] font-mono px-2 py-0.5 rounded" style={{ background:"#fff", border:`1px solid ${C.border}`, color:C.muted }}>
+                <span className="hidden lg:inline text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 border border-white/10 text-slate-400">
                   ⚡ 14ms Gemini Flash
                 </span>
-                <span className="text-[11px] font-mono font-semibold" style={{ color:C.text }}>10:42 AM</span>
+                <span className="text-[11px] font-mono font-semibold text-white">10:42 AM</span>
               </div>
             </div>
 
@@ -1101,9 +1113,9 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
             <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr] min-h-[460px]">
               {/* OS App Dock / Sidebar */}
               <div className="border-b lg:border-b-0 lg:border-r p-3 flex flex-row lg:flex-col justify-between gap-1.5 overflow-x-auto lg:overflow-y-auto no-scrollbar"
-                style={{ background:C.bg, borderColor:C.border }}>
+                style={{ background:"#070C1A", borderColor:"rgba(255,255,255,0.08)" }}>
                 <div className="flex flex-row lg:flex-col gap-1.5 flex-1">
-                  <p className="hidden lg:block text-[10px] font-bold uppercase tracking-wider px-2.5 py-1" style={{ color:C.muted }}>
+                  <p className="hidden lg:block text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 text-slate-400">
                     System Engines
                   </p>
                   {ECO_ITEMS.map((item, i) => {
@@ -1115,18 +1127,18 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
                         onClick={() => setActiveEco(i)}
                         className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left flex-shrink-0 transition-all cursor-pointer"
                         style={{
-                          background: isActive ? C.primary : "#fff",
-                          borderColor: isActive ? C.primary : C.border,
+                          background: isActive ? "#2457FF" : "rgba(255,255,255,0.03)",
+                          borderColor: isActive ? "#2457FF" : "rgba(255,255,255,0.06)",
                           borderWidth: "1px",
                           borderStyle: "solid",
-                          boxShadow: isActive ? `0 4px 14px ${C.primary}30` : "none",
-                          color: isActive ? "#fff" : C.text
+                          boxShadow: isActive ? "0 4px 16px rgba(36,87,255,0.35)" : "none",
+                          color: isActive ? "#ffffff" : "#CBD5E1"
                         }}
                       >
                         <div
                           className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors"
                           style={{
-                            backgroundColor: isActive ? "rgba(255,255,255,0.2)" : `${item.color}15`,
+                            backgroundColor: isActive ? "rgba(255,255,255,0.2)" : `${item.color}22`,
                             color: isActive ? "#ffffff" : item.color
                           }}
                         >
@@ -1134,7 +1146,7 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
                         </div>
                         <div className="min-w-0 flex-1">
                           <p className="text-[12px] font-semibold truncate leading-tight">{item.label}</p>
-                          <p className="text-[9px] truncate mt-0.5" style={{ color: isActive ? "rgba(255,255,255,0.8)" : C.muted }}>
+                          <p className="text-[9px] truncate mt-0.5" style={{ color: isActive ? "rgba(255,255,255,0.8)" : "#94A3B8" }}>
                             {item.sublabel}
                           </p>
                         </div>
@@ -1145,19 +1157,19 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
                 </div>
 
                 {/* OS System Telemetry Footer (Desktop only) */}
-                <div className="hidden lg:block pt-3 border-t mt-2 space-y-1.5 text-[10px]" style={{ borderColor:C.border }}>
-                  <div className="flex justify-between" style={{ color:C.muted }}>
+                <div className="hidden lg:block pt-3 border-t mt-2 space-y-1.5 text-[10px]" style={{ borderColor:"rgba(255,255,255,0.08)" }}>
+                  <div className="flex justify-between text-slate-400">
                     <span>ATS Scraper Pipeline</span>
-                    <span className="font-mono font-bold" style={{ color:C.success }}>99.8% Online</span>
+                    <span className="font-mono font-bold text-emerald-400">99.8% Online</span>
                   </div>
-                  <div className="w-full h-1 rounded-full overflow-hidden" style={{ background:"#E2E8F0" }}>
-                    <div className="h-full rounded-full" style={{ background:C.success, width:"94%" }} />
+                  <div className="w-full h-1 rounded-full overflow-hidden bg-white/10">
+                    <div className="h-full rounded-full bg-emerald-500 w-[94%]" />
                   </div>
                 </div>
               </div>
 
               {/* OS Active Canvas Viewport */}
-              <div className="flex-1 overflow-hidden flex flex-col min-h-[420px]" style={{ background:"#fff" }}>
+              <div className="flex-1 overflow-hidden flex flex-col min-h-[420px]" style={{ background:"#0B1328" }}>
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={activeEco}
