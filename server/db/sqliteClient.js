@@ -608,6 +608,22 @@ export function initSqliteDatabase() {
     CREATE INDEX IF NOT EXISTS idx_sec_alerts_time ON security_alerts(created_at);
 
     -- 14. Security Alert Deliveries (Channel Dispatch & Audit Log)
+    
+    CREATE TABLE IF NOT EXISTS interview_sessions (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      company_name TEXT NOT NULL,
+      role_title TEXT NOT NULL,
+      track TEXT NOT NULL,
+      overall_score INTEGER NOT NULL,
+      verdict TEXT NOT NULL,
+      verdict_color TEXT,
+      answers_json TEXT NOT NULL,
+      scorecard_json TEXT NOT NULL,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    );
+
     CREATE TABLE IF NOT EXISTS security_alert_deliveries (
       id TEXT PRIMARY KEY,
       alert_id TEXT NOT NULL,

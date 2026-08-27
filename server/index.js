@@ -1,3 +1,4 @@
+import { generateInterviewSession, evaluateTurnResponse, finalizeInterviewSession } from './services/interviewCoachEngine.js';
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
@@ -351,16 +352,126 @@ app.post('/api/v1/ai/match-jobs-to-cv', aiLimiter, async (req, res) => {
   }
 });
 
-// AI Mock Interview Coach
-app.post('/api/v1/ai/interview-coach', aiLimiter, async (req, res) => {
-  try {
-    const { role, company, question, answer, previousScore } = req.body;
-    const feedback = await generateInterviewFeedback({ role, company, question, answer, previousScore });
-    res.json({ status: 'success', feedback });
-  } catch (err) {
-    res.status(500).json({ error: 'Interview coach evaluation failed: ' + err.message });
-  }
-});
+  // AI Mock Interview Simulation Routes
+  app.post('/api/v1/ai/interview/generate-session', aiLimiter, async (req, res) => {
+    try {
+      const { company, role, track, seniority, questionCount, userProfile } = req.body;
+      const session = await generateInterviewSession({
+        company,
+        role,
+        track,
+        seniority,
+        questionCount: questionCount || 3,
+        userProfile: userProfile || req.user || {}
+      });
+      res.json(session);
+    } catch (err) {
+      console.error('[Interview Gen Error]:', err);
+      res.status(500).json({ error: 'Failed to generate interview session: ' + err.message });
+    }
+  });
+
+  app.post('/api/v1/ai/interview/evaluate-turn', aiLimiter, async (req, res) => {
+    try {
+      const { company, role, question, answer, turnIndex, totalTurns } = req.body;
+      const evaluation = await evaluateTurnResponse({
+        company,
+        role,
+        question,
+        answer,
+        turnIndex: turnIndex || 1,
+        totalTurns: totalTurns || 3
+      });
+      res.json(evaluation);
+    } catch (err) {
+      console.error('[Interview Turn Error]:', err);
+      res.status(500).json({ error: 'Failed to evaluate interview answer: ' + err.message });
+    }
+  });
+
+  app.post('/api/v1/ai/interview/finalize-session', aiLimiter, optionalAuth, async (req, res) => {
+    try {
+      const { company, role, track, answers, userProfile } = req.body;
+      const scorecard = await finalizeInterviewSession({
+        company,
+        role,
+        track,
+        answers: answers || [],
+        userProfile: userProfile || req.user || {}
+      });
+
+      const userId = req.user?.id || req.user?.userId || 'guest_user';
+      try {
+        sqliteDb.prepare(`
+          INSERT INTO interview_sessions (
+            id, user_id, company_name, role_title, track,
+            overall_score, verdict, verdict_color, answers_json, scorecard_json
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `).run(
+          scorecard.sessionId,
+          userId,
+          company || 'Global Enterprise',
+          role || 'Specialist',
+          track || 'Behavioral (STAR)',
+          scorecard.overallScore,
+          scorecard.verdict,
+          scorecard.verdictColor,
+          JSON.stringify(answers || []),
+          JSON.stringify(scorecard)
+        );
+      } catch (dbErr) {
+        console.warn('[Interview DB Save Warning]:', dbErr.message);
+      }
+
+      res.json(scorecard);
+    } catch (err) {
+      console.error('[Interview Finalize Error]:', err);
+      res.status(500).json({ error: 'Failed to finalize interview session: ' + err.message });
+    }
+  });
+
+  app.get('/api/v1/ai/interview/history', optionalAuth, async (req, res) => {
+    try {
+      const userId = req.user?.id || req.user?.userId;
+      if (!userId) {
+        return res.json({ status: 'success', sessions: [] });
+      }
+      const rows = sqliteDb.prepare('SELECT * FROM interview_sessions WHERE user_id = ? ORDER BY created_at DESC LIMIT 20').all(userId);
+      const sessions = rows.map(r => ({
+        ...r,
+        answers: JSON.parse(r.answers_json || '[]'),
+        scorecard: JSON.parse(r.scorecard_json || '{}')
+      }));
+      res.json({ status: 'success', sessions });
+    } catch (err) {
+      res.status(500).json({ error: 'Failed to fetch interview history: ' + err.message });
+    }
+  });
+
+  // Legacy fallback endpoint
+  app.post('/api/v1/ai/interview-coach', aiLimiter, async (req, res) => {
+    try {
+      const { role, company, question, answer } = req.body;
+      const evaluation = await evaluateTurnResponse({ company, role, question, answer });
+      res.json({
+        status: 'success',
+        feedback: {
+          score: evaluation.score,
+          star_breakdown: {
+            situation: evaluation.starBreakdown.situation.feedback,
+            task: evaluation.starBreakdown.task.feedback,
+            action: evaluation.starBreakdown.action.feedback,
+            result: evaluation.starBreakdown.result.feedback
+          },
+          critique: evaluation.improvements.join(' '),
+          suggested_response: evaluation.goldenAnswer
+        }
+      });
+    } catch (err) {
+      res.status(500).json({ error: 'Interview coach evaluation failed: ' + err.message });
+    }
+  });
+
 
 // AI Career Copilot Chat
 app.post('/api/v1/ai/career-copilot', aiLimiter, async (req, res) => {
