@@ -94,50 +94,75 @@ export default function CvStudio({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.type !== 'application/pdf' && !file.name.endsWith('.pdf')) {
+    if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
       if (triggerToast) triggerToast('Please upload a valid PDF document.');
       return;
     }
 
+    if (file.size > 5 * 1024 * 1024) {
+      if (triggerToast) triggerToast('File exceeds 5MB limit. Please upload a smaller PDF.');
+      return;
+    }
+
     setIsUploading(true);
-    if (triggerToast) triggerToast('Extracting resume content via OCR parser...');
+    if (triggerToast) triggerToast(`Parsing "${file.name}" via ATS extractor...`);
 
     try {
-      const formData = new FormData();
-      formData.append('resume', file);
-      const token = localStorage.getItem('careerly_token');
-
-      const res = await fetch(`${API_BASE_URL}/cv/extract-pdf`, {
-        method: 'POST',
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        body: formData
+      const base64Data = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
       });
 
-      if (res.ok) {
-        const data = await res.json();
-        if (data.parsed) {
-          setCvData(prev => ({
-            ...prev,
-            name: data.parsed.name || prev.name,
-            email: data.parsed.email || prev.email,
-            phone: data.parsed.phone || prev.phone,
-            summary: data.parsed.summary || prev.summary,
-            experiences: data.parsed.experiences || prev.experiences
-          }));
-          setAtsScore(88);
-          if (triggerToast) triggerToast('✓ PDF parsed & synchronized successfully!');
-        }
-      } else {
-        // Mock extract fallback
-        setTimeout(() => {
-          setAtsScore(84);
-          if (triggerToast) triggerToast('✓ PDF analyzed & structured into International CV format!');
-        }, 1000);
+      const token = localStorage.getItem('careerly_token');
+      const res = await fetch(`${API_BASE_URL}/ai/parse-pdf`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({
+          fileBase64: base64Data,
+          fileName: file.name
+        })
+      });
+
+      if (!res.ok) throw new Error(`Server returned HTTP ${res.status}`);
+      const data = await res.json();
+
+      if (data.parsed) {
+        const p = data.parsed;
+        const newCv = {
+          name: p.name || cvData.name,
+          title: p.title || cvData.title,
+          email: p.email || cvData.email,
+          phone: p.phone || cvData.phone,
+          location: p.location || cvData.location,
+          linkedin: p.linkedin !== undefined ? p.linkedin : (cvData.linkedin || ''),
+          portfolio: p.portfolio !== undefined ? p.portfolio : (cvData.portfolio || ''),
+          github: p.github !== undefined ? p.github : (cvData.github || ''),
+          summary: p.summary || cvData.summary,
+          experiences: (p.experiences && p.experiences.length > 0) ? p.experiences : cvData.experiences,
+          education: (p.education && p.education.length > 0) ? p.education : cvData.education,
+          skillsCategories: (p.skillsCategories && p.skillsCategories.length > 0) ? p.skillsCategories : cvData.skillsCategories,
+          achievements: (p.achievements && p.achievements.length > 0) ? p.achievements : cvData.achievements
+        };
+
+        setCvData(newCv);
+        setAtsScore(p.atsScore || 92);
+        try { localStorage.setItem('careerly_cv_studio_draft', JSON.stringify(newCv)); } catch(e){}
+        if (triggerToast) triggerToast(`✓ Successfully imported ${file.name} for ${p.name || 'Candidate'}!`);
+      } else if (data.extractedText) {
+        setCvData(prev => ({ ...prev, summary: data.extractedText.slice(0, 500) }));
+        if (triggerToast) triggerToast('✓ Resume text extracted into workspace.');
       }
     } catch (err) {
-      if (triggerToast) triggerToast('PDF loaded into workspace.');
+      console.error('[CV Upload Error]:', err);
+      if (triggerToast) triggerToast('PDF import notice: ' + err.message);
     } finally {
       setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 

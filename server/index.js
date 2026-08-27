@@ -1,4 +1,4 @@
-﻿import 'dotenv/config';
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -11,6 +11,7 @@ import db, { initDatabase } from './db/database.js';
 import { runScraperPipeline, startBackgroundScheduler } from './services/scheduler.js';
 import { sendOutreachEmail } from './services/mailer.js';
 import { analyzeCV, generateInterviewFeedback, handleCareerCopilot, parsePdfText, getGeminiApiStatus } from './services/geminiAi.js';
+import { parseStructuredCv } from './services/cvStructuredExtractor.js';
 import { matchOpportunitiesToCV } from './services/cvJobMatcher.js';
 import { generateVerifiedJobUrl, testUrlHealth } from './services/linkVerifier.js';
 import { 
@@ -271,18 +272,54 @@ app.post('/api/v1/ai/parse-pdf', aiLimiter, async (req, res) => {
       });
     }
 
+    const structured = await parseStructuredCv({
+      rawText: result.text,
+      fileBase64: validation.cleanBase64,
+      fileName: safeFileName,
+      userProfile: req.user || {}
+    });
+
     res.json({
       status: 'success',
       fileName: safeFileName,
       extractedText: result.text,
       pageCount: result.pageCount || 1,
-      source: result.source
+      source: result.source,
+      parsed: structured
     });
   } catch (err) {
     console.error('[PDF Parse Error]:', err.message);
     res.status(500).json({ error: 'Failed to extract text from PDF. Please verify the document is not corrupted.' });
   }
 });
+
+// Alias routes for CV extraction & parsing
+const handleCvExtractRoute = async (req, res) => {
+  try {
+    const { fileBase64, fileName, resumeText } = req.body;
+    if (fileBase64) {
+      const validation = validatePdfBase64(fileBase64, 5 * 1024 * 1024);
+      if (!validation.valid) {
+        return res.status(400).json({ error: validation.error });
+      }
+      const safeFileName = sanitizeFileName(fileName || 'resume.pdf');
+      const result = await parsePdfText(validation.cleanBase64, safeFileName);
+      const structured = await parseStructuredCv({ rawText: result.text, fileName: safeFileName });
+      return res.json({ status: 'success', parsed: structured, extractedText: result.text });
+    }
+    if (resumeText) {
+      const structured = await parseStructuredCv({ rawText: resumeText, fileName: 'pasted_resume.txt' });
+      return res.json({ status: 'success', parsed: structured, extractedText: resumeText });
+    }
+    return res.status(400).json({ error: 'fileBase64 or resumeText is required in request body.' });
+  } catch (err) {
+    res.status(500).json({ error: 'CV extraction failed: ' + err.message });
+  }
+};
+
+app.post('/api/v1/cv/extract-pdf', aiLimiter, handleCvExtractRoute);
+app.post('/api/v1/ai/parse-cv', aiLimiter, handleCvExtractRoute);
+app.post('/api/v1/cv/parse', aiLimiter, handleCvExtractRoute);
 
 // AI CV & ATS Analysis
 app.post('/api/v1/ai/analyze-cv', aiLimiter, async (req, res) => {
