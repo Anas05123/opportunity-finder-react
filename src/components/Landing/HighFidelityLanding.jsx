@@ -171,7 +171,7 @@ function EcoDiscovery({ nav }: { coachIdx?: number; nav?: (s: Screen) => void })
             <button
               key={t}
               onClick={() => setSelectedTag(t)}
-              className={`px-2.5 py-1.5 rounded-lg text-[10.5px] font-semibold whitespace-nowrap transition-all cursor-pointer ${
+              className={`px-3.5 py-2 rounded-xl text-[12px] font-semibold whitespace-nowrap transition-all cursor-pointer ${
                 selectedTag === t
                   ? "bg-[#2457FF] text-white shadow-xs"
                   : "bg-[#111C38] text-slate-400 hover:text-white border border-white/8"
@@ -529,11 +529,11 @@ function EcoCoach({ coachIdx, isTyping, hideInnerHeader = false }: { coachIdx:nu
         </AnimatePresence>
       </div>
       <div className="flex items-center gap-2 mt-3 pt-3 border-t border-white/10 flex-shrink-0">
-        <div className="flex-1 rounded-xl px-3 py-2 text-[11px] bg-[#101B35] border border-white/10 text-slate-400">
+        <div className="flex-1 rounded-xl px-4 py-2.5 text-[13px] bg-[#101B35] border border-white/10 text-slate-300">
           Type your STAR response or press record...
         </div>
-        <div className="w-8 h-8 rounded-xl flex items-center justify-center text-white flex-shrink-0 shadow-sm bg-[#7C3AED] hover:opacity-90 transition-opacity cursor-pointer">
-          <Mic size={13}/>
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white flex-shrink-0 shadow-md bg-[#7C3AED] hover:bg-[#6D28D9] transition-all cursor-pointer">
+          <Mic size={16}/>
         </div>
       </div>
     </div>
@@ -548,8 +548,8 @@ function EcoCalendar() {
       <div className="flex items-center justify-between mb-3 pb-2 border-b border-white/10">
         <span className="text-[12px] font-bold text-white">December 2026</span>
         <div className="flex gap-1">
-          <div className="w-5 h-5 rounded flex items-center justify-center cursor-pointer text-slate-400 hover:text-white"><ChevronLeft size={11}/></div>
-          <div className="w-5 h-5 rounded flex items-center justify-center cursor-pointer text-slate-400 hover:text-white"><ChevronRight size={11}/></div>
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer bg-white/5 hover:bg-white/15 text-slate-300 hover:text-white transition-colors"><ChevronLeft size={14}/></div>
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer bg-white/5 hover:bg-white/15 text-slate-300 hover:text-white transition-colors"><ChevronRight size={14}/></div>
         </div>
       </div>
       <div className="grid grid-cols-7 gap-0.5 mb-1">
@@ -560,7 +560,7 @@ function EcoCalendar() {
       <div className="grid grid-cols-7 gap-0.5 mb-4">
         {[0,1,2,3,4,5].map(i => <div key={`e${i}`}/>)}
         {days.map(d => (
-          <div key={d} className="text-center text-[9px] py-1.5 rounded-md cursor-pointer font-medium transition-all"
+          <div key={d} className="text-center text-[11px] py-2 rounded-lg cursor-pointer font-medium transition-all"
             style={{
               color: highlights[d] ? "#fff" : d === 9 ? "#38BDF8" : "#CBD5E1",
               background: highlights[d] ?? (d === 9 ? "rgba(36,87,255,0.25)" : "transparent"),
@@ -1097,7 +1097,7 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
                   <span className="w-2 h-2 rounded-full" style={{ backgroundColor: ECO_ITEMS[activeEco].color }} />
                   <span className="font-medium truncate text-slate-200">app.careerly.io/{ECO_ITEMS[activeEco].label.toLowerCase().replace(" ", "-")}</span>
                 </div>
-                <span className="hidden md:inline text-[9px] px-1.5 py-0.2 rounded bg-white/5 border border-white/10 text-slate-400">⌘K Quick Switch</span>
+                <span className="hidden md:inline text-[11px] px-2.5 py-1 font-semibold rounded-md bg-white/10 border border-white/15 text-slate-300 hover:text-white">⌘K Quick Switch</span>
               </div>
 
               {/* Right Status Badges */}
@@ -1125,7 +1125,7 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
                       <button
                         key={i}
                         onClick={() => setActiveEco(i)}
-                        className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left flex-shrink-0 transition-all cursor-pointer"
+                        className="flex items-center gap-3 px-3.5 py-3 rounded-xl text-left flex-shrink-0 transition-all cursor-pointer"
                         style={{
                           background: isActive ? "#2457FF" : "rgba(255,255,255,0.03)",
                           borderColor: isActive ? "#2457FF" : "rgba(255,255,255,0.06)",
@@ -1136,7 +1136,7 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
                         }}
                       >
                         <div
-                          className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors"
+                          className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors"
                           style={{
                             backgroundColor: isActive ? "rgba(255,255,255,0.2)" : `${item.color}22`,
                             color: isActive ? "#ffffff" : item.color
@@ -1145,7 +1145,7 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
                           <Icon size={14} />
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p className="text-[12px] font-semibold truncate leading-tight">{item.label}</p>
+                          <p className="text-[13px] font-bold truncate leading-tight">{item.label}</p>
                           <p className="text-[9px] truncate mt-0.5" style={{ color: isActive ? "rgba(255,255,255,0.8)" : "#94A3B8" }}>
                             {item.sublabel}
                           </p>
@@ -1218,7 +1218,7 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
                 {searchQuery && <button onClick={()=>setSearchQuery("")} className="text-[18px] leading-none" style={{ color:C.muted }}>×</button>}
               </div>
               <motion.button whileHover={{ scale:1.04 }} whileTap={{ scale:0.96 }}
-                className="flex items-center gap-2 px-4 py-3 rounded-xl border text-[13px] font-medium"
+                className="flex items-center gap-2 px-5 py-3 rounded-xl border text-[14px] font-semibold cursor-pointer shadow-xs"
                 style={{ background:"#fff", borderColor:C.border, color:C.text }}>
                 <Filter size={14}/> Filters
               </motion.button>
@@ -1227,7 +1227,7 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
               <span className="text-[11px] font-medium mr-1" style={{ color:C.muted }}>Type:</span>
               {["job","internship","scholarship","fellowship"].map(t=>(
                 <motion.button key={t} onClick={()=>setTypeFilter(typeFilter===t?null:t)} whileTap={{ scale:0.93 }}
-                  className="px-3 py-1.5 rounded-lg text-[12px] font-semibold border transition-all"
+                  className="px-4 py-2 rounded-xl text-[13px] font-semibold border transition-all cursor-pointer shadow-2xs"
                   style={{ background:typeFilter===t?TYPE_COLORS[t]:"#fff", borderColor:typeFilter===t?TYPE_COLORS[t]:C.border, color:typeFilter===t?"#fff":C.muted }}>
                   {TYPE_LABELS[t]}
                 </motion.button>
@@ -1235,7 +1235,7 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
               <span className="text-[11px] font-medium ml-3 mr-1" style={{ color:C.muted }}>Mode:</span>
               {["remote","hybrid","onsite"].map(m=>(
                 <motion.button key={m} onClick={()=>setModeFilter(modeFilter===m?null:m)} whileTap={{ scale:0.93 }}
-                  className="px-3 py-1.5 rounded-lg text-[12px] font-semibold border transition-all capitalize"
+                  className="px-4 py-2 rounded-xl text-[13px] font-semibold border transition-all capitalize cursor-pointer shadow-2xs"
                   style={{ background:modeFilter===m?C.text:"#fff", borderColor:modeFilter===m?C.text:C.border, color:modeFilter===m?"#fff":C.muted }}>
                   {m}
                 </motion.button>
@@ -1305,7 +1305,7 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
                 🔒 Sign in to unlock full database and match with your profile
               </span>
               <motion.button onClick={()=>nav("signin")} whileHover={{ scale:1.03, y:-1 }} whileTap={{ scale:0.96 }}
-                className="inline-flex items-center gap-2 px-5 py-2.5 text-white text-[13.5px] font-bold rounded-xl cursor-pointer whitespace-nowrap shadow-sm"
+                className="inline-flex items-center gap-2 px-7 py-3.5 text-white text-[15px] font-bold rounded-xl cursor-pointer whitespace-nowrap shadow-md hover:shadow-lg transition-all"
                 style={{ background:C.primary, boxShadow:`0 4px 14px ${C.primary}35` }}>
                 Sign In to View All 50,000+ Opportunities <ArrowRight size={14}/>
               </motion.button>
@@ -1339,7 +1339,7 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
               </div>
               <div className="flex items-center gap-3">
                 <motion.button onClick={()=>advancePipe(-1)} whileTap={{ scale:0.9 }} disabled={pipePos===0}
-                  className="w-9 h-9 rounded-full border flex items-center justify-center transition-all"
+                  className="w-11 h-11 rounded-full border flex items-center justify-center transition-all cursor-pointer"
                   style={{ borderColor:pipePos===0?C.border:C.primary, color:pipePos===0?C.muted:C.primary }}>
                   <ChevronLeft size={15}/>
                 </motion.button>
@@ -1421,8 +1421,8 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
                                 </div>
                               </div>
                             ))}
-                            <div className="flex items-center justify-center py-2 rounded-lg border border-dashed text-[9px] cursor-pointer" style={{ borderColor:C.soft, color:C.muted }}>
-                              <Plus size={9} className="mr-0.5"/>Add card
+                            <div className="flex items-center justify-center py-2.5 rounded-xl border border-dashed text-[11.5px] font-semibold cursor-pointer hover:bg-white/50 transition-colors" style={{ borderColor:C.soft, color:C.muted }}>
+                              <Plus size={13} className="mr-1"/>Add card
                             </div>
                           </div>
                         </div>
@@ -1523,11 +1523,11 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
                   <motion.button key={i} onClick={()=>setJourneyStep(i)} whileHover={{ scale:1.05 }} whileTap={{ scale:0.95 }}
                     className="flex flex-col items-center gap-3 relative" style={{ width:"16.666%" }}>
                     <motion.div animate={{ scale:isActive?1.22:1 }} transition={{ duration:0.3 }}
-                      className="w-11 h-11 rounded-full flex items-center justify-center border-2 relative z-10 transition-all"
+                      className="w-13 h-13 rounded-full flex items-center justify-center border-2 relative z-10 transition-all shadow-sm"
                       style={{ background:isActive?C.primary:isDone?C.xlight:"#fff", borderColor:isActive?C.primary:isDone?C.primary:C.border, boxShadow:isActive?`0 4px 20px ${C.primary}45`:"none" }}>
                       <Icon size={16} style={{ color:isActive?"#fff":isDone?C.primary:C.muted }}/>
                     </motion.div>
-                    <span className="text-[11px] font-bold transition-colors" style={{ color:isActive?C.primary:C.muted }}>{label}</span>
+                    <span className="text-[13px] font-bold transition-colors" style={{ color:isActive?C.primary:C.muted }}>{label}</span>
                   </motion.button>
                 );
               })}
@@ -1630,7 +1630,7 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
             </p>
             <div className="flex flex-col sm:flex-row items-center gap-3 justify-center">
               <motion.button onClick={()=>nav("signup")} whileHover={{ scale:1.05, y:-2 }} whileTap={{ scale:0.95 }}
-                className="w-full sm:w-auto flex items-center justify-center gap-2 px-7 py-3.5 text-white text-[14px] font-semibold rounded-xl cursor-pointer"
+                className="w-full sm:w-auto flex items-center justify-center gap-2.5 px-9 py-4 text-white text-[16px] font-bold rounded-2xl cursor-pointer shadow-xl shadow-blue-500/30 hover:shadow-blue-500/50 transition-all"
                 style={{ background:C.primary, boxShadow:`0 4px 24px ${C.primary}55` }}
                 onMouseEnter={e=>{ e.currentTarget.style.background=C.bright; e.currentTarget.style.boxShadow=`0 10px 40px ${C.primary}70`; }}
                 onMouseLeave={e=>{ e.currentTarget.style.background=C.primary; e.currentTarget.style.boxShadow=`0 4px 24px ${C.primary}55`; }}>
@@ -1640,7 +1640,7 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
                 const el = document.getElementById("platform-section");
                 if (el) el.scrollIntoView({ behavior: "smooth" });
               }} whileHover={{ scale:1.03, y:-1 }} whileTap={{ scale:0.97 }}
-                className="w-full sm:w-auto flex items-center justify-center gap-2 px-7 py-3.5 text-[14px] font-medium rounded-xl transition-all cursor-pointer"
+                className="w-full sm:w-auto flex items-center justify-center gap-2.5 px-8 py-4 text-[15.5px] font-semibold rounded-2xl transition-all cursor-pointer"
                 style={{ color:"rgba(255,255,255,0.55)", border:"1px solid rgba(255,255,255,0.1)" }}
                 onMouseEnter={e=>{ e.currentTarget.style.color="rgba(255,255,255,0.9)"; e.currentTarget.style.borderColor="rgba(255,255,255,0.22)"; }}
                 onMouseLeave={e=>{ e.currentTarget.style.color="rgba(255,255,255,0.55)"; e.currentTarget.style.borderColor="rgba(255,255,255,0.1)"; }}>
@@ -1726,7 +1726,7 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
                   <li key={link.name}>
                     <button
                       onClick={link.action}
-                      className="text-slate-400 hover:text-white transition-colors cursor-pointer text-left leading-normal"
+                      className="text-slate-300 hover:text-white transition-colors cursor-pointer text-left py-1 text-[14px] font-medium leading-normal"
                     >
                       {link.name}
                     </button>
@@ -1749,7 +1749,7 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
                   <li key={link.name}>
                     <button
                       onClick={link.action}
-                      className="text-slate-400 hover:text-white transition-colors cursor-pointer text-left leading-normal"
+                      className="text-slate-300 hover:text-white transition-colors cursor-pointer text-left py-1 text-[14px] font-medium leading-normal"
                     >
                       {link.name}
                     </button>
@@ -1768,13 +1768,13 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
                   <div className="flex items-center gap-2 pt-1">
                     <button
                       onClick={() => nav("signup")}
-                      className="flex-1 px-3 py-2 bg-primary hover:bg-blue-600 text-white text-[12px] font-bold rounded-lg transition-colors text-center shadow-xs cursor-pointer"
+                      className="flex-1 px-5 py-3 bg-primary hover:bg-blue-600 text-white text-[14px] font-bold rounded-xl transition-all text-center shadow-md hover:shadow-lg cursor-pointer"
                     >
                       Get Started Free
                     </button>
                     <button
                       onClick={() => nav("signin")}
-                      className="px-3 py-2 bg-white/6 hover:bg-white/10 text-white text-[12px] font-semibold rounded-lg transition-colors text-center border border-white/10 cursor-pointer"
+                      className="px-5 py-3 bg-white/10 hover:bg-white/15 text-white text-[14px] font-semibold rounded-xl transition-all text-center border border-white/15 cursor-pointer"
                     >
                       Sign In
                     </button>
@@ -1798,7 +1798,7 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
             <div className="flex items-center gap-6">
               <button
                 onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-                className="text-slate-400 hover:text-white transition-colors cursor-pointer text-[12px] font-semibold flex items-center gap-1"
+                className="px-4 py-2 rounded-xl bg-white/6 hover:bg-white/12 border border-white/10 text-slate-300 hover:text-white transition-all text-[13.5px] font-semibold flex items-center gap-1.5 shadow-2xs cursor-pointer"
               >
                 <span>Back to Top</span>
                 <span>↑</span>
