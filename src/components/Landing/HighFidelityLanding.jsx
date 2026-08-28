@@ -1,10 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from "motion/react";
 import {
-  Search, ArrowRight, Bookmark, Send, MessageSquare, FileText,
-  Calendar, User, Compass, FolderKanban, Trophy, Target,
-  ChevronRight, Heart, Star,
-  ChevronLeft, Plus, Filter, Mic,
+  motion, AnimatePresence, useMotionValue, useSpring, useTransform } from "motion/react";
+import {
+  Search, ArrowRight, Bookmark, Send, MessageSquare, FileText, Calendar, User, Compass, FolderKanban, Trophy, Target, ChevronRight, Heart, Star, ChevronLeft, Plus, Filter, Mic, Briefcase, GraduationCap, Building2, Globe, Sparkles, CheckCircle2, MapPin, Clock, ArrowUpRight, Zap, ShieldCheck, Layers, Lock, SlidersHorizontal
 } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────
@@ -29,12 +27,12 @@ const C = {
 
 // ─── Data ─────────────────────────────────────────────────────────
 const OPPS = [
-  { id:1, title:"Product Designer", company:"Stripe", initial:"S", color:"#635BFF", match:94, type:"job", mode:"hybrid", location:"San Francisco, CA", salary:"$140K–$180K", skills:["Figma","Design Systems","React"] },
-  { id:2, title:"Senior Frontend Engineer", company:"Linear", initial:"L", color:"#5E6AD2", match:87, type:"job", mode:"remote", location:"Remote", salary:"$160K–$220K", skills:["TypeScript","React","GraphQL"] },
-  { id:3, title:"UX Research Intern", company:"Google", initial:"G", color:"#4285F4", match:82, type:"internship", mode:"hybrid", location:"New York, NY", salary:"$8,500/mo", skills:["User Research","Figma","Surveys"] },
-  { id:4, title:"Chevening Scholarship", company:"UK Government", initial:"C", color:"#0D5C3E", match:78, type:"scholarship", mode:"onsite", location:"London, UK", salary:"Full Funding", skills:["Leadership","Academia"] },
-  { id:5, title:"Presidential Innovation Fellow", company:"US Federal Gov.", initial:"P", color:"#B91C1C", match:71, type:"fellowship", mode:"hybrid", location:"Washington, DC", salary:"$120K/yr", skills:["Policy","Technology"] },
-  { id:6, title:"Staff Product Manager", company:"Figma", initial:"F", color:"#F24E1E", match:89, type:"job", mode:"remote", location:"Remote", salary:"$200K–$260K", skills:["Product Strategy","Data","Design"] },
+  { id:1, title:"Product Designer", company:"Stripe", initial:"S", color:"#635BFF", match:94, type:"job", mode:"hybrid", location:"San Francisco, CA", salary:"$140K–$180K", skills:["Figma","Design Systems","React"], deadline:"4 days left" },
+  { id:2, title:"Senior Frontend Engineer", company:"Linear", initial:"L", color:"#5E6AD2", match:87, type:"job", mode:"remote", location:"Remote Worldwide", salary:"$160K–$220K", skills:["TypeScript","React 19","GraphQL"], deadline:"Active Intake" },
+  { id:3, title:"UX Research Intern", company:"Google", initial:"G", color:"#4285F4", match:82, type:"internship", mode:"hybrid", location:"New York, NY", salary:"$8,500/mo", skills:["User Research","Figma","AI UX"], deadline:"Rolling" },
+  { id:4, title:"Chevening Scholarship", company:"UK Government", initial:"C", color:"#0D5C3E", match:78, type:"scholarship", mode:"onsite", location:"London, UK", salary:"Full Tuition + Stipend", skills:["Leadership","Public Policy","No IELTS"], deadline:"12 days left" },
+  { id:5, title:"Presidential Innovation Fellow", company:"US Federal Gov.", initial:"P", color:"#B91C1C", match:71, type:"fellowship", mode:"hybrid", location:"Washington, DC", salary:"$120K–$150K/yr", skills:["Civic Tech","AI Strategy","Leadership"], deadline:"Intake Open" },
+  { id:6, title:"Staff Product Manager", company:"Figma", initial:"F", color:"#F24E1E", match:89, type:"job", mode:"remote", location:"Remote US / EMEA", salary:"$200K–$260K", skills:["Product Strategy","Figma Tokens","Growth"], deadline:"Featured" },
 ];
 const TYPE_LABELS: Record<string,string> = { job:"Job", internship:"Internship", scholarship:"Scholarship", fellowship:"Fellowship" };
 const TYPE_COLORS: Record<string,string> = { job:C.primary, internship:"#0891B2", scholarship:C.success, fellowship:"#7C3AED" };
@@ -1195,124 +1193,312 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
         </div>
       </section>
 
-      {/* ── Discovery ─────────────────────────────────────────────── */}
-      <section className="py-14 sm:py-20" style={{ borderBottom:`1px solid ${C.border}`, background:`linear-gradient(180deg,${C.bg} 0%,${C.xlight}60 100%)` }}>
-        <div className="max-w-[1180px] mx-auto px-4 sm:px-6">
-          <motion.div initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }}
-            viewport={{ once:true, amount:0.2 }} transition={{ duration:0.55 }} className="mb-10">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-5 h-px" style={{ background:C.primary }}/>
-              <p className="text-[10px] font-bold uppercase tracking-[0.15em]" style={{ color:C.primary }}>Discovery</p>
-            </div>
-            <h2 className="text-[22px] sm:text-[30px] font-bold leading-tight mb-2" style={{ color:C.text }}>Find your next opportunity.</h2>
-            <p className="text-[15px]" style={{ color:C.muted }}>Jobs, internships, scholarships and fellowships — all in one place.</p>
-          </motion.div>
+                  {/* ── Discovery (ui-ux-pro-max enhanced) ──────────────────── */}
+      <section id="discovery-section" className="py-16 sm:py-24 relative overflow-hidden" style={{ borderBottom: `1px solid ${C.border}`, background: "linear-gradient(180deg, #F8FAFC 0%, #FFFFFF 50%, #F8FAFC 100%)" }}>
+        
+        {/* Soft Ambient Radial Glow */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[850px] h-[300px] bg-gradient-to-b from-[#2457FF]/6 via-[#2457FF]/2 to-transparent rounded-full blur-3xl pointer-events-none" />
 
-          <div className="mb-7">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="flex-1 flex items-center gap-2.5 rounded-xl px-4 py-3 border" style={{ background:"#fff", borderColor:C.border, boxShadow:"0 2px 8px rgba(16,33,61,0.05)" }}>
-                <Search size={15} style={{ color:C.primary, flexShrink:0 }}/>
-                <input value={searchQuery} onChange={e=>setSearchQuery(e.target.value)}
-                  placeholder="Search roles, companies, skills..."
-                  className="flex-1 bg-transparent text-[14px] outline-none" style={{ color:C.text }}/>
-                {searchQuery && <button onClick={()=>setSearchQuery("")} className="text-[18px] leading-none" style={{ color:C.muted }}>×</button>}
+        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 relative z-10">
+          
+          {/* Section Header with Telemetry Badges */}
+          <div className="mb-10 text-center sm:text-left">
+            <div className="flex flex-wrap items-center justify-between gap-4 mb-3.5">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200/80 shadow-2xs">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-[11px] font-bold text-blue-700 uppercase tracking-widest font-mono">Live Intelligence Radar</span>
+                <span className="text-[11px] text-blue-300 font-medium">·</span>
+                <span className="text-[11px] font-semibold text-blue-600">50,000+ Verified Postings</span>
               </div>
-              <motion.button whileHover={{ scale:1.04 }} whileTap={{ scale:0.96 }}
-                className="flex items-center gap-2 px-5 py-3 rounded-xl border text-[14px] font-semibold cursor-pointer shadow-xs"
-                style={{ background:"#fff", borderColor:C.border, color:C.text }}>
-                <Filter size={14}/> Filters
-              </motion.button>
+
+              {/* Real-Time Telemetry Ticker */}
+              <div className="hidden lg:flex items-center gap-3 text-[12px] font-medium text-slate-500 bg-white px-3.5 py-1.5 rounded-full border border-slate-200 shadow-2xs">
+                <span className="flex items-center gap-1 text-slate-700 font-semibold"><Zap size={13} className="text-amber-500" /> 48 New Today</span>
+                <span className="text-slate-300">|</span>
+                <span className="flex items-center gap-1 text-slate-700 font-semibold"><ShieldCheck size={13} className="text-emerald-600" /> 99.8% Link Health</span>
+                <span className="text-slate-300">|</span>
+                <span className="flex items-center gap-1 text-slate-700 font-semibold"><Globe size={13} className="text-blue-600" /> 140+ Countries</span>
+              </div>
             </div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-[11px] font-medium mr-1" style={{ color:C.muted }}>Type:</span>
-              {["job","internship","scholarship","fellowship"].map(t=>(
-                <motion.button key={t} onClick={()=>setTypeFilter(typeFilter===t?null:t)} whileTap={{ scale:0.93 }}
-                  className="px-4 py-2 rounded-xl text-[13px] font-semibold border transition-all cursor-pointer shadow-2xs"
-                  style={{ background:typeFilter===t?TYPE_COLORS[t]:"#fff", borderColor:typeFilter===t?TYPE_COLORS[t]:C.border, color:typeFilter===t?"#fff":C.muted }}>
-                  {TYPE_LABELS[t]}
-                </motion.button>
-              ))}
-              <span className="text-[11px] font-medium ml-3 mr-1" style={{ color:C.muted }}>Mode:</span>
-              {["remote","hybrid","onsite"].map(m=>(
-                <motion.button key={m} onClick={()=>setModeFilter(modeFilter===m?null:m)} whileTap={{ scale:0.93 }}
-                  className="px-4 py-2 rounded-xl text-[13px] font-semibold border transition-all capitalize cursor-pointer shadow-2xs"
-                  style={{ background:modeFilter===m?C.text:"#fff", borderColor:modeFilter===m?C.text:C.border, color:modeFilter===m?"#fff":C.muted }}>
-                  {m}
-                </motion.button>
-              ))}
-            </div>
+
+            <h2 className="text-[28px] sm:text-[38px] font-extrabold text-[#0B1528] tracking-tight leading-tight mb-2.5 font-display">
+              Find your next <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#2457FF] via-[#4F7CFF] to-[#7C3AED]">calibrated opportunity</span>.
+            </h2>
+            <p className="text-[15px] sm:text-[16px] text-slate-600 max-w-2xl">
+              Real-time opportunity engine aggregating Tier 1 tech roles, full international scholarships, and prestige fellowships — calibrated directly to your skills.
+            </p>
           </div>
 
+          {/* Interactive Search & Filter Command Console */}
+          <div className="bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-[0_4px_20px_rgba(15,23,42,0.04)] mb-8 space-y-4">
+            
+            {/* Primary Search Input Row */}
+            <div className="flex items-center gap-3">
+              <div className="flex-1 flex items-center gap-3 rounded-xl px-4 py-3 bg-slate-50/90 hover:bg-slate-50 focus-within:bg-white border border-slate-200 focus-within:border-[#2457FF] focus-within:ring-2 focus-within:ring-[#2457FF]/10 transition-all shadow-inner">
+                <Search size={18} className="text-[#2457FF] flex-shrink-0" />
+                <input 
+                  value={searchQuery} 
+                  onChange={e => setSearchQuery(e.target.value)}
+                  placeholder='Search by role ("Staff Product Designer"), company ("Linear", "Stripe"), or keyword ("Chevening", "Remote")...'
+                  className="flex-1 bg-transparent text-[14.5px] text-slate-900 placeholder:text-slate-400 outline-none font-medium"
+                />
+                {searchQuery && (
+                  <button 
+                    onClick={() => setSearchQuery("")} 
+                    className="w-6 h-6 rounded-full bg-slate-200 hover:bg-slate-300 text-slate-600 flex items-center justify-center text-xs font-bold transition-colors cursor-pointer"
+                  >
+                    ×
+                  </button>
+                )}
+                <span className="hidden md:inline-flex items-center px-2 py-0.5 rounded text-[11px] font-mono text-slate-400 bg-white border border-slate-200 shadow-2xs">
+                  ⌘K
+                </span>
+              </div>
+
+              <motion.button 
+                whileHover={{ scale: 1.02 }} 
+                whileTap={{ scale: 0.98 }}
+                onClick={() => nav("signin")}
+                className="flex items-center gap-2 px-5 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-[14px] font-semibold cursor-pointer shadow-sm transition-all flex-shrink-0"
+              >
+                <SlidersHorizontal size={15} />
+                <span className="hidden sm:inline">Advanced</span> Filters
+              </motion.button>
+            </div>
+
+            {/* Filter Pills Console: Category Types & Modality */}
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3.5 pt-3 border-t border-slate-100">
+              
+              {/* Category Types */}
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mr-1">Type</span>
+                {[
+                  { id: null, label: "All Types", count: OPPS.length },
+                  { id: "job", label: "💼 Jobs", count: OPPS.filter(o=>o.type==="job").length },
+                  { id: "internship", label: "🎓 Internships", count: OPPS.filter(o=>o.type==="internship").length },
+                  { id: "scholarship", label: "🏛️ Scholarships", count: OPPS.filter(o=>o.type==="scholarship").length },
+                  { id: "fellowship", label: "🌐 Fellowships", count: OPPS.filter(o=>o.type==="fellowship").length },
+                ].map(t => {
+                  const isActive = typeFilter === t.id;
+                  return (
+                    <motion.button
+                      key={String(t.id)}
+                      onClick={() => setTypeFilter(t.id)}
+                      whileTap={{ scale: 0.95 }}
+                      className={`px-3.5 py-1.5 rounded-xl text-[12.5px] font-semibold border transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs ${
+                        isActive
+                          ? "bg-[#2457FF] text-white border-[#2457FF] shadow-sm shadow-[#2457FF]/30 font-bold"
+                          : "bg-white hover:bg-slate-50 text-slate-600 border-slate-200 hover:border-slate-300"
+                      }`}
+                    >
+                      <span>{t.label}</span>
+                      <span className={`text-[10.5px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
+                        isActive ? "bg-white/20 text-white" : "bg-slate-100 text-slate-500"
+                      }`}>
+                        {t.count}
+                      </span>
+                    </motion.button>
+                  );
+                })}
+              </div>
+
+              {/* Modality Segmented Controls */}
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mr-1">Mode</span>
+                {[
+                  { id: null, label: "All" },
+                  { id: "remote", label: "🌍 Remote" },
+                  { id: "hybrid", label: "🏢 Hybrid" },
+                  { id: "onsite", label: "📍 On-site" }
+                ].map(m => {
+                  const isActive = modeFilter === m.id;
+                  return (
+                    <motion.button
+                      key={String(m.id)}
+                      onClick={() => setModeFilter(m.id)}
+                      whileTap={{ scale: 0.95 }}
+                      className={`px-3 py-1.5 rounded-xl text-[12.5px] font-semibold border transition-all cursor-pointer shadow-2xs ${
+                        isActive
+                          ? "bg-slate-900 text-white border-slate-900 shadow-xs font-bold"
+                          : "bg-white hover:bg-slate-50 text-slate-600 border-slate-200 hover:border-slate-300"
+                      }`}
+                    >
+                      {m.label}
+                    </motion.button>
+                  );
+                })}
+              </div>
+            </div>
+
+          </div>
+
+          {/* Cards Bento Grid (3 Columns) */}
           <AnimatePresence mode="popLayout">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {(filteredOpps.length>0?filteredOpps:OPPS).map((o,i)=>(
-                <motion.div key={o.id} layout
-                  initial={{ opacity:0, scale:0.95, y:12 }} animate={{ opacity:1, scale:1, y:0 }}
-                  exit={{ opacity:0, scale:0.92 }} transition={{ duration:0.3, delay:i*0.04 }}
-                  onMouseEnter={()=>setHoverOpp(o.id)} onMouseLeave={()=>setHoverOpp(null)}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {(filteredOpps.length > 0 ? filteredOpps : OPPS).map((o, i) => (
+                <motion.div
+                  key={o.id}
+                  layout
+                  initial={{ opacity: 0, scale: 0.98 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.96 }}
+                  transition={{ duration: 0.2 }}
+                  onMouseEnter={() => setHoverOpp(o.id)}
+                  onMouseLeave={() => setHoverOpp(null)}
                   onClick={() => nav("signin")}
-                  className="group rounded-2xl p-5 cursor-pointer border transition-all relative overflow-hidden"
-                  style={{ background:"#fff", borderColor:hoverOpp===o.id?C.primary:C.border, boxShadow:hoverOpp===o.id?`0 12px 36px ${C.primary}15`:"0 2px 8px rgba(16,33,61,0.04)" }}>
-                  <motion.div animate={{ y:hoverOpp===o.id?-2:0 }} transition={{ duration:0.2 }}>
-                    <div className="flex items-start gap-3 mb-4">
-                      <div className="w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center text-white text-[12px] font-bold" style={{ background:o.color }}>{o.initial}</div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[14px] font-semibold leading-tight truncate transition-colors" style={{ color:hoverOpp===o.id?C.primary:C.text }}>{o.title}</p>
-                        <p className="text-[12px]" style={{ color:C.muted }}>{o.company}</p>
+                  className="group bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/90 shadow-[0_4px_16px_rgba(15,23,42,0.04)] hover:shadow-[0_20px_40px_rgba(36,87,255,0.12)] hover:border-[#2457FF]/40 transition-all duration-300 relative overflow-hidden cursor-pointer flex flex-col justify-between"
+                >
+                  {/* Top Ambient Hover Glow */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#2457FF]/4 via-transparent to-[#7C3AED]/4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+
+                  <div>
+                    {/* Header: Company Monogram + Title + Heart */}
+                    <div className="flex items-start gap-3.5 mb-3.5 relative z-10">
+                      <div 
+                        className="w-11 h-11 rounded-xl flex-shrink-0 flex items-center justify-center text-white text-[14px] font-extrabold shadow-sm"
+                        style={{ backgroundColor: o.color }}
+                      >
+                        {o.initial}
                       </div>
-                      <motion.button onClick={e=>{e.stopPropagation();nav("signin");}} whileHover={{ scale:1.3 }} whileTap={{ scale:0.8 }} title="Sign in to save">
-                        <Heart size={16} fill="none" color="#CBD5E1"/>
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <p className="text-[13px] font-bold text-slate-700 truncate">{o.company}</p>
+                          <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9.5px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/70">
+                            <CheckCircle2 size={10} className="text-emerald-600" /> Verified
+                          </span>
+                        </div>
+                        <h4 className="text-[15.5px] font-bold text-slate-900 group-hover:text-[#2457FF] transition-colors leading-snug truncate mt-0.5">
+                          {o.title}
+                        </h4>
+                      </div>
+
+                      <motion.button 
+                        onClick={e => { e.stopPropagation(); nav("signin"); }}
+                        whileHover={{ scale: 1.2 }}
+                        whileTap={{ scale: 0.85 }}
+                        className="w-8 h-8 rounded-lg bg-slate-50 hover:bg-rose-50 border border-slate-200/80 hover:rose-200 flex items-center justify-center text-slate-400 hover:text-rose-500 transition-colors shadow-2xs flex-shrink-0"
+                        title="Save to Vault"
+                      >
+                        <Heart size={14} fill="none" />
                       </motion.button>
                     </div>
-                    <div className="flex items-center gap-2 mb-4 flex-wrap">
-                      <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md" style={{ background:TYPE_COLORS[o.type]+"14", color:TYPE_COLORS[o.type] }}>{TYPE_LABELS[o.type]}</span>
-                      <span className="text-[11px] capitalize" style={{ color:C.muted }}>{o.mode}</span>
-                      <span className="text-[11px]" style={{ color:C.muted }}>· {o.location}</span>
+
+                    {/* Metadata Badges: Type + Modality + Location */}
+                    <div className="flex items-center gap-1.5 flex-wrap mb-3.5 relative z-10">
+                      <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-lg border ${
+                        o.type === 'job' ? 'bg-blue-50 text-blue-700 border-blue-200/80' :
+                        o.type === 'internship' ? 'bg-cyan-50 text-cyan-700 border-cyan-200/80' :
+                        o.type === 'scholarship' ? 'bg-emerald-50 text-emerald-700 border-emerald-200/80' :
+                        'bg-purple-50 text-purple-700 border-purple-200/80'
+                      }`}>
+                        {TYPE_LABELS[o.type] || o.type.toUpperCase()}
+                      </span>
+
+                      <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-600 bg-slate-50 border border-slate-200/80 px-2 py-0.5 rounded-lg capitalize">
+                        <Globe size={11} className="text-slate-400" />
+                        {o.mode}
+                      </span>
+
+                      <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-500 bg-slate-50 border border-slate-200/80 px-2 py-0.5 rounded-lg truncate max-w-[150px]">
+                        <MapPin size={11} className="text-slate-400" />
+                        {o.location}
+                      </span>
                     </div>
-                    <div className="flex items-center justify-between pt-3.5" style={{ borderTop:`1px solid ${C.border}` }}>
-                      <span className="text-[12px] font-semibold font-mono" style={{ color:C.text }}>{o.salary}</span>
-                      <MatchRing score={o.match} size={40}/>
+
+                    {/* Skills Tag Pills */}
+                    {o.skills && (
+                      <div className="flex items-center gap-1.5 flex-wrap mb-4 relative z-10">
+                        {o.skills.slice(0, 3).map(skill => (
+                          <span key={skill} className="px-2.5 py-0.5 rounded-md text-[11px] font-medium bg-slate-100 hover:bg-blue-50 text-slate-600 hover:text-blue-700 border border-slate-200/60 transition-colors">
+                            {skill}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Compensation + Match Score Ring Footer */}
+                  <div className="pt-3.5 border-t border-slate-100 flex items-center justify-between relative z-10">
+                    <div>
+                      <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Estimated Fit & Comp</p>
+                      <p className="text-[14px] font-bold font-mono text-slate-900 mt-0.5">{o.salary}</p>
                     </div>
-                    <AnimatePresence>
-                      {hoverOpp===o.id && (
-                        <motion.div initial={{ opacity:0, height:0 }} animate={{ opacity:1, height:"auto" }}
-                          exit={{ opacity:0, height:0 }} transition={{ duration:0.22 }} className="overflow-hidden">
-                          <div className="flex items-center justify-between mt-3 pt-3" style={{ borderTop:`1px solid ${C.border}` }}>
-                            <div className="flex flex-wrap gap-1.5">
-                              {o.skills.slice(0,2).map(s=>(
-                                <span key={s} className="text-[10px] font-medium px-2 py-0.5 rounded-md" style={{ background:C.xlight, color:C.primary }}>{s}</span>
-                              ))}
-                            </div>
-                            <span className="text-[11px] font-bold" style={{ color:C.primary }}>Sign in to view →</span>
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </motion.div>
+
+                    <div className="flex items-center gap-2.5">
+                      <MatchRing score={o.match} size={42} />
+                    </div>
+                  </div>
+
+                  {/* Hover Action Bar */}
+                  <div className="mt-3 pt-2.5 border-t border-slate-100/80 flex items-center justify-between text-[11.5px] font-bold text-[#2457FF] opacity-85 group-hover:opacity-100 transition-opacity">
+                    <span className="flex items-center gap-1 text-slate-400 font-normal">
+                      <Clock size={12} /> {o.deadline || "Active Intake"}
+                    </span>
+                    <span className="flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                      1-Click Kit <ArrowRight size={13} />
+                    </span>
+                  </div>
                 </motion.div>
               ))}
             </div>
           </AnimatePresence>
 
-          {filteredOpps.length===0 && (
-            <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} className="text-center py-10 text-[14px]" style={{ color:C.muted }}>
-              No results. <button style={{ color:C.primary }} className="hover:underline" onClick={()=>{setTypeFilter(null);setModeFilter(null);setSearchQuery("");}}>Clear filters</button>
-            </motion.div>
+          {/* Empty Filter State */}
+          {filteredOpps.length === 0 && (
+            <div className="text-center py-12 bg-white rounded-2xl border border-slate-200 shadow-sm mt-4 p-8 space-y-3">
+              <div className="w-12 h-12 rounded-xl bg-blue-50 text-[#2457FF] flex items-center justify-center mx-auto">
+                <Search size={22} />
+              </div>
+              <h4 className="text-[16px] font-bold text-slate-900">No opportunities match the selected filters</h4>
+              <p className="text-[13px] text-slate-500 max-w-sm mx-auto">Try clearing search terms or resetting category filters to view all listings.</p>
+              <button 
+                onClick={() => { setTypeFilter(null); setModeFilter(null); setSearchQuery(""); }}
+                className="px-5 py-2.5 bg-[#2457FF] text-white text-[13px] font-bold rounded-xl shadow-sm hover:opacity-95 transition-all cursor-pointer"
+              >
+                Reset All Filters
+              </button>
+            </div>
           )}
-          <div className="text-center mt-8">
-            <div className="inline-flex flex-col sm:flex-row items-center gap-3 p-2 bg-white rounded-2xl border shadow-sm max-w-full" style={{ borderColor:C.border }}>
-              <span className="text-[12.5px] font-medium px-3 text-center sm:text-left" style={{ color:C.muted }}>
-                🔒 Sign in to unlock full database and match with your profile
-              </span>
-              <motion.button onClick={()=>nav("signin")} whileHover={{ scale:1.03, y:-1 }} whileTap={{ scale:0.96 }}
-                className="inline-flex items-center gap-2 px-7 py-3.5 text-white text-[15px] font-bold rounded-xl cursor-pointer whitespace-nowrap shadow-md hover:shadow-lg transition-all"
-                style={{ background:C.primary, boxShadow:`0 4px 14px ${C.primary}35` }}>
-                Sign In to View All 50,000+ Opportunities <ArrowRight size={14}/>
+
+          {/* Luxury Floating Signup CTA Dock */}
+          <div className="mt-12 rounded-2xl p-6 sm:p-7 bg-[#070E20] border border-white/10 text-white shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6">
+            {/* Ambient Background Glow */}
+            <div className="absolute top-0 right-0 w-80 h-80 bg-[#2457FF]/20 rounded-full blur-3xl pointer-events-none" />
+
+            <div className="flex items-center gap-4 relative z-10">
+              <div className="w-12 h-12 rounded-xl bg-[#2457FF]/20 border border-[#2457FF]/40 flex items-center justify-center flex-shrink-0 text-white shadow-sm">
+                <Lock size={22} className="text-blue-400" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="text-[17px] font-bold text-white tracking-tight">Unlock Full 50,000+ Opportunity Database</h3>
+                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10.5px] font-bold font-mono">
+                    LIVE RADAR ACTIVE
+                  </span>
+                </div>
+                <p className="text-[13px] text-slate-300 mt-1 max-w-xl">
+                  Create your free profile to access calibrated affinity match scores, 1-click tailored application dossiers, and real-time intake deadlines.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 flex-shrink-0 w-full md:w-auto justify-end relative z-10">
+              <motion.button 
+                onClick={() => nav("signin")} 
+                whileHover={{ scale: 1.03 }} 
+                whileTap={{ scale: 0.97 }}
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-7 py-3.5 bg-[#2457FF] hover:bg-[#1d48d8] text-white text-[15px] font-bold rounded-xl shadow-[0_4px_20px_rgba(36,87,255,0.45)] hover:shadow-[0_8px_25px_rgba(36,87,255,0.6)] transition-all cursor-pointer whitespace-nowrap"
+              >
+                <span>Sign In to View All 50,000+</span>
+                <ArrowRight size={16} />
               </motion.button>
             </div>
           </div>
+
         </div>
       </section>
+
 
       {/* ── Pipeline ──────────────────────────────────────────────── */}
       <section id="pipeline-section" className="py-14 sm:py-20" style={{ borderBottom:`1px solid ${C.border}`, background:"#fff" }}>
