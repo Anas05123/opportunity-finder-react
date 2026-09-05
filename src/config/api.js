@@ -28,8 +28,8 @@ export const getApiBase = () => {
       return '';
     }
 
-    // When frontend is hosted on Cloudflare Pages / Vercel / Netlify / GitHub Pages
-    if (hostname.includes('pages.dev') || hostname.includes('vercel.app') || hostname.includes('netlify.app') || hostname.includes('github.io')) {
+    // When frontend is hosted on Cloudflare (pages.dev / workers.dev) / Vercel / Netlify / GitHub Pages
+    if (hostname.includes('pages.dev') || hostname.includes('workers.dev') || hostname.includes('vercel.app') || hostname.includes('netlify.app') || hostname.includes('github.io')) {
       return 'https://opportunity-finder-gsxr.onrender.com';
     }
 
