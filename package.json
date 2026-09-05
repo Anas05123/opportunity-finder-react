@@ -14,7 +14,8 @@
     "security:gate": "node scripts/security-gate.js",
     "test:security": "node test/security.test.js",
     "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui"
+    "test:e2e:ui": "playwright test --ui",
+    "deploy:cf": "wrangler pages deploy dist --project-name=careerly-finder --branch=main"
   },
   "dependencies": {
     "@sentry/react": "^10.71.0",
