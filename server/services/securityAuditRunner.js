@@ -21,7 +21,8 @@ import { scanGitHistory } from './security/gitHistoryScanner.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, '../../');
-const BASE_URL = 'http://localhost:5000/api/v1';
+const DEFAULT_PORT = process.env.PORT || 5000;
+const BASE_URL = process.env.INTERNAL_API_URL || `http://127.0.0.1:${DEFAULT_PORT}/api/v1`;
 axios.defaults.headers.common['x-security-audit'] = 'careerly-internal-audit';
 
 import { getGitCommit, getAppVersion } from './security/securityMeta.js';
@@ -37,6 +38,8 @@ export async function executeSecurityAudit(options = {}) {
   const suiteVersion = '2.0.0';
   const gitCommit = getGitCommit();
   const triggeredBy = options.triggeredBy || 'automated_suite';
+  const activePort = process.env.PORT || 5000;
+  const BASE_URL = options.baseUrl || process.env.INTERNAL_API_URL || `http://127.0.0.1:${activePort}/api/v1`;
 
   // 1. Initialize Audit Run in DB with status = IN_PROGRESS
   db.prepare(`
@@ -482,12 +485,12 @@ export async function executeSecurityAudit(options = {}) {
     // GROUP 4: ADVANCED SSRF DEFENSE (7 checks)
     // -------------------------------------------------------------
     const ssrfVectors = [
-      { key: 'SSRF_LOOPBACK_IPV4_BLOCKED', url: 'http://127.0.0.1:5000/api/v1/admin/scrape', name: 'SSRF Block: Loopback 127.0.0.1', desc: '127.0.0.1' },
-      { key: 'SSRF_LOCALHOST_BLOCKED', url: 'http://localhost:5000/api/v1/user/profile', name: 'SSRF Block: Localhost Hostname', desc: 'localhost' },
+      { key: 'SSRF_LOOPBACK_IPV4_BLOCKED', url: `http://127.0.0.1:${activePort}/api/v1/admin/scrape`, name: 'SSRF Block: Loopback 127.0.0.1', desc: '127.0.0.1' },
+      { key: 'SSRF_LOCALHOST_BLOCKED', url: `http://localhost:${activePort}/api/v1/user/profile`, name: 'SSRF Block: Localhost Hostname', desc: 'localhost' },
       { key: 'SSRF_CLOUD_METADATA_BLOCKED', url: 'http://169.254.169.254/latest/meta-data/', name: 'SSRF Block: Cloud Metadata (169.254.169.254)', desc: '169.254.169.254' },
       { key: 'SSRF_PRIVATE_CLASS_A_BLOCKED', url: 'http://10.0.0.1/admin', name: 'SSRF Block: Private Class A (10.0.0.0/8)', desc: '10.0.0.1' },
       { key: 'SSRF_PRIVATE_CLASS_C_BLOCKED', url: 'http://192.168.1.1/router', name: 'SSRF Block: Private Class C (192.168.0.0/16)', desc: '192.168.1.1' },
-      { key: 'SSRF_WILDCARD_BLOCKED', url: 'http://0.0.0.0:5000', name: 'SSRF Block: Wildcard 0.0.0.0', desc: '0.0.0.0' },
+      { key: 'SSRF_WILDCARD_BLOCKED', url: `http://0.0.0.0:${activePort}`, name: 'SSRF Block: Wildcard 0.0.0.0', desc: '0.0.0.0' },
       { key: 'SSRF_FILE_PROTOCOL_BLOCKED', url: 'file:///etc/passwd', name: 'SSRF Block: File Protocol (file://)', desc: 'file://' }
     ];
 
@@ -589,7 +592,7 @@ export async function executeSecurityAudit(options = {}) {
     // -------------------------------------------------------------
     t0 = Date.now();
     try {
-      const headerCheck = await axios.get('http://localhost:5000/api/v1/sources');
+      const headerCheck = await axios.get(`${BASE_URL}/sources`);
       const h = headerCheck.headers;
 
       // 6.1 X-Content-Type-Options

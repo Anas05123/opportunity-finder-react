@@ -61,7 +61,7 @@ export async function enrichWithAiAssist(opportunity) {
   // If skills and basic metadata are extracted, return fast to avoid freezing
   const currentSkills = JSON.parse(updated.skills_required || '[]');
   if (currentSkills.length > 0) {
-    return { enriched: updated, status: 'SUCCESS_FAST' };
+    return { enriched: updated, status: 'SUCCESS' };
   }
 
   // 2. Only if entirely missing skills, attempt Gemini with a short 2.5s ceiling
@@ -95,7 +95,7 @@ Return ONLY JSON:
 
     return { enriched: updated, status: 'SUCCESS' };
   } catch (err) {
-    return { enriched: updated, status: 'FAST_FALLBACK' };
+    return { enriched: updated, status: 'SKIPPED' };
   }
 }
 

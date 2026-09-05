@@ -23,13 +23,13 @@ export const getApiBase = () => {
       return `${protocol}//${hostname}:5000`;
     }
 
-    // When running on Render (backend & frontend served on same origin)
-    if (hostname.includes('onrender.com')) {
+    // When running on Render or Cloudflare Pages (same-origin relative proxy to Render backend)
+    if (hostname.includes('onrender.com') || hostname.includes('pages.dev')) {
       return '';
     }
 
-    // When frontend is hosted on Vercel / Netlify / GitHub Pages
-    if (hostname.includes('vercel.app') || hostname.includes('netlify.app') || hostname.includes('github.io')) {
+    // When frontend is hosted on Cloudflare Workers / Vercel / Netlify / GitHub Pages
+    if (hostname.includes('workers.dev') || hostname.includes('vercel.app') || hostname.includes('netlify.app') || hostname.includes('github.io')) {
       return 'https://opportunity-finder-gsxr.onrender.com';
     }
 
