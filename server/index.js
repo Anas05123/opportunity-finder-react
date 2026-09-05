@@ -84,6 +84,8 @@ app.use(helmet({
         "https://apis.google.com",
         "https://identitytoolkit.googleapis.com",
         "https://opportunity-finder-gsxr.onrender.com",
+        "https://*.pages.dev",
+        "https://*.workers.dev",
         "http://localhost:5000",
         "http://127.0.0.1:5000",
         "http://localhost:3000",
@@ -156,8 +158,15 @@ app.use(cors({
       return callback(null, true);
     }
 
-    // 4. Official Careerly OnRender / Cloud hosting domains
-    if (origin === 'https://opportunity-finder-gsxr.onrender.com' || origin.endsWith('.onrender.com') || origin.endsWith('.vercel.app') || origin.endsWith('.netlify.app')) {
+    // 4. Official Careerly Cloud hosting domains (OnRender, Cloudflare Pages, Workers, Vercel, Netlify)
+    if (
+      origin === 'https://opportunity-finder-gsxr.onrender.com' ||
+      origin.endsWith('.onrender.com') ||
+      origin.endsWith('.pages.dev') ||
+      origin.endsWith('.workers.dev') ||
+      origin.endsWith('.vercel.app') ||
+      origin.endsWith('.netlify.app')
+    ) {
       return callback(null, true);
     }
 
