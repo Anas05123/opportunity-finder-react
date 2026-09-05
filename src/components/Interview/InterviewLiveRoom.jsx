@@ -55,6 +55,8 @@ export default function InterviewLiveRoom({
   const chatScrollRef = useRef(null);
   const isAiSpeakingRef = useRef(false);
   const liveTextRef = useRef('');
+  const micActiveRef = useRef(micActive);
+  micActiveRef.current = micActive;
 
   isAiSpeakingRef.current = isAiSpeaking;
   liveTextRef.current = candidateLiveText;
@@ -80,8 +82,10 @@ export default function InterviewLiveRoom({
         }
 
         cleanupAudio = attachAudioVisualizer(stream, (vol) => {
-          if (micActive) {
+          if (micActiveRef.current) {
             setAudioVolume(vol);
+          } else {
+            setAudioVolume(0);
           }
         });
       } catch (err) {
@@ -140,7 +144,7 @@ export default function InterviewLiveRoom({
 
   // 5. Continuous Speech Recognition with Fast VAD Silence Trigger
   const startContinuousListening = () => {
-    if (!isSpeechRecognitionSupported()) {
+    if (!isSpeechRecognitionSupported() || !micActiveRef.current) {
       setIsRecording(false);
       return;
     }
@@ -152,6 +156,7 @@ export default function InterviewLiveRoom({
     const recognizer = createSpeechRecognizer({
       silenceThresholdMs: 2000, // 2.0s conversational silence trigger
       onResult: ({ final, interim, full }) => {
+        if (!micActiveRef.current) return;
         setInterimText(interim);
         if (final) {
           setCandidateLiveText(prev => (prev ? prev + ' ' + final : final).trim());
@@ -159,9 +164,11 @@ export default function InterviewLiveRoom({
         }
       },
       onSpeechStart: () => {
+        if (!micActiveRef.current) return;
         setIsRecording(true);
       },
       onSilenceTimeout: () => {
+        if (!micActiveRef.current) return;
         // Auto-respond when candidate pauses talking
         const fullSpoken = (liveTextRef.current + ' ' + interimText).trim();
         if (fullSpoken.length > 8 && !isAiThinking && !isAiSpeakingRef.current) {
@@ -176,6 +183,31 @@ export default function InterviewLiveRoom({
       recognizerObjRef.current = recognizer;
       recognizer.start();
       setIsRecording(true);
+    }
+  };
+
+  const handleToggleMic = () => {
+    const nextState = !micActive;
+    setMicActive(nextState);
+    micActiveRef.current = nextState;
+
+    if (mediaStreamRef.current) {
+      mediaStreamRef.current.getAudioTracks().forEach(track => {
+        track.enabled = nextState;
+      });
+    }
+
+    if (!nextState) {
+      setAudioVolume(0);
+      setIsRecording(false);
+      setInterimText('');
+      if (recognizerObjRef.current) {
+        try { recognizerObjRef.current.stop(); } catch(e){}
+      }
+    } else {
+      if (!isAiSpeakingRef.current && !isAiThinking) {
+        startContinuousListening();
+      }
     }
   };
 
@@ -439,14 +471,14 @@ export default function InterviewLiveRoom({
           {/* Center Talking Avatar */}
           <div className="my-auto flex flex-col items-center justify-center text-center space-y-3 z-10">
             <div className="relative">
-              <div className={`w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center text-4xl sm:text-5xl shadow-2xl transition-all duration-300 ${
+              <div className={`w-20 h-20 sm:w-24 sm:h-24 rounded-2xl flex items-center justify-center font-mono font-bold text-2xl sm:text-3xl text-white shadow-2xl transition-all duration-300 border border-white/20 ${
                 isAiSpeaking 
-                  ? 'ring-4 ring-blue-500/80 scale-105 shadow-blue-500/40 bg-blue-900/40' 
+                  ? 'ring-4 ring-blue-500/80 scale-105 shadow-blue-500/40 bg-gradient-to-br from-blue-600 to-indigo-700' 
                   : isAiThinking 
-                  ? 'ring-4 ring-amber-500/80 animate-pulse bg-amber-900/30'
-                  : 'ring-2 ring-slate-700 bg-slate-800'
+                  ? 'ring-4 ring-amber-500/80 animate-pulse bg-gradient-to-br from-amber-600 to-amber-800'
+                  : 'ring-2 ring-slate-700 bg-gradient-to-br from-slate-800 to-slate-900'
               }`}>
-                {persona?.avatar || '👩‍💼'}
+                {persona?.initials || (persona?.name ? persona.name.split(' ').map(n=>n[0]).join('').slice(0,2) : 'AI')}
               </div>
 
               {/* Dynamic Audio Waves */}
@@ -463,12 +495,23 @@ export default function InterviewLiveRoom({
               )}
             </div>
 
-            <div className="bg-black/60 backdrop-blur-md px-3.5 py-1 rounded-full text-[11px] font-medium text-slate-200">
-              {isAiSpeaking 
-                ? '🎙️ Speaking...' 
-                : isAiThinking 
-                ? '🧠 Formulating follow-up question...' 
-                : '👂 Listening to you (Speak freely)...'}
+            <div className="bg-black/60 backdrop-blur-md px-3.5 py-1.5 rounded-full text-[11px] font-medium text-slate-200 flex items-center gap-2 border border-white/10">
+              {isAiSpeaking ? (
+                <>
+                  <Volume2 size={13} className="text-blue-400 animate-pulse" />
+                  <span>Interviewer Speaking...</span>
+                </>
+              ) : isAiThinking ? (
+                <>
+                  <RefreshCw size={13} className="text-amber-400 animate-spin" />
+                  <span>Formulating Evaluation Probe...</span>
+                </>
+              ) : (
+                <>
+                  <Mic size={13} className="text-emerald-400 animate-pulse" />
+                  <span>Listening to Candidate...</span>
+                </>
+              )}
             </div>
           </div>
 
@@ -506,10 +549,20 @@ export default function InterviewLiveRoom({
               <span className="font-semibold">{userProfile?.name || 'You (Candidate)'}</span>
             </div>
 
-            {isRecording && (
+            {!micActive ? (
+              <div className="flex items-center gap-1.5 bg-red-600/90 backdrop-blur-md px-2.5 py-1 rounded-lg text-[10px] font-bold text-white shadow-sm">
+                <MicOff size={11} />
+                <span>Muted</span>
+              </div>
+            ) : isRecording ? (
               <div className="flex items-center gap-1.5 bg-emerald-600/90 backdrop-blur-md px-2.5 py-1 rounded-lg text-[10px] font-bold text-white animate-pulse">
                 <Mic size={11} />
                 <span>Microphone Live</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5 bg-slate-700/80 backdrop-blur-md px-2.5 py-1 rounded-lg text-[10px] font-medium text-slate-300">
+                <Mic size={11} />
+                <span>Mic Standby</span>
               </div>
             )}
           </div>
@@ -538,7 +591,7 @@ export default function InterviewLiveRoom({
               </button>
 
               <button
-                onClick={() => setMicActive(!micActive)}
+                onClick={handleToggleMic}
                 className={`p-1.5 rounded-lg text-[11px] font-medium transition-all ${
                   micActive ? 'bg-white/20 text-white hover:bg-white/30' : 'bg-red-500 text-white'
                 }`}
