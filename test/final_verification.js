@@ -23,7 +23,8 @@ import db from '../server/db/sqliteClient.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const BASE_URL = 'http://localhost:5000/api/v1';
+const PORT = process.env.PORT || 5000;
+const BASE_URL = process.env.INTERNAL_API_URL || `http://127.0.0.1:${PORT}/api/v1`;
 axios.defaults.headers.common['x-security-audit'] = 'careerly-internal-audit';
 
 async function runFinalVerification() {
