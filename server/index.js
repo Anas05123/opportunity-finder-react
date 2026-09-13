@@ -228,6 +228,26 @@ app.get('/health', (req, res) => {
   });
 });
 
+// Webmaster & Crawler Transparency Declaration (RFC 9309 / Ethical Bot)
+app.get(['/bot', '/api/v1/bot'], (req, res) => {
+  res.json({
+    botName: 'CareerlyBot',
+    version: '2.0',
+    operator: 'Careerly Intelligence Platform',
+    website: 'https://careerly-finder.pages.dev',
+    documentationUrl: 'https://careerly-finder.pages.dev/bot',
+    contactEmail: 'compliance@careerly.app',
+    purpose: 'Index public student scholarships, fellowships, and verified early-career opportunities.',
+    policies: {
+      robotsTxtCompliance: 'Strict adherence to RFC 9309 (honors Disallow, Allow, and Crawl-delay)',
+      politeCrawling: 'Inter-request spacing minimum 1.8s per domain with adaptive exponential backoff on HTTP 429/503',
+      rateLimitCap: 'Max 1 request per 2 seconds per target hostname',
+      dataCollection: 'Read-only public opportunity metadata (title, link, company, deadline). No personal data or form submission.',
+      optOutInstructions: 'Add "User-agent: CareerlyBot\\nDisallow: /" to your robots.txt or email compliance@careerly.app for immediate domain exclusion.'
+    }
+  });
+});
+
 // Deep readiness check verifying database connectivity and operational availability
 const readyCheckHandler = (req, res) => {
   try {

@@ -33,6 +33,7 @@ const CvStudio = lazy(() => import('./components/CvStudio.jsx'));
 const InterviewCoach = lazy(() => import('./components/InterviewCoach.jsx'));
 const InterviewSessionReviewPage = lazy(() => import('./components/Interview/InterviewSessionReviewPage.jsx'));
 const AiCareerCopilot = lazy(() => import('./components/AiCareerCopilot.jsx'));
+const BotTransparencyPage = lazy(() => import('./components/BotTransparencyPage.jsx'));
 
 // Modal & Overlay Components
 import AuthModal from './components/Auth/AuthModal.jsx';
@@ -1285,6 +1286,9 @@ export default function App() {
                   <CareerlyWorkspace activeTab="admin" theme={theme} toggleTheme={toggleTheme} triggerToast={triggerToast} />
                 </AdminRoute>
               } />
+
+              {/* Webmaster Transparency Route */}
+              <Route path="/bot" element={<BotTransparencyPage />} />
 
               {/* 404 Catch-All */}
               <Route path="*" element={<NotFoundPage />} />

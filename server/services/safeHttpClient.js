@@ -157,7 +157,8 @@ export async function safeFetch(initialUrl, options = {}) {
       maxRedirects: 0, // STRICT: Disable automatic axios redirects
       validateStatus: (status) => status >= 200 && status < 400, // Accept 2xx and 3xx
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 (OpportunityHub-Probe/3.0)',
+        'User-Agent': 'Mozilla/5.0 (compatible; CareerlyBot/2.0; +https://careerly-finder.pages.dev/bot; compliance@careerly.app)',
+        'X-Crawler-Policy': 'https://careerly-finder.pages.dev/bot',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,application/json;q=0.8,*/*;q=0.7',
         ...(options.headers || {})
       },

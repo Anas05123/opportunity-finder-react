@@ -1,5 +1,5 @@
-import axios from 'axios';
 import crypto from 'crypto';
+import { ethicalFetch } from '../ethicalHttpClient.js';
 
 export class BaseAdapter {
   constructor(sourceId, sourceName, domain, tier = 3) {
@@ -7,15 +7,17 @@ export class BaseAdapter {
     this.sourceName = sourceName;
     this.domain = domain;
     this.tier = tier;
-    this.rateLimitMs = 1500;
+    this.rateLimitMs = 1800;
   }
 
   async fetch(url) {
-    const headers = {
-      'User-Agent': 'OpportunityHub-Discovery-Bot/1.0 (+https://opportunityhub.global/bot)'
-    };
     try {
-      const response = await axios.get(url, { headers, timeout: 12000 });
+      const response = await ethicalFetch(url, {
+        timeout: 12000,
+        baseDelayMs: this.rateLimitMs,
+        respectRobots: true,
+        polite: true
+      });
       return {
         statusCode: response.status,
         data: response.data,

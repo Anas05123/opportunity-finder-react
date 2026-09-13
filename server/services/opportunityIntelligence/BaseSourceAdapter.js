@@ -1,4 +1,4 @@
-import { safeFetch } from '../safeHttpClient.js';
+import { ethicalFetch } from '../ethicalHttpClient.js';
 import crypto from 'crypto';
 
 /**
@@ -12,7 +12,7 @@ export class BaseSourceAdapter {
     domain,
     type = 'ats',
     tier = 1,
-    rateLimitMs = 1500,
+    rateLimitMs = 1800,
     authorityLevel = 1,
     trustScore = 95
   }) {
@@ -34,17 +34,17 @@ export class BaseSourceAdapter {
   }
 
   /**
-   * SSRF-Safe HTTP Fetch via safeFetch
+   * Ethical, SSRF-Safe, Robots-Compliant HTTP Fetch
    */
   async fetch(url, options = {}) {
-    const headers = {
-      'User-Agent': 'Careerly-Intelligence-Ingestion-Bot/2.0 (+https://careerly.app/bot)',
-      'Accept': 'application/json, text/html, application/xml;q=0.9, */*;q=0.8',
-      ...(options.headers || {})
-    };
-
     const timeout = options.timeout || 12000;
-    return await safeFetch(url, { ...options, headers, timeout });
+    return await ethicalFetch(url, {
+      ...options,
+      timeout,
+      baseDelayMs: this.rateLimitMs,
+      respectRobots: options.respectRobots !== false,
+      polite: options.polite !== false
+    });
   }
 
   /**
