@@ -1,3 +1,6 @@
+import { handleConversationalTurn } from './services/conversationalEngine.js';
+import { synthesizeElevenLabsVoice, ELEVENLABS_VOICES } from './services/elevenlabsTts.js';
+import { generateInterviewSession, evaluateTurnResponse, finalizeInterviewSession } from './services/interviewCoachEngine.js';
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
@@ -11,6 +14,7 @@ import db, { initDatabase } from './db/database.js';
 import { runScraperPipeline, startBackgroundScheduler } from './services/scheduler.js';
 import { sendOutreachEmail } from './services/mailer.js';
 import { analyzeCV, generateInterviewFeedback, handleCareerCopilot, parsePdfText, getGeminiApiStatus } from './services/geminiAi.js';
+import { parseStructuredCv } from './services/cvStructuredExtractor.js';
 import { matchOpportunitiesToCV } from './services/cvJobMatcher.js';
 import { generateVerifiedJobUrl, testUrlHealth } from './services/linkVerifier.js';
 import { 
@@ -83,6 +87,8 @@ app.use(helmet({
         "https://accounts.google.com",
         "https://apis.google.com",
         "https://identitytoolkit.googleapis.com",
+        "https://api.elevenlabs.io",
+        "https://*.elevenlabs.io",
         "https://opportunity-finder-gsxr.onrender.com",
         "https://*.pages.dev",
         "https://*.workers.dev",
@@ -96,6 +102,13 @@ app.use(helmet({
         "ws://127.0.0.1:5173",
         "ws://localhost:3100",
         "ws://127.0.0.1:3100"
+      ],
+      mediaSrc: [
+        "'self'",
+        "data:",
+        "blob:",
+        "https://api.elevenlabs.io",
+        "https://*.elevenlabs.io"
       ],
       frameSrc: [
         "'self'",
@@ -207,7 +220,44 @@ app.get('/api/v1/health', (req, res) => {
     uptime_seconds: Math.floor(process.uptime())
   });
 });
-app.get('/health', (req, res) => res.json({ status: 'healthy' }));
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'healthy',
+    uptime_seconds: Math.floor(process.uptime()),
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Deep readiness check verifying database connectivity and operational availability
+const readyCheckHandler = (req, res) => {
+  try {
+    const dbCheck = sqliteDb.prepare('SELECT 1 as alive').get();
+    if (!dbCheck || dbCheck.alive !== 1) {
+      return res.status(503).json({
+        status: 'unready',
+        database: 'unresponsive',
+        timestamp: new Date().toISOString()
+      });
+    }
+    res.json({
+      status: 'ready',
+      service: 'Careerly Hardened SaaS API',
+      database: 'connected',
+      uptime_seconds: Math.floor(process.uptime()),
+      timestamp: new Date().toISOString()
+    });
+  } catch (err) {
+    res.status(503).json({
+      status: 'unready',
+      error: err.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+};
+
+app.get('/ready', readyCheckHandler);
+app.get('/readyz', readyCheckHandler);
+app.get('/api/v1/ready', readyCheckHandler);
 
 // -------------------------------------------------------------
 // 4. AI CAREER SUITE ENDPOINTS (RATE LIMITED & HARDENED)
@@ -243,18 +293,54 @@ app.post('/api/v1/ai/parse-pdf', aiLimiter, async (req, res) => {
       });
     }
 
+    const structured = await parseStructuredCv({
+      rawText: result.text,
+      fileBase64: validation.cleanBase64,
+      fileName: safeFileName,
+      userProfile: req.user || {}
+    });
+
     res.json({
       status: 'success',
       fileName: safeFileName,
       extractedText: result.text,
       pageCount: result.pageCount || 1,
-      source: result.source
+      source: result.source,
+      parsed: structured
     });
   } catch (err) {
     console.error('[PDF Parse Error]:', err.message);
     res.status(500).json({ error: 'Failed to extract text from PDF. Please verify the document is not corrupted.' });
   }
 });
+
+// Alias routes for CV extraction & parsing
+const handleCvExtractRoute = async (req, res) => {
+  try {
+    const { fileBase64, fileName, resumeText } = req.body;
+    if (fileBase64) {
+      const validation = validatePdfBase64(fileBase64, 5 * 1024 * 1024);
+      if (!validation.valid) {
+        return res.status(400).json({ error: validation.error });
+      }
+      const safeFileName = sanitizeFileName(fileName || 'resume.pdf');
+      const result = await parsePdfText(validation.cleanBase64, safeFileName);
+      const structured = await parseStructuredCv({ rawText: result.text, fileName: safeFileName });
+      return res.json({ status: 'success', parsed: structured, extractedText: result.text });
+    }
+    if (resumeText) {
+      const structured = await parseStructuredCv({ rawText: resumeText, fileName: 'pasted_resume.txt' });
+      return res.json({ status: 'success', parsed: structured, extractedText: resumeText });
+    }
+    return res.status(400).json({ error: 'fileBase64 or resumeText is required in request body.' });
+  } catch (err) {
+    res.status(500).json({ error: 'CV extraction failed: ' + err.message });
+  }
+};
+
+app.post('/api/v1/cv/extract-pdf', aiLimiter, handleCvExtractRoute);
+app.post('/api/v1/ai/parse-cv', aiLimiter, handleCvExtractRoute);
+app.post('/api/v1/cv/parse', aiLimiter, handleCvExtractRoute);
 
 // AI CV & ATS Analysis
 app.post('/api/v1/ai/analyze-cv', aiLimiter, async (req, res) => {
@@ -286,16 +372,289 @@ app.post('/api/v1/ai/match-jobs-to-cv', aiLimiter, async (req, res) => {
   }
 });
 
-// AI Mock Interview Coach
-app.post('/api/v1/ai/interview-coach', aiLimiter, async (req, res) => {
-  try {
-    const { role, company, question, answer, previousScore } = req.body;
-    const feedback = await generateInterviewFeedback({ role, company, question, answer, previousScore });
-    res.json({ status: 'success', feedback });
-  } catch (err) {
-    res.status(500).json({ error: 'Interview coach evaluation failed: ' + err.message });
-  }
-});
+  // AI Mock Interview Simulation Routes
+  
+  // ElevenLabs Voice & Neural TTS Endpoint
+  app.post('/api/v1/ai/tts', aiLimiter, async (req, res) => {
+    try {
+      const { text, voiceKey, apiKey } = req.body;
+      if (!text) return res.status(400).json({ error: 'text is required' });
+      const result = await synthesizeElevenLabsVoice({ text, voiceKey, customApiKey: apiKey });
+      res.json(result);
+    } catch (err) {
+      res.status(500).json({ error: 'TTS synthesis error: ' + err.message });
+    }
+  });
+
+  app.get('/api/v1/ai/voices', (req, res) => {
+    res.json({ status: 'success', voices: ELEVENLABS_VOICES });
+  });
+
+  
+  // Live Real-Time Conversational Dialogue Turn
+  app.post('/api/v1/ai/interview/conversational-turn', aiLimiter, async (req, res) => {
+    try {
+      const { company, role, persona, conversationHistory, candidateMessage, track } = req.body;
+      const turnResult = await handleConversationalTurn({
+        company,
+        role,
+        persona,
+        conversationHistory,
+        candidateMessage,
+        track
+      });
+      res.json({ status: 'success', ...turnResult });
+    } catch (err) {
+      res.status(500).json({ error: 'Conversational turn failed: ' + err.message });
+    }
+  });
+
+    // 1. Create a New Live Private Interview Session & Generate Secure Session URL
+  app.post('/api/v1/ai/interview/create-live-session', aiLimiter, optionalAuth, async (req, res) => {
+    try {
+      const { company, role, track, seniority, persona, questionCount, userProfile } = req.body;
+      
+      const generated = await generateInterviewSession({
+        company,
+        role,
+        track,
+        seniority,
+        questionCount: questionCount || 3,
+        userProfile: userProfile || req.user || {}
+      });
+
+      const sessionId = 'iv_sess_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
+      const defaultUser = sqliteDb.prepare("SELECT id FROM users LIMIT 1").get();
+      const userId = req.user?.id || req.user?.userId || defaultUser?.id || 'usr_admin_anas_001';
+      const privateUrl = `/interview/session/${sessionId}`;
+
+      const sessionConfig = {
+        sessionId,
+        company: company || 'Global Enterprise',
+        role: role || 'Specialist',
+        track: track || 'Behavioral (STAR)',
+        seniority: seniority || 'Senior',
+        persona: persona || { id: 'bella', name: 'Elena / Bella' },
+        questions: generated.questions || []
+      };
+
+      try {
+        sqliteDb.prepare(`
+          INSERT INTO interview_sessions (
+            id, user_id, company_name, role_title, track,
+            overall_score, verdict, verdict_color, answers_json, scorecard_json, status, session_config_json
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `).run(
+          sessionId,
+          userId,
+          sessionConfig.company,
+          sessionConfig.role,
+          sessionConfig.track,
+          0,
+          'In Progress',
+          '#3B82F6',
+          JSON.stringify([]),
+          JSON.stringify({}),
+          'in_progress',
+          JSON.stringify(sessionConfig)
+        );
+      } catch (dbErr) {
+        console.warn('[Interview Session Create Warning]:', dbErr.message);
+      }
+
+      res.json({
+        status: 'success',
+        sessionId,
+        privateUrl,
+        sessionConfig
+      });
+    } catch (err) {
+      console.error('[Create Live Session Error]:', err);
+      res.status(500).json({ error: 'Failed to create interview session: ' + err.message });
+    }
+  });
+
+  app.post('/api/v1/ai/interview/generate-session', aiLimiter, async (req, res) => {
+    try {
+      const { company, role, track, seniority, questionCount, userProfile } = req.body;
+      const session = await generateInterviewSession({
+        company,
+        role,
+        track,
+        seniority,
+        questionCount: questionCount || 3,
+        userProfile: userProfile || req.user || {}
+      });
+      res.json(session);
+    } catch (err) {
+      console.error('[Interview Gen Error]:', err);
+      res.status(500).json({ error: 'Failed to generate interview session: ' + err.message });
+    }
+  });
+
+  app.post('/api/v1/ai/interview/evaluate-turn', aiLimiter, async (req, res) => {
+    try {
+      const { company, role, question, answer, turnIndex, totalTurns } = req.body;
+      const evaluation = await evaluateTurnResponse({
+        company,
+        role,
+        question,
+        answer,
+        turnIndex: turnIndex || 1,
+        totalTurns: totalTurns || 3
+      });
+      res.json(evaluation);
+    } catch (err) {
+      console.error('[Interview Turn Error]:', err);
+      res.status(500).json({ error: 'Failed to evaluate interview answer: ' + err.message });
+    }
+  });
+
+    // 2. Finalize Session, Update DB Record to Completed & Generate Holistic Scorecard
+  app.post('/api/v1/ai/interview/finalize-session', aiLimiter, optionalAuth, async (req, res) => {
+    try {
+      const { sessionId: providedSessionId, company, role, track, answers, userProfile } = req.body;
+      const scorecard = await finalizeInterviewSession({
+        company,
+        role,
+        track,
+        answers: answers || [],
+        userProfile: userProfile || req.user || {}
+      });
+
+      const sessionId = providedSessionId || scorecard.sessionId || ('iv_sess_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8));
+      const defaultUser = sqliteDb.prepare("SELECT id FROM users LIMIT 1").get();
+      const userId = req.user?.id || req.user?.userId || defaultUser?.id || 'usr_admin_anas_001';
+      const privateUrl = `/interview/session/${sessionId}`;
+
+      try {
+        const existing = sqliteDb.prepare('SELECT id FROM interview_sessions WHERE id = ?').get(sessionId);
+        if (existing) {
+          sqliteDb.prepare(`
+            UPDATE interview_sessions SET
+              overall_score = ?,
+              verdict = ?,
+              verdict_color = ?,
+              answers_json = ?,
+              scorecard_json = ?,
+              status = 'completed'
+            WHERE id = ?
+          `).run(
+            scorecard.overallScore,
+            scorecard.verdict,
+            scorecard.verdictColor,
+            JSON.stringify(scorecard.evaluatedAnswers || answers || []),
+            JSON.stringify({ ...scorecard, sessionId, privateUrl }),
+            sessionId
+          );
+        } else {
+          sqliteDb.prepare(`
+            INSERT INTO interview_sessions (
+              id, user_id, company_name, role_title, track,
+              overall_score, verdict, verdict_color, answers_json, scorecard_json, status
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'completed')
+          `).run(
+            sessionId,
+            userId,
+            company || 'Global Enterprise',
+            role || 'Specialist',
+            track || 'Behavioral (STAR)',
+            scorecard.overallScore,
+            scorecard.verdict,
+            scorecard.verdictColor,
+            JSON.stringify(scorecard.evaluatedAnswers || answers || []),
+            JSON.stringify({ ...scorecard, sessionId, privateUrl })
+          );
+        }
+      } catch (dbErr) {
+        console.warn('[Interview DB Save Warning]:', dbErr.message);
+      }
+
+      res.json({ status: 'success', sessionId, privateUrl, ...scorecard });
+    } catch (err) {
+      console.error('[Interview Finalize Error]:', err);
+      res.status(500).json({ error: 'Failed to finalize interview session: ' + err.message });
+    }
+  });
+
+  // 3. Get Private Persistent Interview Session by ID (Accessible via private URL)
+  app.get('/api/v1/ai/interview/session/:sessionId', async (req, res) => {
+    try {
+      const { sessionId } = req.params;
+      const row = sqliteDb.prepare('SELECT * FROM interview_sessions WHERE id = ?').get(sessionId);
+      if (!row) {
+        return res.status(404).json({ error: 'Interview session not found or private link expired' });
+      }
+
+      const answers = JSON.parse(row.answers_json || '[]');
+      const scorecard = JSON.parse(row.scorecard_json || '{}');
+      const sessionConfig = JSON.parse(row.session_config_json || '{}');
+
+      res.json({
+        status: 'success',
+        session: {
+          id: row.id,
+          company: row.company_name,
+          role: row.role_title,
+          track: row.track,
+          status: row.status || (row.overall_score > 0 ? 'completed' : 'in_progress'),
+          overallScore: row.overall_score,
+          verdict: row.verdict,
+          verdictColor: row.verdict_color,
+          answers,
+          scorecard,
+          sessionConfig,
+          privateUrl: `/interview/session/${row.id}`,
+          createdAt: row.created_at
+        }
+      });
+    } catch (err) {
+      res.status(500).json({ error: 'Failed to retrieve session: ' + err.message });
+    }
+  });
+
+  app.get('/api/v1/ai/interview/history', optionalAuth, async (req, res) => {
+    try {
+      const userId = req.user?.id || req.user?.userId;
+      if (!userId) {
+        return res.json({ status: 'success', sessions: [] });
+      }
+      const rows = sqliteDb.prepare('SELECT * FROM interview_sessions WHERE user_id = ? ORDER BY created_at DESC LIMIT 20').all(userId);
+      const sessions = rows.map(r => ({
+        ...r,
+        answers: JSON.parse(r.answers_json || '[]'),
+        scorecard: JSON.parse(r.scorecard_json || '{}')
+      }));
+      res.json({ status: 'success', sessions });
+    } catch (err) {
+      res.status(500).json({ error: 'Failed to fetch interview history: ' + err.message });
+    }
+  });
+
+  // Legacy fallback endpoint
+  app.post('/api/v1/ai/interview-coach', aiLimiter, async (req, res) => {
+    try {
+      const { role, company, question, answer } = req.body;
+      const evaluation = await evaluateTurnResponse({ company, role, question, answer });
+      res.json({
+        status: 'success',
+        feedback: {
+          score: evaluation.score,
+          star_breakdown: {
+            situation: evaluation.starBreakdown.situation.feedback,
+            task: evaluation.starBreakdown.task.feedback,
+            action: evaluation.starBreakdown.action.feedback,
+            result: evaluation.starBreakdown.result.feedback
+          },
+          critique: evaluation.improvements.join(' '),
+          suggested_response: evaluation.goldenAnswer
+        }
+      });
+    } catch (err) {
+      res.status(500).json({ error: 'Interview coach evaluation failed: ' + err.message });
+    }
+  });
+
 
 // AI Career Copilot Chat
 app.post('/api/v1/ai/career-copilot', aiLimiter, async (req, res) => {
@@ -445,7 +804,7 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(PORT, async () => {
-  console.log(`[API SERVER] 🛡️ Hardened Careerly SaaS API running on http://localhost:${PORT}`);
+  console.log(`[API SERVER] ðŸ›¡ï¸ Hardened Careerly SaaS API running on http://localhost:${PORT}`);
   startBackgroundScheduler(120);
 
   // Automatically bootstrap baseline 35-point security audit if none exists
@@ -462,3 +821,4 @@ app.listen(PORT, async () => {
 });
 
 export default app;
+

@@ -1,4 +1,4 @@
-name: Deploy to GitHub Pages
+﻿name: Deploy to GitHub Pages
 
 on:
   push:
@@ -32,6 +32,15 @@ jobs:
 
       - name: Install dependencies (Deterministic Lockfile)
         run: npm ci
+
+      - name: Run Linting
+        run: npm run lint
+
+      - name: Run Routing Tests
+        run: npm run test:routing
+
+      - name: Run Opportunity Intelligence Tests
+        run: npm run test:opportunity
 
       - name: Compile Production Bundle
         run: npm run build

@@ -12,21 +12,11 @@ Use this file to choose the smallest context set.
 | Database/schema | `.agent/agents/database_agent.md` | `server/db/**`, SQL callers, sync scripts |
 | Discovery/scraping | `.agent/agents/discovery_agent.md` | discovery services, adapters, scrapers, tests |
 | AI features | `.agent/agents/ai_agent.md` | AI services and AI-facing components |
-| Deployment/build | `.agent/agents/devops_agent.md` | `render.yaml`, `vite.config.js`, `.env.example`, build scripts |
+| Deployment/build | `.agent/agents/devops_agent.md`, `docs/DEPLOYMENT.md` | `render.yaml`, `vite.config.js`, `.env.example`, build scripts |
 | Tests/verification | `.agent/agents/qa_agent.md` | `test/**`, `server/tests/**`, package scripts |
 | Audit/planning | `.agent/skills/improve.md` | `plans/**`, docs, targeted source |
 
-## Planned Documentation Layer
+## Documentation Layer
 
-Create these docs when the related subsystem changes enough to justify durable documentation:
-
-- `docs/ARCHITECTURE.md`
-- `docs/AUTH.md`
-- `docs/API.md`
-- `docs/DATABASE.md`
-- `docs/OPPORTUNITIES.md`
-- `docs/SCRAPING.md`
-- `docs/AI.md`
-- `docs/SECURITY.md`
-- `docs/DEPLOYMENT.md`
-- `docs/OBSERVABILITY.md`
+- `docs/DEPLOYMENT.md` — DevOps, CI/CD pipeline, environment variables, health checks, and deployment guide.
+- Planned: `docs/ARCHITECTURE.md`, `docs/AUTH.md`, `docs/API.md`, `docs/DATABASE.md`, `docs/OPPORTUNITIES.md`, `docs/SCRAPING.md`, `docs/AI.md`, `docs/SECURITY.md`, `docs/OBSERVABILITY.md`.
