@@ -48,7 +48,9 @@ function base64ToBlobUrl(dataUrl) {
 export function createSpeechRecognizer({ 
   onResult, 
   onSpeechStart,
+  onStart,
   onSpeechEnd,
+  onEnd,
   onSilenceTimeout,
   onError, 
   continuous = true,
@@ -77,6 +79,7 @@ export function createSpeechRecognizer({
 
   recognition.onstart = () => {
     if (onSpeechStart) onSpeechStart();
+    if (onStart) onStart();
   };
 
   recognition.onresult = (event) => {
@@ -98,7 +101,7 @@ export function createSpeechRecognizer({
     }
 
     if (onResult) {
-      onResult({
+      onResult(finalTranscript.trim(), interimTranscript.trim(), {
         final: finalTranscript.trim(),
         interim: interimTranscript.trim(),
         full: currentText
@@ -115,6 +118,7 @@ export function createSpeechRecognizer({
   recognition.onend = () => {
     if (silenceTimer) clearTimeout(silenceTimer);
     if (onSpeechEnd) onSpeechEnd();
+    if (onEnd) onEnd();
   };
 
   return {
@@ -200,12 +204,14 @@ export async function playAiVoice({
           await audio.play();
         } catch (playErr) {
           if (playErr.name === 'AbortError') {
-            // Audio was paused or interrupted normally
             return;
           }
           console.warn('[Audio Play Warning]:', playErr.message);
+          if (waveInterval) clearInterval(waveInterval);
+          if (onWaveUpdate) onWaveUpdate(0);
+          if (onEnd) onEnd();
+          return;
         }
-        return;
       }
     }
   } catch (err) {
@@ -227,18 +233,34 @@ function speakBrowserFallback(text, { onStart, onEnd, onWaveUpdate, voiceKey }) 
   const cleanText = text.replace(/[*_#`]/g, '').trim();
   const utterance = new SpeechSynthesisUtterance(cleanText);
 
-  utterance.rate = 1.0;
+  utterance.rate = 0.95;
   utterance.pitch = 1.0;
 
   const voices = window.speechSynthesis.getVoices();
-  const isMale = voiceKey === 'adam' || voiceKey === 'roger' || voiceKey === 'antoni';
+  const isMale = voiceKey === 'adam' || voiceKey === 'roger' || voiceKey === 'antoni' || voiceKey === 'george';
   
   const preferredVoice = voices.find(v => 
     v.lang.startsWith('en') && (
-      (isMale && (v.name.includes('David') || v.name.includes('George') || v.name.includes('Guy') || v.name.includes('Mark'))) ||
-      (!isMale && (v.name.includes('Zira') || v.name.includes('Samantha') || v.name.includes('Victoria')))
+      (isMale && (
+        v.name.includes('Natural') ||
+        v.name.includes('Guy') ||
+        v.name.includes('David') ||
+        v.name.includes('George') ||
+        v.name.includes('Mark') ||
+        v.name.includes('Google US English')
+      )) ||
+      (!isMale && (
+        v.name.includes('Natural') ||
+        v.name.includes('Jenny') ||
+        v.name.includes('Aria') ||
+        v.name.includes('Samantha') ||
+        v.name.includes('Victoria') ||
+        v.name.includes('Zira') ||
+        v.name.includes('Google US English')
+      ))
     )
-  ) || voices.find(v => v.lang.startsWith('en'));
+  ) || voices.find(v => v.lang.startsWith('en') && v.name.includes('Natural'))
+    || voices.find(v => v.lang.startsWith('en'));
 
   if (preferredVoice) {
     utterance.voice = preferredVoice;

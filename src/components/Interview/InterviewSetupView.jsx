@@ -167,6 +167,13 @@ export default function InterviewSetupView({ userProfile, onStartSession, isLoad
   const questionCount = 3;
 
   const [playingPersonaId, setPlayingPersonaId] = useState(null);
+  const [showVoiceConfig, setShowVoiceConfig] = useState(false);
+  const [elevenLabsKey, setElevenLabsKey] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('careerly_elevenlabs_key') || '';
+    }
+    return '';
+  });
 
   const [pastSessions, setPastSessions] = useState([]);
   const [_isLoadingHistory, setIsLoadingHistory] = useState(false);
@@ -620,10 +627,41 @@ export default function InterviewSetupView({ userProfile, onStartSession, isLoad
                       Interviewer Persona & Voice Caliber
                     </h2>
                   </div>
-                  <span className="text-[10px] font-bold text-primary font-mono">
-                    Ultra-Realistic ElevenLabs
-                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setShowVoiceConfig(!showVoiceConfig)}
+                    className="text-[10px] font-bold text-primary font-mono hover:underline cursor-pointer flex items-center gap-1"
+                  >
+                    <Sparkles size={11} className="text-amber-500" />
+                    <span>ElevenLabs Studio Voice</span>
+                  </button>
                 </div>
+
+                {showVoiceConfig && (
+                  <div className="p-3.5 rounded-xl bg-secondary/50 border border-border space-y-2 text-xs">
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold text-foreground">Custom ElevenLabs Key:</span>
+                      <span className="text-[10px] text-muted-foreground font-mono">Optional</span>
+                    </div>
+                    <div className="flex gap-2">
+                      <input 
+                        type="password"
+                        placeholder="xi-api-key..."
+                        value={elevenLabsKey}
+                        onChange={(e) => {
+                          setElevenLabsKey(e.target.value);
+                          if (typeof window !== 'undefined') {
+                            localStorage.setItem('careerly_elevenlabs_key', e.target.value);
+                          }
+                        }}
+                        className="flex-1 bg-background border border-border rounded-lg px-3 py-1.5 text-xs text-foreground outline-none font-mono"
+                      />
+                    </div>
+                    <p className="text-[10px] text-muted-foreground leading-relaxed">
+                      If provided, the system streams high-fidelity ElevenLabs voice synthesis directly with natural human cadence.
+                    </p>
+                  </div>
+                )}
 
                 <div className="space-y-2.5">
                   {PERSONAS.map(p => {

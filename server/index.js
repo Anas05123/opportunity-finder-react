@@ -414,16 +414,35 @@ app.post('/api/v1/ai/match-jobs-to-cv', aiLimiter, async (req, res) => {
   // Live Real-Time Conversational Dialogue Turn
   app.post('/api/v1/ai/interview/conversational-turn', aiLimiter, async (req, res) => {
     try {
-      const { company, role, persona, conversationHistory, candidateMessage, track } = req.body;
-      const turnResult = await handleConversationalTurn({
+      const {
         company,
         role,
         persona,
         conversationHistory,
+        history,
         candidateMessage,
+        candidateAnswer,
+        message,
+        track
+      } = req.body;
+
+      const turnResult = await handleConversationalTurn({
+        company,
+        role,
+        persona,
+        conversationHistory: conversationHistory || history || [],
+        candidateMessage: candidateMessage || candidateAnswer || message || '',
         track
       });
-      res.json({ status: 'success', ...turnResult });
+
+      const reply = turnResult.spokenReply || turnResult.replyText || "Thank you. Let us proceed to the next technical aspect.";
+
+      res.json({
+        status: 'success',
+        spokenReply: reply,
+        replyText: reply,
+        ...turnResult
+      });
     } catch (err) {
       res.status(500).json({ error: 'Conversational turn failed: ' + err.message });
     }

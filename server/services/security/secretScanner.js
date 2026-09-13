@@ -123,7 +123,7 @@ export const SECRET_RULES = [
     type: 'HARDCODED_PASSWORD',
     name: 'Hardcoded Password / Credential Variable',
     severity: 'HIGH',
-    regex: /(?:["']?(?:password|passwd|jwt_secret|jwtSecret|smtp_pass|smtpPassword|db_pass|dbPassword|db_password)["']?)\s*[:=]\s*['"]([^'"]{8,})['"]/gi
+    regex: /(?:^|[;,{\n])\s*(?:(?:['"](?:password|passwd|jwt_secret|jwtSecret|smtp_pass|smtpPassword|db_pass|dbPassword|db_password)['"])|(?:\b(?:password|passwd|jwt_secret|jwtSecret|smtp_pass|smtpPassword|db_pass|dbPassword|db_password)\b))\s*[:=]\s*['"]([^'"]{8,})['"]/gi
   },
   {
     type: 'GENERIC_API_SECRET',
@@ -252,6 +252,9 @@ function collectFilesToScan(dirPath, fileList = [], depth = 0) {
           collectFilesToScan(path.join(dirPath, entry.name), fileList, depth + 1);
         }
       } else if (entry.isFile()) {
+        if (entry.name.startsWith('.env') && entry.name !== '.env.example') {
+          continue;
+        }
         const ext = path.extname(entry.name).toLowerCase();
         if (!IGNORED_EXTENSIONS.has(ext)) {
           fileList.push(path.join(dirPath, entry.name));

@@ -24,7 +24,9 @@ export async function handleConversationalTurn({
         .map(msg => `${msg.role === 'interviewer' ? persona.name : 'Candidate'}: ${msg.content}`)
         .join('\n');
 
-      const intentGuidance = type === ANSWER_TYPES.UNCERTAIN_ADMISSION
+      const intentGuidance = type === ANSWER_TYPES.REPEAT_REQUEST
+        ? `The candidate asked you to repeat or clarify the question, or indicated they did not catch it. Speak like a real senior interviewer: calmly, politely, and warmly repeat the core question in natural spoken words, and invite them to answer.`
+        : type === ANSWER_TYPES.UNCERTAIN_ADMISSION
         ? `The candidate indicated they don't know or lack experience with the specific question. Acknowledge this with warmth and executive poise like a real senior human interviewer. Never repeat canned phrases. Offer a constructive bridge question or pivot to an adjacent technical scenario so they can demonstrate their strengths.`
         : type === ANSWER_TYPES.HINT_REQUEST
         ? `The candidate asked for a hint or guidance. Give a sharp, encouraging hint tailored to what was asked, then prompt them to take the first step.`
@@ -86,6 +88,7 @@ Return valid JSON strictly matching this schema:
           return {
             status: 'success',
             spokenReply: parsed.spokenReply,
+            replyText: parsed.spokenReply,
             quickFeedback: parsed.quickFeedback || 'Evaluated conversational turn.',
             starScore: typeof parsed.starScore === 'number' ? parsed.starScore : 75,
             classification: parsed.classification || type
@@ -107,6 +110,20 @@ Return valid JSON strictly matching this schema:
 
   const turnIndex = conversationHistory.filter(m => m.role === 'candidate').length;
 
+  if (type === ANSWER_TYPES.REPEAT_REQUEST) {
+    const lastQuestion = conversationHistory.slice().reverse().find(m => m.role === 'interviewer')?.content
+      || 'Could you walk me through a major technical project you led and the key trade-offs you made?';
+    const repText = `Of course! Let me repeat the question: ${lastQuestion}`;
+    return {
+      status: 'success',
+      spokenReply: repText,
+      replyText: repText,
+      quickFeedback: 'Interviewer repeated the prompt upon candidate request.',
+      starScore: 50,
+      classification: 'repeat_request'
+    };
+  }
+
   if (type === ANSWER_TYPES.UNCERTAIN_ADMISSION) {
     const uncertaintyPool = [
       `No worries at all, that's completely understandable. Let's pivot: can you tell me about a time you had to quickly learn a new technology or debug a system you had zero familiarity with?`,
@@ -117,6 +134,7 @@ Return valid JSON strictly matching this schema:
     return {
       status: 'success',
       spokenReply: uncertaintyPool[turnIndex % uncertaintyPool.length],
+      replyText: uncertaintyPool[turnIndex % uncertaintyPool.length],
       quickFeedback: 'Candidate acknowledged unfamiliarity; interviewer adapted with an alternative scenario.',
       starScore: 40,
       classification: 'uncertainty_bridge'
@@ -132,6 +150,7 @@ Return valid JSON strictly matching this schema:
     return {
       status: 'success',
       spokenReply: hintPool[turnIndex % hintPool.length],
+      replyText: hintPool[turnIndex % hintPool.length],
       quickFeedback: 'Candidate requested contextual guidance.',
       starScore: 45,
       classification: 'hint_request'

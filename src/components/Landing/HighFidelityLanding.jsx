@@ -6,8 +6,8 @@ import {
 } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────
-type Screen = "landing"|"signin"|"dashboard"|"discovery"|"details"|"crm"|"saved"|"cv"|"coach"|"calendar"|"profile"|"settings";
-const cn = (...c: (string|boolean|undefined|null)[]) => c.filter(Boolean).join(" ");
+// Screen types: "landing"|"signin"|"dashboard"|"discovery"|"details"|"crm"|"saved"|"cv"|"coach"|"calendar"|"profile"|"settings";
+const cn = (...c) => c.filter(Boolean).join(" ");
 
 // ─── Blue Design System ───────────────────────────────────────────
 const C = {
@@ -34,8 +34,8 @@ const OPPS = [
   { id:5, title:"Presidential Innovation Fellow", company:"US Federal Gov.", initial:"P", color:"#B91C1C", match:71, type:"fellowship", mode:"hybrid", location:"Washington, DC", salary:"$120K–$150K/yr", skills:["Civic Tech","AI Strategy","Leadership"], deadline:"Intake Open" },
   { id:6, title:"Staff Product Manager", company:"Figma", initial:"F", color:"#F24E1E", match:89, type:"job", mode:"remote", location:"Remote US / EMEA", salary:"$200K–$260K", skills:["Product Strategy","Figma Tokens","Growth"], deadline:"Featured" },
 ];
-const TYPE_LABELS: Record<string,string> = { job:"Job", internship:"Internship", scholarship:"Scholarship", fellowship:"Fellowship" };
-const TYPE_COLORS: Record<string,string> = { job:C.primary, internship:"#0891B2", scholarship:C.success, fellowship:"#7C3AED" };
+const TYPE_LABELS = { job:"Job", internship:"Internship", scholarship:"Scholarship", fellowship:"Fellowship" };
+const TYPE_COLORS = { job:C.primary, internship:"#0891B2", scholarship:C.success, fellowship:"#7C3AED" };
 
 const PIPE_STAGES = [
   { id:"saved",     label:"Saved",     col:"#94A3B8" },
@@ -81,7 +81,7 @@ const TESTIMONIALS = [
 ];
 
 // ─── MatchRing ────────────────────────────────────────────────────
-function MatchRing({ score, size=44, dark=false }: { score:number; size?:number; dark?:boolean }) {
+function MatchRing({ score, size=44, dark=false }) {
   const r = size/2 - 4;
   const circ = 2*Math.PI*r;
   const col = score>=85 ? C.primary : score>=70 ? C.bright : "#F59E0B";
@@ -103,7 +103,7 @@ function MatchRing({ score, size=44, dark=false }: { score:number; size?:number;
 }
 
 // ─── Ecosystem Product Previews ───────────────────────────────────
-function EcoDiscovery({ nav }: { coachIdx?: number; nav?: (s: Screen) => void }) {
+function EcoDiscovery({ nav }) {
   const [selectedTag, setSelectedTag] = useState<string | null>("All");
   const [hoveredCard, setHoveredCard] = useState<number | null>(null);
 
@@ -383,7 +383,7 @@ function EcoPipeline() {
   );
 }
 
-function EcoCVStudio({ cvSection, hideInnerHeader = false }: { cvSection:number; hideInnerHeader?:boolean }) {
+function EcoCVStudio({ cvSection, hideInnerHeader = false }) {
   const sections = [
     { id:"summary", label:"Executive Summary", score: 96, color: C.primary },
     { id:"experience", label:"Work Experience & Impact", score: 94, color: "#7C3AED" },
@@ -471,7 +471,7 @@ function EcoCVStudio({ cvSection, hideInnerHeader = false }: { cvSection:number;
   );
 }
 
-function EcoCoach({ coachIdx, isTyping, hideInnerHeader = false }: { coachIdx:number; isTyping:boolean; hideInnerHeader?:boolean }) {
+function EcoCoach({ coachIdx, isTyping, hideInnerHeader = false }) {
   const chatScrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -540,7 +540,7 @@ function EcoCoach({ coachIdx, isTyping, hideInnerHeader = false }: { coachIdx:nu
 
 function EcoCalendar() {
   const days = Array.from({ length: 31 }, (_, i) => i+1);
-  const highlights: Record<number,string> = { 15:"#EF4444", 18:"#2457FF", 20:"#F59E0B", 23:"#10B981" };
+  const highlights = { 15:"#EF4444", 18:"#2457FF", 20:"#F59E0B", 23:"#10B981" };
   return (
     <div className="h-full overflow-hidden p-4 text-white" style={{ background:"#0B1328" }}>
       <div className="flex items-center justify-between mb-3 pb-2 border-b border-white/10">
@@ -626,17 +626,17 @@ function EcoProfile() {
 }
 
 const ECO_ITEMS = [
-  { icon:Compass,      label:"Discovery",  color:C.primary,  Preview:(p:any) => <EcoDiscovery {...p}/> },
+  { icon:Compass,      label:"Discovery",  color:C.primary,  Preview:(p) => <EcoDiscovery {...p}/> },
   { icon:Bookmark,     label:"Saved",      color:"#0891B2",  Preview:() => <EcoSaved/> },
   { icon:FolderKanban, label:"Pipeline",   color:"#7C3AED",  Preview:() => <EcoPipeline/> },
-  { icon:FileText,     label:"CV Studio",  color:"#F24E1E",  Preview:(p:any) => <EcoCVStudio {...p}/> },
-  { icon:MessageSquare,label:"Coach",      color:"#7C3AED",  Preview:(p:any) => <EcoCoach {...p}/> },
+  { icon:FileText,     label:"CV Studio",  color:"#F24E1E",  Preview:(p) => <EcoCVStudio {...p}/> },
+  { icon:MessageSquare,label:"Coach",      color:"#7C3AED",  Preview:(p) => <EcoCoach {...p}/> },
   { icon:Calendar,     label:"Calendar",   color:"#0891B2",  Preview:() => <EcoCalendar/> },
   { icon:User,         label:"Profile",    color:"#92400E",  Preview:() => <EcoProfile/> },
 ];
 
 // ─── Main Component ───────────────────────────────────────────────
-export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
+export function LandingPage({ nav }) {
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
   const springX = useSpring(mouseX, { stiffness:60, damping:16 });
@@ -648,7 +648,7 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
   const dashX = useTransform(springX, v=>v*4);  const dashY = useTransform(springY, v=>v*4);
 
   const heroRef = useRef<HTMLDivElement>(null);
-  function onHeroMouse(e: React.MouseEvent<HTMLDivElement>) {
+  function onHeroMouse(e) {
     const r = heroRef.current?.getBoundingClientRect();
     if (!r) return;
     mouseX.set(((e.clientX-r.left)/r.width-0.5)*2);
@@ -685,7 +685,7 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
     return ()=>clearInterval(t);
   }, []);
 
-  function advancePipe(dir: 1|-1) {
+  function advancePipe(dir) {
     const next = Math.max(0, Math.min(4, pipePos+dir));
     setPipePos(next);
     if (next===4) { setCelebrateOffer(true); setTimeout(()=>setCelebrateOffer(false), 2000); }
@@ -697,7 +697,7 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
     if (searchQuery && !o.title.toLowerCase().includes(searchQuery.toLowerCase()) && !o.company.toLowerCase().includes(searchQuery.toLowerCase())) return false;
     return true;
   });
-  const toggleSave = (id:number) => setSavedOpps(s=>{ const ns=new Set(s); ns.has(id)?ns.delete(id):ns.add(id); return ns; });
+  const toggleSave = (id) => setSavedOpps(s=>{ const ns=new Set(s); ns.has(id)?ns.delete(id):ns.add(id); return ns; });
 
   // Floating hero card positions
   const cardPositions = [
@@ -957,8 +957,8 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
                         <span style={{ fontSize:12, fontWeight:700, color:C.text }}>Careerly</span>
                       </div>
                       {[["Dashboard",true],["Discover",false],["Applications",false],["Saved",false],["CV Studio",false],["Coach",false]].map(([l,a])=>(
-                        <div key={l as string} style={{ padding:"6px 10px", borderRadius:7, fontSize:10.5, fontWeight:500, marginBottom:3, cursor:"pointer", background:a?C.primary:"transparent", color:a?"#fff":C.muted }}>
-                          {l as string}
+                        <div key={l} style={{ padding:"6px 10px", borderRadius:7, fontSize:10.5, fontWeight:500, marginBottom:3, cursor:"pointer", background:a?C.primary:"transparent", color:a?"#fff":C.muted }}>
+                          {l}
                         </div>
                       ))}
                       <div className="mt-auto pt-3 flex items-center gap-2 px-1" style={{ borderTop:`1px solid ${C.border}` }}>
@@ -973,8 +973,8 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
                       </div>
                       <div className="grid grid-cols-4 gap-2" style={{ marginBottom:14 }}>
                         {[["12","Active",C.primary],["4","Applied",C.bright],["2","Offers","#7C3AED"],["84%","Match",C.success]].map(([n,l,c])=>(
-                          <div key={l as string} style={{ background:"#fff", border:`1px solid ${C.border}`, borderRadius:10, padding:"8px 10px" }}>
-                            <p style={{ fontSize:17, fontWeight:700, fontFamily:"monospace", color:c as string, lineHeight:1 }}>{n}</p>
+                          <div key={l} style={{ background:"#fff", border:`1px solid ${C.border}`, borderRadius:10, padding:"8px 10px" }}>
+                            <p style={{ fontSize:17, fontWeight:700, fontFamily:"monospace", color:c, lineHeight:1 }}>{n}</p>
                             <p style={{ fontSize:8.5, color:C.muted, marginTop:2 }}>{l}</p>
                           </div>
                         ))}
@@ -1011,7 +1011,7 @@ export function LandingPage({ nav }: { nav:(s:Screen)=>void }) {
                   const isHov = hoveredHeroCard===i;
                   return (
                     <motion.div key={card.id}
-                      style={{ x:parallaxXArr[i], y:parallaxYArr[i], position:"absolute", top:pos.top, left:(pos as any).left, right:(pos as any).right, bottom:(pos as any).bottom, zIndex:isHov?35:25 }}>
+                      style={{ x:parallaxXArr[i], y:parallaxYArr[i], position:"absolute", top:pos.top, left:pos.left, right:pos.right, bottom:pos.bottom, zIndex:isHov?35:25 }}>
                       <motion.div
                         animate={{ y:[0, pos.floatDir*pos.floatAmp, 0] }}
                         transition={{ duration:pos.floatDur, repeat:Infinity, ease:"easeInOut" }}>

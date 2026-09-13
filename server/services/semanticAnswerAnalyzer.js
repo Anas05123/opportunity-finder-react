@@ -8,6 +8,7 @@
 // Intent / Answer Classifications
 export const ANSWER_TYPES = {
   GREETING: 'greeting',
+  REPEAT_REQUEST: 'repeat_request',
   HINT_REQUEST: 'hint_request',
   UNCERTAIN_ADMISSION: 'uncertain_admission',
   CLARIFYING_QUESTION: 'clarifying_question',
@@ -25,6 +26,13 @@ export function classifyCandidateInput(text = '') {
   const wordCount = words.length;
 
   if (wordCount === 0) return { type: ANSWER_TYPES.INCOMPLETE, wordCount: 0 };
+
+  // 0. Repeat Requests
+  if (
+    /\b(repeat|can you repeat|could you repeat|say that again|say again|what was the question|pardon|come again|what did you ask|rephrase|can't hear|missed that|say it again)\b/i.test(clean)
+  ) {
+    return { type: ANSWER_TYPES.REPEAT_REQUEST, wordCount };
+  }
 
   // 1. Hint Requests
   if (

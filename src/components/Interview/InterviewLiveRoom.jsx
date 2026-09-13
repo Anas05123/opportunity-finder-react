@@ -118,12 +118,22 @@ export default function InterviewLiveRoom({
     const initialGreeting = messages[0].content;
     setIsAiSpeaking(true);
 
+    let safetyTimeout = setTimeout(() => {
+      // Safety timeout: If audio synthesis is blocked or takes too long
+      if (isAiSpeakingRef.current) {
+        setIsAiSpeaking(false);
+        setAiWaveLevel(0);
+        startContinuousListening();
+      }
+    }, 4500);
+
     playAiVoice({
       text: initialGreeting,
       voiceKey,
       elevenLabsApiKey: elevenLabsKey,
       onStart: () => setIsAiSpeaking(true),
       onEnd: () => {
+        clearTimeout(safetyTimeout);
         setIsAiSpeaking(false);
         setAiWaveLevel(0);
         startContinuousListening();
@@ -131,7 +141,10 @@ export default function InterviewLiveRoom({
       onWaveUpdate: (lvl) => setAiWaveLevel(lvl)
     });
 
-    return () => stopSpeaking();
+    return () => {
+      clearTimeout(safetyTimeout);
+      stopSpeaking();
+    };
   }, []);
 
   // Auto-scroll chat
@@ -159,11 +172,13 @@ export default function InterviewLiveRoom({
       continuous: true,
       interimResults: true,
       onResult: (finalTranscript, interimTranscript) => {
+        let finalStr = typeof finalTranscript === 'string' ? finalTranscript : finalTranscript?.final || '';
+        let interimStr = typeof interimTranscript === 'string' ? interimTranscript : finalTranscript?.interim || '';
         if (!micActiveRef.current) return;
-        if (finalTranscript) {
-          setCandidateLiveText(prev => (prev ? prev + ' ' + finalTranscript : finalTranscript).trim());
+        if (finalStr) {
+          setCandidateLiveText(prev => (prev ? prev + ' ' + finalStr : finalStr).trim());
         }
-        setInterimText(interimTranscript);
+        setInterimText(interimStr);
       },
       onStart: () => setIsRecording(true),
       onEnd: () => {
@@ -172,15 +187,25 @@ export default function InterviewLiveRoom({
           try {
             if (liveTextRef.current && liveTextRef.current.trim().length > 0) {
               handleSendCandidateTurn(liveTextRef.current.trim());
+            } else {
+              // Seamless auto-restart across silence pauses
+              rec.start();
             }
           } catch (err) {
-            console.error('[Speech Rec auto-restart error]:', err);
+            console.warn('[Speech Rec auto-restart notice]:', err?.message);
           }
         }
       },
       onError: (err) => {
         console.warn('[Speech Recognizer Warning]:', err);
         setIsRecording(false);
+        if (micActiveRef.current && !isAiSpeakingRef.current && err !== 'not-allowed') {
+          setTimeout(() => {
+            if (micActiveRef.current && !isAiSpeakingRef.current) {
+              try { rec.start(); } catch(_e){}
+            }
+          }, 1000);
+        }
       }
     });
 
@@ -262,17 +287,19 @@ export default function InterviewLiveRoom({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          conversationHistory: historyPayload,
           history: historyPayload,
           company,
           role,
           track,
           persona: persona?.name || 'Elena Rostova',
+          candidateMessage: rawAnswer,
           candidateAnswer: rawAnswer
         })
       });
 
       const data = await res.json();
-      const aiReplyText = data.replyText || "Thank you. Let us proceed to the next technical aspect.";
+      const aiReplyText = data.spokenReply || data.replyText || "Thank you. Let us proceed to the next technical aspect.";
 
       const aiMsg = {
         id: 'm_ai_' + Date.now(),
@@ -623,6 +650,7 @@ export default function InterviewLiveRoom({
             </div>
             <div className="flex flex-wrap gap-2">
               {[
+                { label: 'Can you repeat that?', text: 'Could you please repeat the question for me?' },
                 { label: 'Request Hint', text: 'Could you give me a small hint or steer me in the right direction on this point?' },
                 { label: 'Clarify Scope', text: 'Could you clarify the scale and performance constraints for this scenario?' },
                 { label: 'I am Uncertain', text: 'I am not completely certain about this specific detail. Could you provide a pointer?' },
