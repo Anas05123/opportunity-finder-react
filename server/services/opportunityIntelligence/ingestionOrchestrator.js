@@ -141,7 +141,7 @@ export async function executeScrapeRun(runId) {
         if (config.use_ai !== false) {
           const aiRes = await enrichWithAiAssist(normalized);
           normalized = aiRes.enriched;
-          aiStatus = aiRes.status;
+          aiStatus = ['NONE', 'SUCCESS', 'SKIPPED', 'FAILED'].includes(aiRes?.status) ? aiRes.status : 'SKIPPED';
         }
 
         // 4. Schema Validation
